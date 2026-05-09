@@ -2,6 +2,8 @@ import { AiService } from '../../modules/ai/services/ai.service.js';
 import { ingestJob } from '../../modules/ai/services/job.ingestion.service.js';
 import { getMarketTrends } from '../../modules/ai/services/market.trend.service.js';
 import { getSkillGapForJob } from '../../modules/ai/services/skill.gap.service.js';
+import { AccessibilityAlert } from '../../modules/ai/models/alert.model.js';
+import { streamSpeech } from '../../ai/agents/shared/tts.js';
 import { ValidHttpResponse } from '../../../packages/handler/response/validHttp.response.js';
 
 class Controller {
@@ -49,6 +51,13 @@ class Controller {
     return ValidHttpResponse.toOkResponse({ cleared: true });
   };
 
+  /** GET /ai/voice/stream?text=... — SSE streaming TTS */
+  streamTts = async (req, res) => {
+    const text = req.query.text;
+    if (!text) { res.status(400).end('text required'); return; }
+    await streamSpeech(decodeURIComponent(text), res);
+  };
+
   /** GET /ai/market-trends */
   marketTrends = async (_req) => {
     const trends = await getMarketTrends();
@@ -71,6 +80,7 @@ const _format = (r) => ({
   profile: r.profile,
   profile_completeness: r.profile?.profile_completeness,
   matches: r.matches,
+  profile_coach: r.profile_coach,
   nextStep: r.nextStep,
   errors: r.errors,
 });

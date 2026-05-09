@@ -46,6 +46,7 @@ export const AgentState = Annotation.Root({
 
   // ── Job Matching ───────────────────────────────────────────────────────────
   matches: Annotation({ reducer: (_, y) => y, default: () => [] }),
+  profile_coach: Annotation({ reducer: (_, y) => y, default: () => null }),
 
   // ── HR ─────────────────────────────────────────────────────────────────────
   hr_result: Annotation({ reducer: (_, y) => y, default: () => null }),

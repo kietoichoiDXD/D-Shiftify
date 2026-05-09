@@ -1,8 +1,51 @@
 import { analystModel } from '../shared/llm.js';
 import { synthesizeSpeech } from '../shared/tts.js';
 import { analyzeSkillGap } from './skill_gap.js';
+import { hybridScore } from '../match/match.scoring.js';
 
 const GAP_THRESHOLD = parseInt(process.env.SKILL_GAP_THRESHOLD || '70', 10);
+
+/**
+ * Profile Coach: find which missing skills would boost score the most.
+ * Returns top-2 skills with estimated score delta.
+ */
+const computeProfileCoach = (profile, matches) => {
+  if (!matches?.length) return null;
+
+  // Collect all required skills across top matches
+  const skillFreq = {};
+  for (const m of matches) {
+    for (const s of (m.required_skills || [])) {
+      skillFreq[s] = (skillFreq[s] || 0) + 1;
+    }
+  }
+
+  const allCandidateSkills = new Set([
+    ...(profile.hard_skills || []),
+    ...(profile.soft_skills || []),
+    ...(profile.inferred_skills || []),
+  ].map((s) => s.toLowerCase()));
+
+  // Missing skills sorted by frequency across top jobs
+  const missing = Object.entries(skillFreq)
+    .filter(([s]) => !allCandidateSkills.has(s.toLowerCase()))
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([skill, freq]) => {
+      // Estimate score boost: adding skill increases skill_score by 1/job_skills_count
+      const avgJobSkills = matches.reduce((s, m) => s + (m.required_skills?.length || 1), 0) / matches.length;
+      const boost = Math.round((0.40 / avgJobSkills) * freq * 100);
+      return { skill, boost_estimate: Math.min(boost, 20), appears_in: freq };
+    });
+
+  if (!missing.length) return null;
+
+  const tts_text = missing
+    .map((m) => `Thêm kỹ năng ${m.skill} có thể tăng điểm phù hợp của bạn thêm khoảng ${m.boost_estimate} điểm cho ${m.appears_in} việc làm.`)
+    .join(' ');
+
+  return { suggestions: missing, tts_text };
+};
 
 // ── RAG: retrieve top evidence chunks from job description ────────────────────
 const retrieveEvidence = (narrativeRaw, jobDescription, topN = 3) => {
@@ -54,7 +97,9 @@ export const xaiNode = async (state) => {
 
     const audio = await synthesizeSpeech(ttsText).catch(() => null);
 
-    return { matches: enriched, tts_text: ttsText, audio_base64: audio, nextStep: 'end' };
+    const profile_coach = computeProfileCoach(profile, enriched);
+
+    return { matches: enriched, tts_text: ttsText, audio_base64: audio, profile_coach, nextStep: 'end' };
   } catch (err) {
     return { errors: [err.message], nextStep: 'end' };
   }

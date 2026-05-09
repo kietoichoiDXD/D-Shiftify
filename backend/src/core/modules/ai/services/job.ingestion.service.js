@@ -2,6 +2,7 @@ import { embedText } from '../../ai/agents/shared/embedding.js';
 import { hrNode } from '../../ai/agents/hr/hr.agent.js';
 import { JobRepository } from '../repositories/job.repository.js';
 import { HumanMessage } from '@langchain/core/messages';
+import { runAlertJob } from './alert.job.service.js';
 
 /**
  * Called when HR posts a new job.
@@ -52,6 +53,9 @@ export const ingestJob = async (jobPayload) => {
     accessibility_level: hr.level ?? 'A',
     embedding_vector: `[${finalEmbedding.join(',')}]`,
   });
+
+  // Fire-and-forget: notify matching candidates
+  runAlertJob(job);
 
   return {
     job,

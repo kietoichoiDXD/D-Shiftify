@@ -58,10 +58,37 @@ export const synthesizeSpeech = async (text) => {
     return Buffer.concat(buffers).toString('base64');
   } catch {
     if (useFpt) {
-      // FPT failed → fall back to Google
       const buffers = await Promise.all(chunks.map(fetchGoogleChunk));
       return Buffer.concat(buffers).toString('base64');
     }
     throw new Error('TTS failed');
   }
+};
+
+/**
+ * Stream TTS chunks as SSE to an Express response.
+ * Each event: { index, total, audio_base64 } — client plays chunks in order.
+ * Usage: GET /api/ai/voice/stream?text=...
+ */
+export const streamSpeech = async (text, res) => {
+  const clean = sanitize(text);
+  const chunks = splitChunks(clean);
+  const useFpt = !!process.env.FPT_AI_API_KEY;
+  const fetchChunk = useFpt ? fetchFptChunk : fetchGoogleChunk;
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+
+  for (let i = 0; i < chunks.length; i++) {
+    try {
+      const buf = await fetchChunk(chunks[i]).catch(() => fetchGoogleChunk(chunks[i]));
+      const payload = JSON.stringify({ index: i, total: chunks.length, audio_base64: buf.toString('base64') });
+      res.write(`data: ${payload}\n\n`);
+    } catch {
+      // skip failed chunk, don't break stream
+    }
+  }
+  res.write('data: [DONE]\n\n');
+  res.end();
 };
