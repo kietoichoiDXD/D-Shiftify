@@ -3,6 +3,7 @@ import { analystModel } from '../shared/llm.js';
 import { embedText } from '../shared/embedding.js';
 import { synthesizeSpeech } from '../shared/tts.js';
 import { SkillProfileRepository } from '../../../modules/ai/repositories/skill.profile.repository.js';
+import { sanitizeAbleist } from '../shared/ableist.js';
 
 const CvSchema = z.object({
   summary:     z.string(),
@@ -30,7 +31,7 @@ const readSection = (cv, section) => {
         ? `Phần Học vấn: ${cv.education[0].degree} tại ${cv.education[0].institution || 'trường'}.`
         : null;
     case 'summary':
-      return `Phần Tóm tắt: ${(cv.summary || '').slice(0, 80)}.`;
+      return `Phần Tóm tắt: ${sanitizeAbleist((cv.summary || '').slice(0, 80))}.`;
     default:
       return null;
   }
@@ -72,8 +73,21 @@ export const resumeNode = async (state) => {
 
       const sectionText = readSection(cv_data, nextSection);
       if (!sectionText) {
-        // Skip empty section
-        return resumeNode({ ...state, verified_sections: [...verifiedSections, nextSection] });
+        // Skip empty sections without recursion — find next non-empty section
+        const remaining = SECTIONS.filter((s) => ![...verifiedSections, nextSection].includes(s));
+        const nextNonEmpty = remaining.find((s) => readSection(cv_data, s));
+        if (!nextNonEmpty) {
+          const tts = 'Hồ sơ đã được lưu. Đang tìm việc làm phù hợp cho bạn.';
+          return { tts_text: tts, audio_base64: await synthesizeSpeech(tts).catch(() => null), nextStep: 'match' };
+        }
+        const text = readSection(cv_data, nextNonEmpty);
+        const tts = `${text} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;
+        return {
+          verified_sections: [...verifiedSections, nextSection],
+          tts_text: tts,
+          audio_base64: await synthesizeSpeech(tts).catch(() => null),
+          nextStep: 'resume',
+        };
       }
 
       const tts = `${sectionText} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;

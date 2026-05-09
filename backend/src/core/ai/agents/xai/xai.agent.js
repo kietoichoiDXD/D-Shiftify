@@ -1,7 +1,7 @@
 import { analystModel } from '../shared/llm.js';
 import { synthesizeSpeech } from '../shared/tts.js';
 import { analyzeSkillGap } from './skill_gap.js';
-import { hybridScore } from '../match/match.scoring.js';
+import { sanitizeAbleist } from '../shared/ableist.js';
 
 const GAP_THRESHOLD = parseInt(process.env.SKILL_GAP_THRESHOLD || '70', 10);
 
@@ -67,7 +67,7 @@ const explainMatch = async (profile, job, score, narrativeRaw) => {
     `Kỹ năng ứng viên: ${[...(profile.hard_skills || []), ...(profile.inferred_skills || [])].slice(0, 5).join(', ')}\n` +
     `Công việc: ${job.title}`,
   );
-  return typeof res === 'string' ? res : res.content;
+  return sanitizeAbleist(typeof res === 'string' ? res : res.content);
 };
 
 // ── XAI Node ──────────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ export const xaiNode = async (state) => {
       matches.map(async (m) => {
         const [explanation, gap] = await Promise.all([
           explainMatch(profile, m, m.final_score, narrative_raw || ''),
-          m.final_score < GAP_THRESHOLD ? analyzeSkillGap(profile, m, m.final_score) : Promise.resolve(null),
+          m.final_score < GAP_THRESHOLD ? analyzeSkillGap(profile, m) : Promise.resolve(null),
         ]);
         return { ...m, explanation, skill_gap: gap };
       }),

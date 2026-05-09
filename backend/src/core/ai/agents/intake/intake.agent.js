@@ -44,7 +44,9 @@ export const intakeNode = async (state) => {
   // 3. Decide next question
   const missing = Object.keys(W).filter((k) => { const v = updated[k]; return !v || (Array.isArray(v) && !v.length); });
   const { next_question, narrative_chunk } = await qModel.invoke(
-    `Trợ lý tuyển dụng cho người khiếm thị. Hồ sơ hiện tại: ${JSON.stringify(updated)}.\n` +
+    `Trợ lý tuyển dụng cho người khiếm thị.\n` +
+    `QUAN TRỌNG: CHỈ trích xuất thông tin người dùng ĐÃ đề cập rõ ràng. KHÔNG suy diễn. KHÔNG thêm thông tin không có trong hội thoại. Nếu không chắc → để trống.\n\n` +
+    `Hồ sơ hiện tại: ${JSON.stringify(updated)}.\n` +
     `Thiếu: ${missing.join(', ')}. Người dùng vừa nói: "${userText}".\n` +
     `${isComplete ? 'Hồ sơ đủ rồi, next_question = rỗng.' : 'Hỏi 1 câu ngắn về trường còn thiếu quan trọng nhất.'}`,
   ).catch(() => ({ next_question: '', narrative_chunk: userText }));

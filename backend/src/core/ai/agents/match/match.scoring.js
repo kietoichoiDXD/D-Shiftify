@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { routerModel } from '../shared/llm.js';
 import { geoScore } from '../shared/geo.js';
+import db from '../../../../core/database/index.js';
 
-// ── Dynamic weight schema ──────────────────────────────────────────────────────
 const WeightSchema = z.object({
   skill:        z.number().min(0).max(1),
   exp:          z.number().min(0).max(1),
@@ -13,40 +13,43 @@ const WeightSchema = z.object({
 
 const weightModel = routerModel.withStructuredOutput(WeightSchema);
 
-// In-memory cache: job_id → weights (avoids re-calling Gemini per candidate)
+const DEFAULTS = { skill: 0.40, exp: 0.20, at: 0.25, geo: 0.15, culture_fit: 0 };
+
+// Process-level cache — avoids DB round-trip for hot jobs
 const weightCache = new Map();
 
-/**
- * Ask Gemini to infer scoring weights from the raw JD text.
- * Weights must sum to 1.0.
- * Results cached by job_id for the lifetime of the process.
- */
 export const inferWeights = async (job) => {
   if (weightCache.has(job.job_id)) return weightCache.get(job.job_id);
 
+  // 1. Load from DB (persisted at ingestion time)
+  if (job.weights_json) {
+    const w = typeof job.weights_json === 'string' ? JSON.parse(job.weights_json) : job.weights_json;
+    weightCache.set(job.job_id, w);
+    return w;
+  }
+
+  // 2. Gemini inference (cold path — only on first encounter)
   try {
     const raw = await weightModel.invoke(
       `Bạn là chuyên gia tuyển dụng. Phân tích JD sau và trả về trọng số chấm điểm (tổng = 1.0).\n\n` +
       `JD: "${(job.description_raw || job.title || '').slice(0, 800)}"\n\n` +
-      `Hướng dẫn:\n` +
       `- skill: mức độ yêu cầu kỹ năng kỹ thuật cụ thể\n` +
       `- exp: mức độ yêu cầu kinh nghiệm năm tháng\n` +
-      `- at: mức độ quan trọng của hỗ trợ accessibility (screen reader, remote...)\n` +
+      `- at: mức độ quan trọng của hỗ trợ accessibility\n` +
       `- geo: mức độ quan trọng của vị trí địa lý\n` +
-      `- culture_fit: mức độ quan trọng của văn hóa, thái độ, soft skills ẩn\n\n` +
-      `Ví dụ startup sáng tạo: skill=0.25, exp=0.10, at=0.20, geo=0.10, culture_fit=0.35\n` +
-      `Ví dụ ngân hàng: skill=0.45, exp=0.35, at=0.10, geo=0.05, culture_fit=0.05`,
+      `- culture_fit: mức độ quan trọng của văn hóa, thái độ, soft skills ẩn`,
     );
 
-    // Normalize to sum = 1.0
     const total = Object.values(raw).reduce((s, v) => s + v, 0) || 1;
     const w = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, v / total]));
+
+    // 3. Persist to DB (fire-and-forget)
+    db('job_descriptions').where({ job_id: job.job_id }).update({ weights_json: JSON.stringify(w) }).catch(() => {});
 
     weightCache.set(job.job_id, w);
     return w;
   } catch {
-    // Fallback to spec defaults
-    return { skill: 0.40, exp: 0.20, at: 0.25, geo: 0.15, culture_fit: 0 };
+    return DEFAULTS;
   }
 };
 

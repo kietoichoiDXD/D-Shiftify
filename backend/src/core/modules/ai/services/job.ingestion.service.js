@@ -3,6 +3,7 @@ import { hrNode } from '../../ai/agents/hr/hr.agent.js';
 import { JobRepository } from '../repositories/job.repository.js';
 import { HumanMessage } from '@langchain/core/messages';
 import { runAlertJob } from './alert.job.service.js';
+import { inferWeights } from '../../ai/agents/match/match.scoring.js';
 
 /**
  * Called when HR posts a new job.
@@ -18,14 +19,11 @@ export const ingestJob = async (jobPayload) => {
     location_lat, location_lng, work_environment,
   } = jobPayload;
 
-  // 1. Accessibility audit + rewrite (parallel with embedding)
-  const [hrState, embedding] = await Promise.all([
-    hrNode({
-      messages: [new HumanMessage(description_raw)],
-      nextStep: 'hr',
-      narrative_raw: '',
-    }),
+  // 1. Accessibility audit + rewrite + weights (all parallel)
+  const [hrState, embedding, weights] = await Promise.all([
+    hrNode({ messages: [new HumanMessage(description_raw)], nextStep: 'hr', narrative_raw: '' }),
     embedText(description_raw),
+    inferWeights({ job_id: 'temp', description_raw, title }),
   ]);
 
   const hr = hrState.hr_result || {};
@@ -38,20 +36,15 @@ export const ingestJob = async (jobPayload) => {
 
   // 3. Save
   const job = await JobRepository.save({
-    employer_id,
-    title,
+    employer_id, title,
     description_raw: finalDescription,
-    required_skills: required_skills,
-    salary_min,
-    salary_max,
-    has_insurance,
-    is_remote,
-    location_lat,
-    location_lng,
-    work_environment,
+    required_skills,
+    salary_min, salary_max, has_insurance, is_remote,
+    location_lat, location_lng, work_environment,
     accessibility_score: hr.score ?? null,
     accessibility_level: hr.level ?? 'A',
     embedding_vector: `[${finalEmbedding.join(',')}]`,
+    weights_json: JSON.stringify(weights),
   });
 
   // Fire-and-forget: notify matching candidates
