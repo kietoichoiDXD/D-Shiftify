@@ -1,0 +1,66 @@
+import { embedText } from '../../ai/agents/shared/embedding.js';
+import { hrNode } from '../../ai/agents/hr/hr.agent.js';
+import { JobRepository } from '../repositories/job.repository.js';
+import { HumanMessage } from '@langchain/core/messages';
+
+/**
+ * Called when HR posts a new job.
+ * 1. Run HR agent → accessibility score + rewrite
+ * 2. Embed description_raw → vector(768)
+ * 3. Save to job_descriptions
+ */
+export const ingestJob = async (jobPayload) => {
+  const {
+    employer_id, title, description_raw,
+    required_skills = [], salary_min, salary_max,
+    has_insurance = false, is_remote = false,
+    location_lat, location_lng, work_environment,
+  } = jobPayload;
+
+  // 1. Accessibility audit + rewrite (parallel with embedding)
+  const [hrState, embedding] = await Promise.all([
+    hrNode({
+      messages: [new HumanMessage(description_raw)],
+      nextStep: 'hr',
+      narrative_raw: '',
+    }),
+    embedText(description_raw),
+  ]);
+
+  const hr = hrState.hr_result || {};
+
+  // 2. Use rewritten JD if available and score improved
+  const finalDescription = hr.rewritten_jd || description_raw;
+  const [finalEmbedding] = hr.rewritten_jd
+    ? await Promise.all([embedText(finalDescription)])
+    : [embedding];
+
+  // 3. Save
+  const job = await JobRepository.save({
+    employer_id,
+    title,
+    description_raw: finalDescription,
+    required_skills: required_skills,
+    salary_min,
+    salary_max,
+    has_insurance,
+    is_remote,
+    location_lat,
+    location_lng,
+    work_environment,
+    accessibility_score: hr.score ?? null,
+    accessibility_level: hr.level ?? 'A',
+    embedding_vector: `[${finalEmbedding.join(',')}]`,
+  });
+
+  return {
+    job,
+    accessibility: {
+      score: hr.score,
+      level: hr.level,
+      issues: hr.issues,
+      suggestions: hr.suggestions,
+      audio_summary_base64: hrState.audio_base64,
+    },
+  };
+};

@@ -114,5 +114,19 @@ export class AppBundle {
     async run() {
         AppBundle.logger.info('Building asynchronous config');
         await connectDatabase();
+
+        // MongoDB for AI profile persistence
+        if (process.env.MONGO_URL) {
+            const mongoose = (await import('mongoose')).default;
+            await mongoose.connect(process.env.MONGO_URL);
+            AppBundle.logger.info('MongoDB connected');
+        }
+
+        // Redis for AI session memory
+        if (process.env.REDIS_URL) {
+            const { getRedisClient } = await import('core/infrastructure/session.store');
+            await getRedisClient();
+            AppBundle.logger.info('Redis session store connected');
+        }
     }
 }

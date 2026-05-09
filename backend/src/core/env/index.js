@@ -8,6 +8,7 @@ export const HOST = process.env.HOST || 'http://localhost:3000';
 export const JWT_SECRET = process.env.JWT_SECRET || 'vjppro';
 export const EXPIRE_DAYS = process.env.EXPIRE_DAYS || '1d';
 export const { DATABASE_URL } = process.env;
+export const MONGO_URL = process.env.MONGO_URL || 'mongodb://localhost:27017/dshiftify';
 export const ROOT_DIR =
     process.env === 'production'
         ? `${process.cwd()}/dist`
