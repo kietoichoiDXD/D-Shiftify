@@ -5,7 +5,6 @@ const key = () => {
   return process.env.GEMINI_API_KEY;
 };
 
-/** Fast cheap model for routing/intake/audit */
 export const routerModel = new ChatGoogleGenerativeAI({
   apiKey: key(),
   model: 'gemini-2.5-flash',
@@ -14,7 +13,6 @@ export const routerModel = new ChatGoogleGenerativeAI({
   maxRetries: 3,
 });
 
-/** High-quality model for CV generation, matching explanation, JD rewrite */
 export const analystModel = new ChatGoogleGenerativeAI({
   apiKey: key(),
   model: 'gemini-2.5-flash',

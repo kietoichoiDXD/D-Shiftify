@@ -1,6 +1,5 @@
 const toRad = (d) => (d * Math.PI) / 180;
 
-/** Haversine distance in km */
 export const haversineKm = (lat1, lng1, lat2, lng2) => {
   const R = 6371;
   const dLat = toRad(lat2 - lat1);
@@ -11,9 +10,8 @@ export const haversineKm = (lat1, lng1, lat2, lng2) => {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-/** 0–1 score: 1 = same location, 0 = beyond maxRadius km */
 export const geoScore = (lat1, lng1, lat2, lng2, maxRadius = 10) => {
-  if (!lat1 || !lng1 || !lat2 || !lng2) return 0.5; // unknown → neutral
+  if (!lat1 || !lng1 || !lat2 || !lng2) return 0.5;
   const d = haversineKm(lat1, lng1, lat2, lng2);
   return d <= maxRadius ? 1 - d / maxRadius : 0;
 };
