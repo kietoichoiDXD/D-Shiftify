@@ -8,7 +8,7 @@ const key = () => {
 /** Fast cheap model for routing/intake/audit */
 export const routerModel = new ChatGoogleGenerativeAI({
   apiKey: key(),
-  model: 'gemini-2.0-flash',
+  model: 'gemini-2.5-flash',
   temperature: 0.1,
   maxOutputTokens: 1024,
   maxRetries: 3,
@@ -17,7 +17,7 @@ export const routerModel = new ChatGoogleGenerativeAI({
 /** High-quality model for CV generation, matching explanation, JD rewrite */
 export const analystModel = new ChatGoogleGenerativeAI({
   apiKey: key(),
-  model: 'gemini-2.0-flash',
+  model: 'gemini-2.5-flash',
   temperature: 0.4,
   maxOutputTokens: 4096,
   maxRetries: 3,
