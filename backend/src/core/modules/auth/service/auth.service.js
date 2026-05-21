@@ -4,10 +4,9 @@ import { UserDataService } from 'core/modules/user/services/userData.service';
 import { joinUserRoles } from 'core/utils/userFilter';
 import { BcryptService } from './bcrypt.service';
 import { JwtService } from './jwt.service';
+import { TokenRevocationService } from './token-revocation.service';
 import { UserRepository } from '../../user/user.repository';
 import { UnAuthorizedException } from '../../../../packages/httpException';
-
-const revokedAccessTokens = new Set();
 
 class Service {
     constructor() {
@@ -64,16 +63,17 @@ class Service {
         };
     }
 
-    logout(accessToken) {
-        if (accessToken) {
-            revokedAccessTokens.add(accessToken.replace('Bearer ', ''));
+    async logout(accessToken) {
+        const token = accessToken?.replace('Bearer ', '');
+        if (token) {
+            const payload = this.jwtService.decode(token);
+            await TokenRevocationService.revoke(token, payload);
         }
         return { loggedOut: true };
     }
 
     isAccessTokenRevoked(accessToken) {
-        if (!accessToken) return false;
-        return revokedAccessTokens.has(accessToken.replace('Bearer ', ''));
+        return TokenRevocationService.isRevoked(accessToken);
     }
 
     #getUserInfo = user => pick(user, ['_id', 'email', 'username', 'roles']);
