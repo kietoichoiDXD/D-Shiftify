@@ -18,7 +18,7 @@ class Controller {
     }
 
     logout = async req => {
-        const data = this.service.logout(req.headers.authorization);
+        const data = await this.service.logout(req.headers.authorization);
         return ValidHttpResponse.toOkResponse(data);
     }
 }

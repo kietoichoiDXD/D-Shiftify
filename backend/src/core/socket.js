@@ -1,7 +1,9 @@
 import { Server } from 'socket.io';
 import { JwtService } from 'core/utils';
 import { ChatService, SendMessageSchema } from 'core/modules/chat';
+import { TokenRevocationService } from 'core/modules/auth/service/token-revocation.service';
 import { logger } from 'packages/logger';
+import { CORS_ORIGIN } from './env';
 
 const extractToken = socket => {
     const authToken = socket.handshake.auth?.token;
@@ -10,10 +12,14 @@ const extractToken = socket => {
     return token?.startsWith('Bearer ') ? token.slice(7) : token;
 };
 
-const authenticateSocket = (socket, next) => {
+const authenticateSocket = async (socket, next) => {
     try {
         const token = extractToken(socket);
         if (!token) return next(new Error('Unauthorized'));
+
+        if (await TokenRevocationService.isRevoked(token)) {
+            return next(new Error('Unauthorized'));
+        }
 
         const payload = JwtService.verify(token);
         if (!payload?.id) return next(new Error('Unauthorized'));
@@ -34,7 +40,7 @@ const normalizeSocketError = error => ({
 export const initSocket = server => {
     const io = new Server(server, {
         cors: {
-            origin: '*',
+            origin: CORS_ORIGIN,
             methods: ['GET', 'POST'],
         },
     });
