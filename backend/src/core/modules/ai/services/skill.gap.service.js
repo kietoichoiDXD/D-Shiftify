@@ -13,5 +13,6 @@ import { NotFoundException } from '../../../../packages/httpException';
 export const getSkillGapForJob = async (jobId, profile, score = 0) => {
     const job = await JobRepository.findById(jobId);
     if (!job) throw new NotFoundException(`Job ${jobId} not found`);
+    if (!profile) throw new NotFoundException('Candidate profile not found');
     return analyzeSkillGap(profile, job, score);
 };
