@@ -44,6 +44,14 @@ class Service {
 
         return joinUserRoles(data);
     }
+
+    async updateOne(id, updateUserDto) {
+        Optional.of(await this.repository.findById(id))
+            .throwIfNotPresent(new NotFoundException('User not found'));
+
+        await this.repository.update(id, updateUserDto);
+        return this.findById(id);
+    }
 }
 
 export const UserService = new Service();

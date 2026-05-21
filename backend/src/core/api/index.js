@@ -5,6 +5,9 @@ import { HandlerResolver } from '../../packages/handler/HandlerResolver';
 import { AuthResolver } from './auth/auth.resolver';
 import { AiResolver } from './ai/ai.resolver';
 import { CandidateResolver } from './candidate/candidate.resolver';
+import { EducationResolver } from './education';
+import { RecruitmentResolver } from './recruitment';
+import { ChatResolver } from './chat';
 
 export const ModuleResolver = HandlerResolver
     .builder()
@@ -15,4 +18,7 @@ export const ModuleResolver = HandlerResolver
         MediaResolver,
         AiResolver,
         CandidateResolver,
+        EducationResolver,
+        RecruitmentResolver,
+        ChatResolver,
     ]);

@@ -13,7 +13,7 @@ import { inferWeights } from '../../ai/agents/match/match.scoring.js';
  */
 export const ingestJob = async (jobPayload) => {
   const {
-    employer_id, title, description_raw,
+    employer_id, employer_user_id, title, description_raw,
     required_skills = [], salary_min, salary_max,
     has_insurance = false, is_remote = false,
     location_lat, location_lng, work_environment,
@@ -36,7 +36,7 @@ export const ingestJob = async (jobPayload) => {
 
   // 3. Save
   const job = await JobRepository.save({
-    employer_id, title,
+    employer_id, employer_user_id, title,
     description_raw: finalDescription,
     required_skills,
     salary_min, salary_max, has_insurance, is_remote,

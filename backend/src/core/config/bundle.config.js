@@ -1,10 +1,11 @@
 // @ts-check
 import * as express from 'express';
 import methodOverride from 'method-override';
+import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { connectDatabase } from 'core/database';
 import { InvalidResolver, InvalidFilter } from '../common/exceptions/system';
-import { logger } from '../../packages/logger';
+import { httpLoggerStream, logger } from '../../packages/logger';
 import { NODE_ENV } from '../env';
 
 /**
@@ -82,6 +83,7 @@ export class AppBundle {
          */
         this.app.use(express.json({ limit: '50mb' }));
         this.app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+        this.app.use(morgan('combined', { stream: httpLoggerStream }));
 
         /**
          * Setup method override method to use PUT, PATCH,...

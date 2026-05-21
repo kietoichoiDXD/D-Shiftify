@@ -12,6 +12,12 @@ exports.seed = knex => knex('roles')
             name: 'ADMIN',
         },
         {
+            name: 'EMPLOYER',
+        },
+        {
+            name: 'CANDIDATE',
+        },
+        {
             name: 'USER',
         },
     ]));

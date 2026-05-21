@@ -5,6 +5,7 @@ import { getSkillGapForJob } from '../../modules/ai/services/skill.gap.service.j
 import { AccessibilityAlert } from '../../modules/ai/models/alert.model.js';
 import { streamSpeech } from '../../ai/agents/shared/tts.js';
 import { ValidHttpResponse } from '../../../packages/handler/response/validHttp.response.js';
+import { getUserContext } from '../../../packages/authModel/module/user';
 
 class Controller {
   /** POST /ai/chat  { session_id, message } */
@@ -41,7 +42,8 @@ class Controller {
 
   /** POST /ai/jobs  { employer_id, title, description_raw, ... } */
   postJob = async (req) => {
-    const result = await ingestJob(req.body);
+    const { id } = getUserContext(req);
+    const result = await ingestJob({ ...req.body, employer_user_id: id });
     return ValidHttpResponse.toOkResponse(result);
   };
 
@@ -54,7 +56,6 @@ class Controller {
   /** GET /ai/voice/stream?text=... — SSE streaming TTS */
   streamTts = async (req, res) => {
     const text = req.query.text;
-    if (!text) { res.status(400).end('text required'); return; }
     await streamSpeech(decodeURIComponent(text), res);
   };
 
