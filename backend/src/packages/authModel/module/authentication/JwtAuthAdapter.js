@@ -38,13 +38,12 @@ export class JwtAuthAdapter {
         return this;
     }
 
-    transfer(req) {
+    async transfer(req) {
         if (this.#token) {
-            const body = JwtValidator
+            const validator = JwtValidator
                 .builder()
-                .applyToken(this.#token)
-                .validate()
-                .getPayload();
+                .applyToken(this.#token);
+            const body = (await validator.validate()).getPayload();
             this.#userDetail = new JwtAuthAdapter.USER_DETAIL_CLASS(body);
             this.#applyPreAuthorizationToUserDetail();
             this.#attachAuthContextToReq(req);

@@ -4,7 +4,7 @@ export class UnionRoleGuard {
     #unionRoles;
 
     constructor(...roles) {
-        this.#unionRoles = roles;
+        this.#unionRoles = roles.flat();
     }
 
     canActive(req) {

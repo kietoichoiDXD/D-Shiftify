@@ -3,6 +3,8 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 export class MulterUploader {
     #destinationPath
 
@@ -27,6 +29,9 @@ export class MulterUploader {
             }
 
             return cb(null, true);
+        },
+        limits: {
+            fileSize: MAX_FILE_SIZE,
         },
     }
 
@@ -64,7 +69,8 @@ export class MulterUploader {
 
     getFileName(file) {
         const originalname = file.originalname.substr(0, file.originalname.lastIndexOf('.')) || file.originalname;
-        return `${originalname}-${Date.now()}${path.extname(file.originalname)}`;
+        const safeName = path.basename(originalname).replace(/[^a-zA-Z0-9-_]/g, '-');
+        return `${safeName}-${Date.now()}${path.extname(file.originalname).toLowerCase()}`;
     }
 
     getHandler() {

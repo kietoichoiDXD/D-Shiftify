@@ -4,11 +4,12 @@ export class SpecificRoleGuard {
     #role;
 
     constructor(role) {
-        this.#role = role;
+        this.#role = Array.isArray(role) ? role[0] : role;
     }
 
     canActive(req) {
         const user = getUserContext(req);
-        return user.roles.some(role => role === this.#role);
+        const roleName = this.#role?.name || this.#role;
+        return user.roles.some(role => role === roleName);
     }
 }

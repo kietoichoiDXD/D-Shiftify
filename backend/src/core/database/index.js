@@ -9,11 +9,17 @@ export default connection;
 
 export const getTransaction = () => connection.transaction();
 
+export const closeDatabase = async () => {
+    await connection.destroy();
+    logger.info('Database connection pool closed');
+};
+
 export const connectDatabase = async () => {
     try {
         await connection.raw('SELECT 1');
         logger.info('Database connection successful');
     } catch (error) {
         logger.error('Database connection error, please check your connection');
+        throw error;
     }
 };
