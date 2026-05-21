@@ -16,7 +16,7 @@ class Controller {
 
     createOne = async req => {
         const data = await this.service.createOne(CreateUserDto(req.body));
-        return ValidHttpResponse.toCreatedResponse(data[0]);
+        return ValidHttpResponse.toCreatedResponse(data);
     };
 
     findById = async req => {
