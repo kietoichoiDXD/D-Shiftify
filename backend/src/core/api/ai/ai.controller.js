@@ -2,7 +2,7 @@ import { AiService } from '../../modules/ai/services/ai.service.js';
 import { ingestJob } from '../../modules/ai/services/job.ingestion.service.js';
 import { getMarketTrends } from '../../modules/ai/services/market.trend.service.js';
 import { getSkillGapForJob } from '../../modules/ai/services/skill.gap.service.js';
-import { AccessibilityAlert } from '../../modules/ai/models/alert.model.js';
+import { SkillProfileRepository } from '../../modules/ai/repositories/skill.profile.repository.js';
 import { streamSpeech } from '../../ai/agents/shared/tts.js';
 import { ValidHttpResponse } from '../../../packages/handler/response/validHttp.response.js';
 import { getUserContext } from '../../../packages/authModel/module/user';
@@ -13,7 +13,7 @@ class Controller {
   chat = async req => {
       const { session_id, message } = req.body;
       if (!session_id || !message) throw new BadRequestException('session_id and message are required');
-      const result = await AiService.chat(session_id, message);
+      const result = await AiService.chat(_resolveOwnedSessionId(req, session_id), message);
       return ValidHttpResponse.toOkResponse(_format(result));
   };
 
@@ -21,7 +21,7 @@ class Controller {
   voice = async req => {
       const { session_id, audio, encoding } = req.body;
       if (!session_id || !audio) throw new BadRequestException('session_id and audio are required');
-      const result = await AiService.voiceChat(session_id, audio, encoding);
+      const result = await AiService.voiceChat(_resolveOwnedSessionId(req, session_id), audio, encoding);
       return ValidHttpResponse.toOkResponse(_format(result));
   };
 
@@ -50,14 +50,23 @@ class Controller {
 
   /** DELETE /ai/session/:id */
   clearSession = async req => {
-      await AiService.clearSession(req.params.id);
+      await AiService.clearSession(_resolveOwnedSessionId(req, req.params.id));
       return ValidHttpResponse.toOkResponse({ cleared: true });
   };
 
   /** GET /ai/voice/stream?text=... — SSE streaming TTS */
   streamTts = async (req, res) => {
-      const {text} = req.query;
-      await streamSpeech(decodeURIComponent(text), res);
+      const { text } = req.query;
+      if (!text || typeof text !== 'string') {
+          throw new BadRequestException('text is required');
+      }
+      let decodedText;
+      try {
+          decodedText = decodeURIComponent(text);
+      } catch (_error) {
+          throw new BadRequestException('text is malformed');
+      }
+      await streamSpeech(decodedText, res);
   };
 
   /** GET /ai/market-trends */
@@ -70,11 +79,21 @@ class Controller {
   skillGap = async req => {
       const { id } = req.params;
       const score = parseFloat(req.query.score ?? '0');
-      const profile = req.body?.profile || {};
+      const { id: userId } = getUserContext(req);
+      const profile = await SkillProfileRepository.findByUserId(userId);
       const gap = await getSkillGapForJob(id, profile, score);
       return ValidHttpResponse.toOkResponse(gap);
   };
 }
+
+const _resolveOwnedSessionId = (req, sessionId) => {
+    const { id } = getUserContext(req);
+    const expectedSessionId = String(id);
+    if (String(sessionId) !== expectedSessionId) {
+        throw new BadRequestException('session_id must match authenticated user');
+    }
+    return expectedSessionId;
+};
 
 const _format = r => ({
     tts_text: r.tts_text,
