@@ -126,7 +126,7 @@ export class Module {
             Module.logger.error(err.message);
             sendErrorToSentry(Sentry, err);
             return InValidHttpResponse.toInternalResponse(
-                err.message,
+                'Internal server error',
             ).toResponse(response);
         }
     };

@@ -20,5 +20,6 @@ export const connectDatabase = async () => {
         logger.info('Database connection successful');
     } catch (error) {
         logger.error('Database connection error, please check your connection');
+        throw error;
     }
 };
