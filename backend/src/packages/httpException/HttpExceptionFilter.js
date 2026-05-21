@@ -8,7 +8,7 @@ export class HttpExceptionFilter {
                 .toResponse(res);
         }
         if (err instanceof Error) {
-            return InValidHttpResponse.toInternalResponse(err.message).toResponse(res);
+            return InValidHttpResponse.toInternalResponse('Internal server error').toResponse(res);
         }
         return next();
     }

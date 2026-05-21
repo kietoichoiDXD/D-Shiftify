@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { connectDatabase } from 'core/database';
 import { InvalidResolver, InvalidFilter } from '../common/exceptions/system';
+import { SecurityRateLimitMiddleware } from '../middleware';
 import { httpLoggerStream, logger } from '../../packages/logger';
 import { NODE_ENV } from '../env';
 
@@ -81,30 +82,15 @@ export class AppBundle {
         /**
          * Setup basic express
          */
-        this.app.use(express.json({ limit: '50mb' }));
-        this.app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+        this.app.use(express.json({ limit: '2mb' }));
+        this.app.use(express.urlencoded({ extended: false, limit: '2mb' }));
+        this.app.use(SecurityRateLimitMiddleware);
         this.app.use(morgan('combined', { stream: httpLoggerStream }));
 
         /**
          * Setup method override method to use PUT, PATCH,...
          */
         this.app.use(methodOverride('X-HTTP-Method-Override'));
-        this.app.use(
-            methodOverride(req => {
-                if (
-                    req.body &&
-                    typeof req.body === 'object' &&
-                    '_method' in req.body
-                ) {
-                    const method = req.body._method;
-                    delete req.body._method;
-
-                    return method;
-                }
-
-                return undefined;
-            }),
-        );
         AppBundle.logger.info('Building initial config');
 
         return this;
