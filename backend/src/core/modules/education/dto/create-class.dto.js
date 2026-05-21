@@ -11,8 +11,6 @@ export const CreateClassSchema = z
         startDate: z.coerce.date(),
         endDate: z.coerce.date(),
         maxStudents: z.coerce.number().int().positive().max(10000),
-        thumbnailUrl: z.string().trim().url().max(1000).optional(),
-        thumbnailPublicId: z.string().trim().max(255).optional(),
         status: ClassStatus.default('DRAFT'),
     })
     .strict()
@@ -29,7 +27,7 @@ export const CreateClassDto = data => ({
     start_date: data.startDate,
     end_date: data.endDate,
     max_students: data.maxStudents,
-    thumbnail_url: data.thumbnailUrl || null,
-    thumbnail_public_id: data.thumbnailPublicId || null,
+    thumbnail_url: null,
+    thumbnail_public_id: null,
     status: data.status,
 });
