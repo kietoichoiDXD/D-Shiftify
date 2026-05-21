@@ -11,7 +11,7 @@
         "lint:staged": "lint-staged",
         "dev": "nodemon --exec npx babel-node src/core/bin/www.js",
         "start": "npm run build && node ./dist/core/bin/www.js",
-        "clean": "rm -rf dist && mkdir dist",
+        "clean": "node -e \"const fs=require('fs'); fs.rmSync('dist',{recursive:true,force:true}); fs.mkdirSync('dist',{recursive:true});\"",
         "build:babel": "babel ./src --out-dir dist --copy-files",
         "build": "npm run clean && npm run build:babel",
         "knex": "babel-node node_modules/knex/bin/cli.js --knexfile src/core/config/knexfile.config.js",
