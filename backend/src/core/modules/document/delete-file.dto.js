@@ -7,5 +7,5 @@ ApiDocument.addModel('DeleteFileDto',
     });
 
 export const DeleteFileDto = body => ({
-    ids: body.ids
+    ids: body.ids.map(id => id.trim())
 });
