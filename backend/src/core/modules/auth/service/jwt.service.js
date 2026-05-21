@@ -1,5 +1,5 @@
 import { sign, decode, verify } from 'jsonwebtoken';
-import { JWT_SECRET, EXPIRE_DAYS } from '../../../env';
+import { JWT_REFRESH_SECRET, JWT_SECRET, EXPIRE_DAYS, REFRESH_EXPIRE_DAYS } from '../../../env';
 import { logger } from '../../../../packages/logger';
 
 class Jwt {
@@ -17,12 +17,22 @@ class Jwt {
         });
     }
 
+    signRefreshToken(payload) {
+        return sign(payload, JWT_REFRESH_SECRET, {
+            expiresIn: REFRESH_EXPIRE_DAYS
+        });
+    }
+
     decode(token) {
         return decode(token);
     }
 
     verify(token) {
         return verify(token, this.secret);
+    }
+
+    verifyRefreshToken(token) {
+        return verify(token, JWT_REFRESH_SECRET);
     }
 }
 

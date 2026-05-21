@@ -1,10 +1,11 @@
 // @ts-check
 import * as express from 'express';
 import methodOverride from 'method-override';
+import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import { connectDatabase } from 'core/database';
 import { InvalidResolver, InvalidFilter } from '../common/exceptions/system';
-import { logger } from '../../packages/logger';
+import { httpLoggerStream, logger } from '../../packages/logger';
 import { NODE_ENV } from '../env';
 
 /**
@@ -82,6 +83,7 @@ export class AppBundle {
          */
         this.app.use(express.json({ limit: '50mb' }));
         this.app.use(express.urlencoded({ extended: false, limit: '50mb' }));
+        this.app.use(morgan('combined', { stream: httpLoggerStream }));
 
         /**
          * Setup method override method to use PUT, PATCH,...
@@ -114,5 +116,19 @@ export class AppBundle {
     async run() {
         AppBundle.logger.info('Building asynchronous config');
         await connectDatabase();
+
+        // MongoDB for AI profile persistence
+        if (process.env.MONGO_URL) {
+            const mongoose = (await import('mongoose')).default;
+            await mongoose.connect(process.env.MONGO_URL);
+            AppBundle.logger.info('MongoDB connected');
+        }
+
+        // Redis for AI session memory
+        if (process.env.REDIS_URL) {
+            const { getRedisClient } = await import('core/infrastructure/session.store');
+            await getRedisClient();
+            AppBundle.logger.info('Redis session store connected');
+        }
     }
 }

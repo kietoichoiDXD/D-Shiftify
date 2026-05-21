@@ -1,4 +1,5 @@
 import { JwtService } from 'core/utils';
+import { AuthService } from 'core/modules/auth/service/auth.service';
 import { UnAuthorizedException } from '../../../httpException';
 import { AUTH_CONTEXT } from '../../common/enum/authContext';
 
@@ -23,6 +24,9 @@ export class JwtValidator {
     validate() {
         if (this.#accessToken) {
             try {
+                if (AuthService.isAccessTokenRevoked(this.#accessToken)) {
+                    throw new UnAuthorizedException();
+                }
                 this.#payload = JwtService.verify(this.#accessToken);
             } catch (e) {
                 throw new UnAuthorizedException();
