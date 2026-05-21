@@ -3,7 +3,6 @@ import { AccessibilityAlert } from '../../modules/ai/models/alert.model.js';
 import { ValidHttpResponse } from '../../../packages/handler/response/validHttp.response.js';
 
 class Controller {
-  /** GET /api/candidate/profile?session_id=xxx */
   getProfile = async (req) => {
     const sessionId = req.query.session_id || req.user?.id;
     if (!sessionId) throw new Error('session_id required');
@@ -12,7 +11,6 @@ class Controller {
     return ValidHttpResponse.toOkResponse(profile);
   };
 
-  /** GET /api/candidate/alerts?session_id=xxx — unread accessibility alerts */
   getAlerts = async (req) => {
     const sessionId = req.query.session_id || req.user?.id;
     if (!sessionId) throw new Error('session_id required');
@@ -20,7 +18,6 @@ class Controller {
       .sort({ createdAt: -1 })
       .limit(20)
       .lean();
-    // Mark as read
     await AccessibilityAlert.updateMany({ user_id: sessionId, read: false }, { $set: { read: true } });
     return ValidHttpResponse.toOkResponse(alerts);
   };
