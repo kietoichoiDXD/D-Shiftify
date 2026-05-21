@@ -16,6 +16,7 @@ class Service {
 
     async applyForJob(payload, candidateId) {
         if (!candidateId) throw new BadRequestException('Authenticated candidate id is required');
+        if (!payload?.job_id) throw new BadRequestException('job_id is required');
 
         const trx = await getTransaction();
 
@@ -32,6 +33,9 @@ class Service {
             return application;
         } catch (error) {
             await trx.rollback();
+            if (error?.code === '23505') {
+                throw new DuplicateException('You have already applied for this job');
+            }
             throw error;
         }
     }
