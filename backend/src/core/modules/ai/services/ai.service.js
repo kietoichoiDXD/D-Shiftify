@@ -5,13 +5,28 @@ import { transcribeAudio } from '../../../ai/agents/shared/stt.js';
 import { SessionStore } from '../../infrastructure/session.store.js';
 import { BadRequestException } from '../../../../packages/httpException';
 import { SkillProfileRepository } from '../repositories/skill.profile.repository.js';
+import { JobRepository } from '../repositories/job.repository.js';
+import { buildMatchExplanation, getJobWeights, hybridScore } from '../../../ai/agents/match/match.scoring.js';
+
+const MAX_MATCH_RESULTS = Number.parseInt(process.env.AI_MATCH_MAX_RESULTS || '20', 10);
+const MAX_MATCH_CANDIDATES = Number.parseInt(process.env.AI_MATCH_MAX_CANDIDATES || '60', 10);
+const DESCRIPTION_CHARS = Number.parseInt(process.env.AI_MATCH_DESCRIPTION_CHARS || '320', 10);
+
+const toBoolean = value => value === true || value === 'true' || value === '1';
+const clampInt = (value, min, max, fallback) => {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed)) return fallback;
+    return Math.min(Math.max(parsed, min), max);
+};
+
+const truncate = (text = '', max = DESCRIPTION_CHARS) =>
+    text && text.length > max ? `${text.slice(0, max).trim()}...` : text;
 
 class AiServiceImpl {
     async _run(sessionId, text, stateOverride = {}) {
         let state = (await SessionStore.get(sessionId)) || {};
 
         if (!state.messages?.length) {
-            // Redis expired — try to recover from MongoDB SkillProfile
             const saved = await SkillProfileRepository.findByUserId(sessionId).catch(() => null);
 
             const { nextStep } = await detectIntent(text);
@@ -19,7 +34,7 @@ class AiServiceImpl {
             state = {
                 messages: [],
                 narrative_raw: saved?.narrative_raw || '',
-                nextStep: saved ? 'match' : nextStep,   // skip intake if profile exists
+                nextStep: saved ? 'match' : nextStep,
                 session_id: sessionId,
                 profile: saved ? {
                     name: saved.name, phone: saved.phone,
@@ -57,6 +72,48 @@ class AiServiceImpl {
     }
 
     async clearSession(sessionId) { await SessionStore.del(sessionId); }
+
+    async recommendJobs(profileId, { limit = 10, minScore = 0, explain = false, includeDescription = true } = {}) {
+        const profile = await SkillProfileRepository.findByUserId(profileId);
+        if (!profile) {
+            throw new BadRequestException('Candidate AI profile not found');
+        }
+
+        const resultLimit = clampInt(limit, 1, MAX_MATCH_RESULTS, 10);
+        const minimumScore = clampInt(minScore, 0, 100, 0);
+        const candidateLimit = Math.min(Math.max(resultLimit * 4, 20), MAX_MATCH_CANDIDATES);
+        const candidates = profile.narrative_embedding
+            ? await JobRepository.vectorSearch(profile.narrative_embedding, candidateLimit)
+            : await JobRepository.listAccessible(candidateLimit);
+
+        const scored = candidates.map(job => {
+            const weights = getJobWeights(job);
+            const finalScore = hybridScore(profile, job, parseFloat(job.semantic_score || 0), weights);
+            const match = {
+                jobId: job.job_id,
+                title: job.title,
+                description: toBoolean(includeDescription) ? truncate(job.description_raw) : undefined,
+                requiredSkills: job.required_skills || [],
+                salaryMin: job.salary_min,
+                salaryMax: job.salary_max,
+                isRemote: job.is_remote,
+                accessibilityLevel: job.accessibility_level,
+                accessibilityScore: job.accessibility_score,
+                finalScore,
+                weights,
+                semanticScore: parseFloat(job.semantic_score || 0),
+            };
+            if (toBoolean(explain)) {
+                match.explanation = buildMatchExplanation(profile, job, weights, finalScore);
+            }
+            return match;
+        });
+
+        return scored
+            .filter(job => job.finalScore >= minimumScore)
+            .sort((a, b) => b.finalScore - a.finalScore)
+            .slice(0, resultLimit);
+    }
 }
 
 export const AiService = new AiServiceImpl();

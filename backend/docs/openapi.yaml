@@ -1,0 +1,440 @@
+openapi: 3.1.0
+info:
+  title: Shiftify Backend API
+  version: 1.0.0
+  description: Production-oriented OpenAPI document for the Shiftify backend.
+servers:
+  - url: https://api.example.com/api
+    description: Production
+  - url: http://localhost:3000/api
+    description: Local
+tags:
+  - name: health
+  - name: auth
+  - name: users
+  - name: media
+  - name: recruitment
+  - name: cv
+  - name: candidate
+  - name: ai
+  - name: chat
+  - name: education
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: object
+          additionalProperties: true
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken:
+          type: string
+        refresh_token:
+          type: string
+    ForgotPasswordRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+    ResetPasswordRequest:
+      type: object
+      required: [token, password, confirmPassword]
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+        confirmPassword:
+          type: string
+    CreateJobRequest:
+      type: object
+      required: [title, description]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        requiredSkills:
+          type: array
+          items:
+            type: string
+        salaryMin:
+          type: number
+        salaryMax:
+          type: number
+        hasInsurance:
+          type: boolean
+        isRemote:
+          type: boolean
+        locationLat:
+          type: number
+        locationLng:
+          type: number
+        workEnvironment:
+          type: string
+    ApplyJobRequest:
+      type: object
+      required: [job_id]
+      properties:
+        job_id:
+          type: string
+          format: uuid
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Liveness check
+      responses:
+        '200':
+          description: OK
+  /ready:
+    get:
+      tags: [health]
+      summary: Readiness check
+      responses:
+        '200':
+          description: Ready
+        '503':
+          description: Not ready
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authenticated
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /auth/register:
+    post:
+      tags: [auth]
+      summary: Register
+      responses:
+        '201':
+          description: User created
+  /auth/refresh-token:
+    post:
+      tags: [auth]
+      summary: Refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenRequest'
+      responses:
+        '200':
+          description: Token pair
+  /auth/logout:
+    post:
+      tags: [auth]
+      summary: Logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logged out
+  /auth/forgot-password:
+    post:
+      tags: [auth]
+      summary: Forgot password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Reset instructions generated
+  /auth/reset-password:
+    post:
+      tags: [auth]
+      summary: Reset password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password updated
+  /users/me:
+    get:
+      tags: [users]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current user
+  /media/images:
+    post:
+      tags: [media]
+      summary: Upload images
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Uploaded
+    delete:
+      tags: [media]
+      summary: Delete images
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Deleted
+  /recruitment/jobs:
+    get:
+      tags: [recruitment]
+      summary: List jobs
+      responses:
+        '200':
+          description: Job list
+    post:
+      tags: [recruitment]
+      summary: Create job
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateJobRequest'
+      responses:
+        '201':
+          description: Job created
+  /recruitment/jobs/{jobId}:
+    get:
+      tags: [recruitment]
+      summary: Get job detail
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job detail
+    patch:
+      tags: [recruitment]
+      summary: Update job
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job updated
+    delete:
+      tags: [recruitment]
+      summary: Delete job
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job deleted
+  /recruitment/jobs/{jobId}/logo:
+    post:
+      tags: [recruitment]
+      summary: Upload company logo
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Logo uploaded
+  /recruitment/applications:
+    post:
+      tags: [recruitment]
+      summary: Apply for job
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyJobRequest'
+      responses:
+        '201':
+          description: Application created
+  /cv/me:
+    get:
+      tags: [cv]
+      summary: Get my CV
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current CV
+    patch:
+      tags: [cv]
+      summary: Update my CV
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: CV updated
+  /cv:
+    post:
+      tags: [cv]
+      summary: Create CV
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: CV created
+  /candidate/{candidateId}:
+    get:
+      tags: [candidate]
+      summary: Get candidate detail
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: candidateId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Candidate detail
+  /ai/match/{profileId}:
+    get:
+      tags: [ai]
+      summary: Recommend jobs for a profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: profileId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: minScore
+          schema:
+            type: number
+        - in: query
+          name: explain
+          schema:
+            type: boolean
+          description: Returns deterministic explanation without per-job LLM calls.
+        - in: query
+          name: includeDescription
+          schema:
+            type: boolean
+          description: Include a shortened job description in results.
+      responses:
+        '200':
+          description: Match results
+  /chat/rooms:
+    get:
+      tags: [chat]
+      summary: List chat rooms
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Rooms
+    post:
+      tags: [chat]
+      summary: Create chat room
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Room created
+  /chat/rooms/{roomId}/messages:
+    get:
+      tags: [chat]
+      summary: Get room messages
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: roomId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Messages
+  /education/classes/:
+    post:
+      tags: [education]
+      summary: Create class
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Class created
+  /education/classes/thumbnail:
+    post:
+      tags: [education]
+      summary: Upload class thumbnail
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Thumbnail uploaded

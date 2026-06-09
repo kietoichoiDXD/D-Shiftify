@@ -9,7 +9,7 @@ export const routerModel = new ChatGoogleGenerativeAI({
   apiKey: key(),
   model: 'gemini-2.5-flash',
   temperature: 0.1,
-  maxOutputTokens: 1024,
+  maxOutputTokens: Number.parseInt(process.env.GEMINI_ROUTER_MAX_OUTPUT_TOKENS || '512', 10),
   maxRetries: 3,
 });
 
@@ -17,6 +17,6 @@ export const analystModel = new ChatGoogleGenerativeAI({
   apiKey: key(),
   model: 'gemini-2.5-flash',
   temperature: 0.4,
-  maxOutputTokens: 4096,
+  maxOutputTokens: Number.parseInt(process.env.GEMINI_ANALYST_MAX_OUTPUT_TOKENS || '768', 10),
   maxRetries: 3,
 });
