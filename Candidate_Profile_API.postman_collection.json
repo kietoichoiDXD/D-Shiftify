@@ -1,0 +1,587 @@
+{
+  "info": {
+    "_postman_id": "candidate-profile-api-collection",
+    "name": "Candidate Profile API",
+    "description": "Complete Postman collection for Candidate Profile API - 9 endpoints with authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const responseBody = pm.response.json();",
+                  "  pm.environment.set('token', responseBody.data.accessToken);",
+                  "  pm.environment.set('userId', responseBody.data.user.id);",
+                  "  pm.test('✅ Login successful and token saved', function() {",
+                  "    pm.expect(responseBody.data.accessToken).to.exist;",
+                  "  });",
+                  "} else {",
+                  "  pm.test('❌ Login failed', function() {",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login to get JWT token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Profile Management",
+      "item": [
+        {
+          "name": "GET - Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseCode = pm.response.code;",
+                  "",
+                  "if (responseCode === 200) {",
+                  "  const responseBody = pm.response.json();",
+                  "  pm.test('✅ GET profile successful', function() {",
+                  "    pm.expect(responseBody.status).to.equal('success');",
+                  "    pm.expect(responseBody.data).to.have.property('id');",
+                  "    pm.expect(responseBody.data).to.have.property('fullName');",
+                  "  });",
+                  "} else if (responseCode === 404) {",
+                  "  pm.test('⚠️  Profile not found (create one first)', function() {",
+                  "    pm.expect(responseCode).to.equal(404);",
+                  "  });",
+                  "} else {",
+                  "  pm.test('❌ Unexpected error', function() {",
+                  "    pm.expect(responseCode).to.be.oneOf([200, 404]);",
+                  "  });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile"
+              ]
+            },
+            "description": "Retrieve current user's candidate profile"
+          }
+        },
+        {
+          "name": "PUT - Create/Update Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBody = pm.response.json();",
+                  "",
+                  "pm.test('✅ Profile created/updated successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  pm.expect(responseBody.status).to.equal('success');",
+                  "  pm.expect(responseBody.data).to.have.property('fullName');",
+                  "});",
+                  "",
+                  "pm.test('✅ Profile has all required fields', function() {",
+                  "  const profile = responseBody.data;",
+                  "  pm.expect(profile).to.have.property('id');",
+                  "  pm.expect(profile).to.have.property('email');",
+                  "  pm.expect(profile).to.have.property('createdAt');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"1234567890\",\n  \"location\": \"San Francisco, CA\",\n  \"headline\": \"Senior Full Stack Developer\",\n  \"bio\": \"Passionate about building scalable web applications\",\n  \"skills\": [\"JavaScript\", \"React\", \"Node.js\", \"PostgreSQL\", \"AWS\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile"
+              ]
+            },
+            "description": "Create or update candidate profile"
+          }
+        },
+        {
+          "name": "POST - Upload Avatar",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBody = pm.response.json();",
+                  "",
+                  "pm.test('✅ Avatar uploaded successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  pm.expect(responseBody.data).to.have.property('profileImage');",
+                  "});",
+                  "",
+                  "pm.test('✅ Avatar URL is valid', function() {",
+                  "  pm.expect(responseBody.data.profileImage).to.be.a('string');",
+                  "  pm.expect(responseBody.data.profileImage.length).to.be.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile/upload-avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile",
+                "upload-avatar"
+              ]
+            },
+            "description": "Upload profile avatar image. Note: Add actual image file in the 'file' field"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Education Management",
+      "item": [
+        {
+          "name": "POST - Add Education",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBody = pm.response.json();",
+                  "",
+                  "pm.test('✅ Education added successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  pm.expect(responseBody.status).to.equal('success');",
+                  "});",
+                  "",
+                  "pm.test('✅ Education has id', function() {",
+                  "  const education = responseBody.data.education;",
+                  "  pm.expect(education).to.be.an('array');",
+                  "  pm.expect(education.length).to.be.above(0);",
+                  "  pm.environment.set('educationId', education[education.length - 1].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"school\": \"Stanford University\",\n  \"degree\": \"Bachelor of Science\",\n  \"fieldOfStudy\": \"Computer Science\",\n  \"startDate\": \"2015-09-01\",\n  \"endDate\": \"2019-05-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile/education",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile",
+                "education"
+              ]
+            },
+            "description": "Add new education record to profile"
+          }
+        },
+        {
+          "name": "PUT - Update Education",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBody = pm.response.json();",
+                  "",
+                  "pm.test('✅ Education updated successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  pm.expect(responseBody.status).to.equal('success');",
+                  "});",
+                  "",
+                  "pm.test('✅ Education field is updated', function() {",
+                  "  const education = responseBody.data.education.find(e => e.id === pm.environment.get('educationId'));",
+                  "  pm.expect(education).to.exist;",
+                  "  pm.expect(education.degree).to.equal('Master of Science');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"school\": \"Stanford University\",\n  \"degree\": \"Master of Science\",\n  \"fieldOfStudy\": \"Computer Science\",\n  \"startDate\": \"2019-09-01\",\n  \"endDate\": \"2021-05-31\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile/education/{{educationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile",
+                "education",
+                "{{educationId}}"
+              ]
+            },
+            "description": "Update existing education record"
+          }
+        },
+        {
+          "name": "DELETE - Delete Education",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Education deleted successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "const responseBody = pm.response.json();",
+                  "pm.test('✅ Education removed from array', function() {",
+                  "  const education = responseBody.data.education;",
+                  "  const found = education.find(e => e.id === pm.environment.get('educationId'));",
+                  "  pm.expect(found).to.not.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile/education/{{educationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile",
+                "education",
+                "{{educationId}}"
+              ]
+            },
+            "description": "Delete education record from profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Experience Management",
+      "item": [
+        {
+          "name": "POST - Add Experience",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBody = pm.response.json();",
+                  "",
+                  "pm.test('✅ Experience added successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  pm.expect(responseBody.status).to.equal('success');",
+                  "});",
+                  "",
+                  "pm.test('✅ Experience has id', function() {",
+                  "  const experience = responseBody.data.experience;",
+                  "  pm.expect(experience).to.be.an('array');",
+                  "  pm.expect(experience.length).to.be.above(0);",
+                  "  pm.environment.set('experienceId', experience[experience.length - 1].id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Full Stack Developer\",\n  \"company\": \"Tech Company Inc.\",\n  \"description\": \"Led the development of scalable web applications using React and Node.js\",\n  \"startDate\": \"2020-01-15\",\n  \"endDate\": null,\n  \"current\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile/experience",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile",
+                "experience"
+              ]
+            },
+            "description": "Add new experience record to profile"
+          }
+        },
+        {
+          "name": "PUT - Update Experience",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const responseBody = pm.response.json();",
+                  "",
+                  "pm.test('✅ Experience updated successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "  pm.expect(responseBody.status).to.equal('success');",
+                  "});",
+                  "",
+                  "pm.test('✅ Experience field is updated', function() {",
+                  "  const experience = responseBody.data.experience.find(e => e.id === pm.environment.get('experienceId'));",
+                  "  pm.expect(experience).to.exist;",
+                  "  pm.expect(experience.title).to.equal('Principal Engineer');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Principal Engineer\",\n  \"company\": \"Tech Company Inc.\",\n  \"description\": \"Led the development of scalable web applications using React and Node.js. Mentored junior developers.\",\n  \"startDate\": \"2020-01-15\",\n  \"endDate\": null,\n  \"current\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile/experience/{{experienceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile",
+                "experience",
+                "{{experienceId}}"
+              ]
+            },
+            "description": "Update existing experience record"
+          }
+        },
+        {
+          "name": "DELETE - Delete Experience",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('✅ Experience deleted successfully', function() {",
+                  "  pm.expect(pm.response.code).to.equal(200);",
+                  "});",
+                  "",
+                  "const responseBody = pm.response.json();",
+                  "pm.test('✅ Experience removed from array', function() {",
+                  "  const experience = responseBody.data.experience;",
+                  "  const found = experience.find(e => e.id === pm.environment.get('experienceId'));",
+                  "  pm.expect(found).to.not.exist;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/candidate/profile/experience/{{experienceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "candidate",
+                "profile",
+                "experience",
+                "{{experienceId}}"
+              ]
+            },
+            "description": "Delete experience record from profile"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string",
+      "description": "Base URL for the API. Change to Supabase URL when deploying"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token - will be set automatically after login"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "User ID - will be set automatically after login"
+    },
+    {
+      "key": "educationId",
+      "value": "",
+      "type": "string",
+      "description": "Education ID - will be set when adding education"
+    },
+    {
+      "key": "experienceId",
+      "value": "",
+      "type": "string",
+      "description": "Experience ID - will be set when adding experience"
+    }
+  ]
+}

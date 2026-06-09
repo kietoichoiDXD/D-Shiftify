@@ -1,0 +1,86 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths:
+      - '**'
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: shiftify_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d shiftify_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      HOST: http://localhost:3000
+      API_PUBLIC_URL: http://localhost:3000
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3000
+      TRUST_PROXY: 'false'
+      JWT_SECRET: ci-jwt-secret
+      JWT_REFRESH_SECRET: ci-jwt-refresh-secret
+      SALT_ROUNDS: 10
+      DB_TYPE: pg
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASS: postgres
+      DB_NAME: shiftify_ci
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint:check
+
+      - name: Unit and contract tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Production harness
+        run: npm run production:harness
+
+      - name: Migrate up
+        run: npm run db:migrate
+
+      - name: Roll back latest migration batch
+        run: npm run db:rollback
+
+      - name: Audit
+        run: npm audit --audit-level=moderate

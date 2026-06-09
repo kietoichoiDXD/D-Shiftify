@@ -54,7 +54,7 @@ export class MulterUploader {
 
         fs.access(destinationPath, error => {
             if (error) {
-                fs.mkdirSync(destinationPath);
+                fs.mkdirSync(destinationPath, { recursive: true });
             }
         });
 

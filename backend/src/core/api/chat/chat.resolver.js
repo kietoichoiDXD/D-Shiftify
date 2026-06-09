@@ -1,4 +1,4 @@
-import { MessageHistoryQueryInterceptor, RoomIdParamInterceptor } from 'core/modules/chat';
+import { CreateRoomInterceptor, MessageHistoryQueryInterceptor, RoomIdParamInterceptor } from 'core/modules/chat';
 import { Module } from 'packages/handler/Module';
 import { ChatController } from './chat.controller';
 
@@ -13,6 +13,13 @@ export const ChatResolver = Module.builder()
             route: '/rooms',
             method: 'get',
             controller: ChatController.getRooms,
+            preAuthorization: true,
+        },
+        {
+            route: '/rooms',
+            method: 'post',
+            interceptors: [CreateRoomInterceptor],
+            controller: ChatController.createRoom,
             preAuthorization: true,
         },
         {

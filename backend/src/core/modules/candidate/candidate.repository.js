@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { DataRepository } from 'packages/restBuilder/core/dataHandler/data.repository'
 import { NotFoundException } from '../../../packages/httpException'
 
@@ -188,7 +189,7 @@ class Repository extends DataRepository {
   }
 
   generateId() {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    return randomUUID();
   }
 }
 

@@ -4,6 +4,8 @@ import {
   AiAuditJdInterceptor,
   AiChatInterceptor,
   AiMarketTrendQueryInterceptor,
+  AiMatchParamInterceptor,
+  AiMatchQueryInterceptor,
   AiPostJobInterceptor,
   AiSessionParamInterceptor,
   AiSkillGapParamInterceptor,
@@ -22,6 +24,7 @@ export const AiResolver = Module.builder()
     { route: '/audit-jd',           method: 'post',   interceptors: [AiAuditJdInterceptor], guards: [hasEmployerRole], controller: AiController.auditJD, preAuthorization: true },
     { route: '/jobs',               method: 'post',   interceptors: [AiPostJobInterceptor], guards: [hasEmployerRole], controller: AiController.postJob, preAuthorization: true },
     { route: '/jobs/:id/skill-gap', method: 'get',    interceptors: [AiSkillGapParamInterceptor, AiSkillGapQueryInterceptor], controller: AiController.skillGap, preAuthorization: true },
+    { route: '/match/:profileId',    method: 'get',    interceptors: [AiMatchParamInterceptor, AiMatchQueryInterceptor], controller: AiController.matchJobs, preAuthorization: true },
     { route: '/market-trends',      method: 'get',    interceptors: [AiMarketTrendQueryInterceptor], controller: AiController.marketTrends, preAuthorization: true },
     { route: '/session/:id',        method: 'delete', interceptors: [AiSessionParamInterceptor], controller: AiController.clearSession, preAuthorization: true },
   ]);

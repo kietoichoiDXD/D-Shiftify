@@ -1,4 +1,5 @@
-import { ForbiddenException, NotFoundException } from 'packages/httpException';
+import { BadRequestException, ForbiddenException, NotFoundException } from 'packages/httpException';
+import db from 'core/database';
 import { CreateMessageDto } from '../dto';
 import { ChatRepository } from '../repository';
 
@@ -9,6 +10,45 @@ class Service {
 
     getRooms(userId) {
         return this.repository.findRoomsByUser(userId);
+    }
+
+    async getOrCreateRoom(payload, user) {
+        const { jobId, candidateId } = payload;
+
+        const job = await db('job_descriptions').where({ job_id: jobId }).first();
+        if (!job) {
+            throw new NotFoundException('Job description not found');
+        }
+
+        const employerId = job.employer_user_id;
+        if (!employerId) {
+            throw new BadRequestException('This job does not have an employer associated with it');
+        }
+
+        let resolvedCandidateId;
+        const isEmployer = user.roles.some(role => role === 'EMPLOYER');
+
+        if (isEmployer) {
+            if (user.id !== employerId) {
+                throw new ForbiddenException('You are not the employer of this job');
+            }
+            if (!candidateId) {
+                throw new BadRequestException('candidateId is required for employers');
+            }
+            resolvedCandidateId = candidateId;
+        } else {
+            resolvedCandidateId = user.id;
+        }
+
+        let room = await this.repository.findRoomByMembers(jobId, employerId, resolvedCandidateId);
+        if (!room) {
+            room = await this.repository.createRoom({
+                job_id: jobId,
+                employer_id: employerId,
+                candidate_id: resolvedCandidateId,
+            });
+        }
+        return room;
     }
 
     async getMessages(roomId, userId, pagination) {

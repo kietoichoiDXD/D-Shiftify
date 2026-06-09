@@ -11,6 +11,7 @@ import app from '../index';
 import { PORT } from '../env';
 import { initSocket } from '../socket';
 import { closeDatabase } from '../database';
+import { markAppShuttingDown } from '../config/bundle.config';
 import { logger } from '../../packages/logger';
 
 const dubugHelper = debug('mongoose:server');
@@ -104,6 +105,7 @@ let isShuttingDown = false;
 async function gracefulShutdown(signal) {
     if (isShuttingDown) return;
     isShuttingDown = true;
+    markAppShuttingDown();
 
     logger.info(`${signal} received. Starting graceful shutdown`);
 

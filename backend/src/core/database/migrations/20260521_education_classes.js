@@ -5,7 +5,7 @@ exports.up = async knex => {
 
     await knex.schema.createTable(tableName, table => {
         table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
-        table.integer('created_by').unsigned().notNullable();
+        table.uuid('created_by').notNullable();
         table.string('title', 255).notNullable();
         table.text('description').notNullable();
         table.string('level', 50).notNullable();

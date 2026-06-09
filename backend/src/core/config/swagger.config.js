@@ -1,22 +1,22 @@
-import { HOST, PORT } from 'core/env';
+import { API_PUBLIC_URL, HOST, PORT } from 'core/env';
 import { SwaggerBuilder } from '../../packages/swagger';
 
 const options = {
     openapi: '3.0.1',
     info: {
         version: '1.0.0',
-        title: 'APIs Document',
-        description: 'API description',
+        title: 'Shiftify Backend API',
+        description: 'Shiftify backend API for auth, recruitment, CV, chat, education, and AI modules.',
         termsOfService: '',
         contact: {
-            name: 'Project Name',
-            email: 'admin@gmail.com',
+            name: 'Shiftify Team',
+            email: 'backend@shiftify.local',
         },
     },
     servers: [
         {
-            url: `${HOST}/api`,
-            description: 'Server',
+            url: `${API_PUBLIC_URL}/api`,
+            description: 'Production/Staging API',
             variables: {
                 env: {
                     default: 'app-dev',

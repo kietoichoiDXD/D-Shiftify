@@ -84,6 +84,14 @@ class Controller {
       const gap = await getSkillGapForJob(id, profile, score);
       return ValidHttpResponse.toOkResponse(gap);
   };
+
+  matchJobs = async req => {
+      const matches = await AiService.recommendJobs(req.params.profileId, req.query);
+      return ValidHttpResponse.toOkResponse({
+          data: matches,
+          total: matches.length,
+      });
+  };
 }
 
 const _resolveOwnedSessionId = (req, sessionId) => {

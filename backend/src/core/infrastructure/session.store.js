@@ -1,5 +1,5 @@
 import { createClient } from 'redis';
-import { logger } from '../../../packages/logger/index.js';
+import { logger } from '../../packages/logger/index.js';
 
 const TTL = parseInt(process.env.SESSION_TTL || '1800', 10); // 30 min
 

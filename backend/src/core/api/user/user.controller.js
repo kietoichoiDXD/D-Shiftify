@@ -23,6 +23,12 @@ class Controller {
         const data = await this.service.findById(req.params.id);
         return ValidHttpResponse.toOkResponse(data);
     };
+
+    me = async req => {
+        const { id } = getUserContext(req);
+        const data = await this.service.findById(id);
+        return ValidHttpResponse.toOkResponse(data);
+    };
 }
 
 export const UserController = new Controller();

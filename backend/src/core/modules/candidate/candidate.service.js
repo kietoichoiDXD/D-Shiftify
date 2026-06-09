@@ -20,12 +20,34 @@ class CandidateService {
     }
   }
 
+  async getPublicProfileByUserId(userId) {
+    const profile = await CandidateRepository.findByUserId(userId)
+    if (!profile) {
+      throw new NotFoundException('Candidate profile not found')
+    }
+
+    const formatted = this.formatProfile(profile)
+    return {
+      id: formatted.id,
+      userId: formatted.userId,
+      fullName: formatted.fullName,
+      headline: formatted.headline,
+      bio: formatted.bio,
+      location: formatted.location,
+      profileImage: formatted.profileImage,
+      skills: formatted.skills,
+      education: formatted.education,
+      experience: formatted.experience,
+    }
+  }
+
   async createProfile(userId, data) {
     try {
-      const user = await UserRepository.findById(userId)
-      if (!user) {
+      const userRows = await UserRepository.findById(userId)
+      if (!userRows?.length) {
         throw new NotFoundException('User not found')
       }
+      const user = userRows[0]
 
       const existing = await CandidateRepository.findByUserId(userId)
       if (existing) {

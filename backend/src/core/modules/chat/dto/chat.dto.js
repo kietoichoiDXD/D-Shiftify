@@ -19,3 +19,8 @@ export const CreateMessageDto = (payload, senderId) => ({
     sender_id: senderId,
     content: payload.content,
 });
+
+export const CreateRoomSchema = z.object({
+    jobId: z.string().trim().uuid(),
+    candidateId: z.coerce.number().int().positive().optional(),
+}).strict();

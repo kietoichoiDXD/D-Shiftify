@@ -4,6 +4,7 @@ import { AUTH_ENDPOINTS } from '@/core/configs/consts'
 import config from '@/core/configs/env'
 import isEqual from '@/core/configs/is-equal'
 import { authApi } from '@/core/services/auth.service'
+import { getFirebaseIdToken } from '@/core/services/firebase'
 import {
   getAccessTokenFromLS,
   getRefreshTokenFromLS,
@@ -35,7 +36,7 @@ const axiosClient = axios.create({
 })
 
 axiosClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
     if (config.url) {
       const prevController = controllers.get(config.url)
       if (prevController) {
@@ -50,8 +51,8 @@ axiosClient.interceptors.request.use(
       controllers.set(config.url, controller)
     }
 
-    const token = getAccessTokenFromLS()
-    if (token) {
+    const token = getAccessTokenFromLS() || (await getFirebaseIdToken())
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
 
