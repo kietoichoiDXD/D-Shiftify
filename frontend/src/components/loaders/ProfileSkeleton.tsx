@@ -6,7 +6,7 @@
 import React from 'react'
 
 export const ProfileSkeleton: React.FC = () => (
-  <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg animate-pulse">
+  <div data-testid="profile-skeleton" className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg animate-pulse">
     {/* Header skeleton */}
     <div className="flex items-center gap-4 mb-6">
       <div className="w-20 h-20 bg-gray-200 rounded-full" />

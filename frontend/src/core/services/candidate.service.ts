@@ -8,6 +8,16 @@
 import apiClient from './api/apiClient'
 import { ApiError } from './api/errors'
 
+type ApiEnvelope<T> = T | { data?: T }
+
+const unwrapData = <T>(response: ApiEnvelope<T>): T => {
+  if (response && typeof response === 'object' && 'data' in response) {
+    return response.data as T
+  }
+
+  return response as T
+}
+
 /**
  * Data Models/Types
  */
@@ -75,12 +85,12 @@ export interface UpdateProfileDto {
  *   }
  * }
  */
-export async function getCandidateProfile(): Promise<CandidateProfile> {
+export async function getCandidateProfile(): Promise<CandidateProfile | null> {
   try {
     const response = await apiClient.get('/candidate/profile')
 
-    // Type assertion - assume backend returns { data: CandidateProfile }
-    if (!response.data) {
+    const profile = unwrapData<CandidateProfile | null>(response)
+    if (!profile) {
       throw new ApiError({
         code: 'INVALID_RESPONSE',
         message: 'Invalid response format from server',
@@ -88,7 +98,7 @@ export async function getCandidateProfile(): Promise<CandidateProfile> {
       })
     }
 
-    return response.data as CandidateProfile
+    return profile
   } catch (error: any) {
     if (error instanceof ApiError) {
       throw error
@@ -117,7 +127,8 @@ export async function getCandidateProfile(): Promise<CandidateProfile> {
  * const profile = await getCandidateProfileById('candidate-123')
  */
 export async function getCandidateProfileById(id: string): Promise<CandidateProfile> {
-  return apiClient.get(`/candidate/profile/${id}`) as Promise<CandidateProfile>
+  const response = await apiClient.get(`/candidate/profile/${id}`)
+  return unwrapData<CandidateProfile>(response)
 }
 
 /**
@@ -139,7 +150,8 @@ export async function getCandidateProfileById(id: string): Promise<CandidateProf
 export async function updateCandidateProfile(
   data: UpdateProfileDto
 ): Promise<CandidateProfile> {
-  return apiClient.put('/candidate/profile', data) as Promise<CandidateProfile>
+  const response = await apiClient.put('/candidate/profile', data)
+  return unwrapData<CandidateProfile>(response)
 }
 
 /**
@@ -165,7 +177,7 @@ export async function uploadProfileAvatar(file: File): Promise<string> {
     },
   })
 
-  return response.data.imageUrl as string
+  return unwrapData<{ imageUrl: string }>(response).imageUrl
 }
 
 /**
@@ -177,7 +189,8 @@ export async function uploadProfileAvatar(file: File): Promise<string> {
  * @returns Promise resolving to updated CandidateProfile
  */
 export async function addEducation(education: Omit<Education, 'id'>): Promise<Education> {
-  return apiClient.post('/candidate/profile/education', education) as Promise<Education>
+  const response = await apiClient.post('/candidate/profile/education', education)
+  return unwrapData<Education>(response)
 }
 
 /**
@@ -193,7 +206,8 @@ export async function updateEducation(
   id: string,
   education: Partial<Omit<Education, 'id'>>
 ): Promise<Education> {
-  return apiClient.put(`/candidate/profile/education/${id}`, education) as Promise<Education>
+  const response = await apiClient.put(`/candidate/profile/education/${id}`, education)
+  return unwrapData<Education>(response)
 }
 
 /**
@@ -205,7 +219,7 @@ export async function updateEducation(
  * @returns Promise resolving when deleted
  */
 export async function deleteEducation(id: string): Promise<void> {
-  return apiClient.delete(`/candidate/profile/education/${id}`) as Promise<void>
+  await apiClient.delete(`/candidate/profile/education/${id}`)
 }
 
 /**
@@ -219,7 +233,8 @@ export async function deleteEducation(id: string): Promise<void> {
 export async function addExperience(
   experience: Omit<Experience, 'id'>
 ): Promise<Experience> {
-  return apiClient.post('/candidate/profile/experience', experience) as Promise<Experience>
+  const response = await apiClient.post('/candidate/profile/experience', experience)
+  return unwrapData<Experience>(response)
 }
 
 /**
@@ -235,7 +250,8 @@ export async function updateExperience(
   id: string,
   experience: Partial<Omit<Experience, 'id'>>
 ): Promise<Experience> {
-  return apiClient.put(`/candidate/profile/experience/${id}`, experience) as Promise<Experience>
+  const response = await apiClient.put(`/candidate/profile/experience/${id}`, experience)
+  return unwrapData<Experience>(response)
 }
 
 /**
@@ -247,5 +263,5 @@ export async function updateExperience(
  * @returns Promise resolving when deleted
  */
 export async function deleteExperience(id: string): Promise<void> {
-  return apiClient.delete(`/candidate/profile/experience/${id}`) as Promise<void>
+  await apiClient.delete(`/candidate/profile/experience/${id}`)
 }

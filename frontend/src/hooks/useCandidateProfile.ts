@@ -57,7 +57,6 @@ export function useCandidateProfile(): UseCandidateProfileReturn {
       })
 
       setError(apiError)
-      console.error('[useCandidateProfile] Error:', apiError.toString())
     } finally {
       if (isRevalidate) {
         setIsValidating(false)

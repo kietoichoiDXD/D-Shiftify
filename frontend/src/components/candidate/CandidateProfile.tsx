@@ -57,13 +57,6 @@ export const CandidateProfile: React.FC = () => {
             Try Again
           </button>
 
-          {/* Dev mode: Show full error details */}
-          {import.meta.env.DEV && (
-            <details className="mt-4 p-2 bg-red-100 rounded text-xs">
-              <summary className="cursor-pointer font-mono">Error Details</summary>
-              <pre className="mt-2 text-red-700">{JSON.stringify(error.toJSON(), null, 2)}</pre>
-            </details>
-          )}
         </div>
       </div>
     )

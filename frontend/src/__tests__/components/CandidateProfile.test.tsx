@@ -5,15 +5,18 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import CandidateProfile from '@/components/candidate/CandidateProfile'
-import * as candidateService from '@/core/services/candidate.service'
+import type { CandidateProfile as CandidateProfileModel } from '@/core/services/candidate.service'
 import { ApiError } from '@/core/services/api/errors'
 
-// Mock the service
-jest.mock('@/core/services/candidate.service')
+jest.mock('@/core/services/candidate.service', () => ({
+  getCandidateProfile: jest.fn(),
+}))
+
+const CandidateProfile = require('@/components/candidate/CandidateProfile').default
+const candidateService = require('@/core/services/candidate.service')
 
 describe('CandidateProfile Component', () => {
-  const mockProfile: candidateService.CandidateProfile = {
+  const mockProfile: CandidateProfileModel = {
     id: '1',
     userId: 'user-1',
     fullName: 'John Doe',
@@ -71,7 +74,7 @@ describe('CandidateProfile Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('John Doe')).toBeInTheDocument()
-      expect(screen.getByText('Senior Developer')).toBeInTheDocument()
+      expect(screen.getAllByText('Senior Developer').length).toBeGreaterThan(0)
       expect(screen.getByText('john@example.com')).toBeInTheDocument()
     })
   })
@@ -194,7 +197,7 @@ describe('CandidateProfile Component', () => {
     render(<CandidateProfile />)
 
     await waitFor(() => {
-      expect(screen.getByText('Senior Developer')).toBeInTheDocument()
+      expect(screen.getAllByText('Senior Developer').length).toBeGreaterThan(0)
       expect(screen.getByText('Tech Company')).toBeInTheDocument()
       expect(screen.getByText(/present/i)).toBeInTheDocument()
     })

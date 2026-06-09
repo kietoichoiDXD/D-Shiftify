@@ -17,9 +17,8 @@ import { ApiError } from './errors'
 import { useAuthStore } from '@/core/store/auth.store'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
-const REQUEST_TIMEOUT = 10000 // 10 seconds
+const REQUEST_TIMEOUT = 10000
 
-// Create axios instance
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: REQUEST_TIMEOUT,
@@ -29,15 +28,8 @@ export const apiClient: AxiosInstance = axios.create({
   },
 })
 
-/**
- * REQUEST INTERCEPTOR
- * - Inject JWT token
- * - Add request ID for tracking
- * - Add request timestamp
- */
 apiClient.interceptors.request.use(
   (config) => {
-    // Get token from auth store
     const authStore = useAuthStore.getState()
     const token = authStore.accessToken
 
@@ -45,16 +37,7 @@ apiClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
 
-    // Add request ID for tracing
     config.headers['X-Request-ID'] = generateRequestId()
-
-    // Log request in development
-    if (import.meta.env.DEV) {
-      console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`, {
-        data: config.data,
-        params: config.params,
-      })
-    }
 
     return config
   },
@@ -64,30 +47,14 @@ apiClient.interceptors.request.use(
   }
 )
 
-/**
- * RESPONSE INTERCEPTOR
- * - Extract data from response
- * - Handle errors globally
- * - Auto-refresh token on 401
- * - Retry failed requests
- */
 apiClient.interceptors.response.use(
   (response) => {
-    // Log successful response
-    if (import.meta.env.DEV) {
-      console.log(`[API Response] ${response.status}`, {
-        data: response.data,
-      })
-    }
-
-    // Return data (assuming backend returns { status, data, message })
     return response.data
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: number }
     const responseData = error.response?.data as Record<string, any> | undefined
 
-    // Network error or timeout
     if (!error.response) {
       console.error('[API Network Error]', error.message)
       throw new ApiError({
@@ -97,12 +64,11 @@ apiClient.interceptors.response.use(
       })
     }
 
-    // Handle specific status codes
     switch (error.response.status) {
-      case 401: // Unauthorized
-        return handle401Error()
+      case 401:
+        return handle401Error(originalRequest)
 
-      case 403: // Forbidden
+      case 403:
         throw new ApiError({
           code: 'FORBIDDEN',
           message: 'You do not have permission to access this resource.',
@@ -110,7 +76,7 @@ apiClient.interceptors.response.use(
           details: responseData,
         })
 
-      case 429: // Too Many Requests (Rate Limited)
+      case 429:
         throw new ApiError({
           code: 'RATE_LIMIT',
           message: 'Too many requests. Please try again later.',
@@ -120,7 +86,7 @@ apiClient.interceptors.response.use(
           },
         })
 
-      case 422: // Unprocessable Entity (Validation Error)
+      case 422:
         const validationDetails = responseData
         throw new ApiError({
           code: 'VALIDATION_ERROR',
@@ -132,7 +98,7 @@ apiClient.interceptors.response.use(
       case 500:
       case 502:
       case 503:
-      case 504: // Server Errors - Retry
+      case 504:
         return retryRequest(originalRequest, error)
 
       default:
@@ -146,17 +112,27 @@ apiClient.interceptors.response.use(
   }
 )
 
-/**
- * Handle 401 Unauthorized errors
- * If token expired, try to refresh. Otherwise, redirect to login.
- */
-async function handle401Error() {
+async function handle401Error(
+  config: AxiosRequestConfig & { _authRetry?: boolean }
+): Promise<never> {
   const authStore = useAuthStore.getState()
 
-  // Clear session
-  authStore.logout()
+  if (!config._authRetry && authStore.refreshToken) {
+    try {
+      config._authRetry = true
+      const newAccessToken = await refreshToken()
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${newAccessToken}`,
+      }
+      return apiClient(config)
+    } catch (_error) {
+      authStore.logout()
+    }
+  } else {
+    authStore.logout()
+  }
 
-  // Redirect to login
   window.location.href = '/login'
 
   throw new ApiError({
@@ -166,10 +142,6 @@ async function handle401Error() {
   })
 }
 
-/**
- * Retry logic with exponential backoff
- * Retries failed requests up to 3 times with increasing delay
- */
 async function retryRequest(
   config: AxiosRequestConfig & { _retry?: number },
   error: AxiosError
@@ -184,31 +156,20 @@ async function retryRequest(
     })
   }
 
-  // Calculate exponential backoff delay
   const delay = Math.pow(2, config._retry) * 1000
   await new Promise((resolve) => setTimeout(resolve, delay))
 
   return apiClient(config)
 }
 
-/**
- * Utility: Generate unique request ID for tracking
- */
 function generateRequestId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-/**
- * Utility: Check if user is online
- */
 export function isOnline(): boolean {
   return navigator.onLine
 }
 
-/**
- * Utility: Manually refresh token
- * Call this before making requests if token might be expired
- */
 export async function refreshToken(): Promise<string> {
   try {
     const authStore = useAuthStore.getState()
