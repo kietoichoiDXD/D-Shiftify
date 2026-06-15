@@ -3,6 +3,9 @@ import { UserRepository } from '../user/user.repository'
 import { UnprocessableEntityException } from 'packages/httpException/UnprocessableEntityException'
 import { NotFoundException } from 'packages/httpException/NotFoundException'
 import { logger } from 'packages/logger'
+import { normalizeCvProfilePayload } from './candidate.schema'
+
+const ensureNormalizedCvPayload = data => (data?.cvPayload ? data : normalizeCvProfilePayload(data))
 
 class CandidateService {
   async getProfileByUserId(userId) {
@@ -43,6 +46,7 @@ class CandidateService {
 
   async createProfile(userId, data) {
     try {
+      const normalized = ensureNormalizedCvPayload(data)
       const userRows = await UserRepository.findById(userId)
       if (!userRows?.length) {
         throw new NotFoundException('User not found')
@@ -56,14 +60,28 @@ class CandidateService {
 
       await CandidateRepository.create({
         userId,
-        fullName: data.fullName || user.fullName,
+        fullName: normalized.fullName || user.fullName,
         email: user.email,
-        phone: data.phone || null,
-        location: data.location || null,
-        headline: data.headline || null,
-        bio: data.bio || null,
-        profileImage: data.profileImage || null,
-        skills: data.skills || [],
+        phone: normalized.phone || null,
+        location: normalized.location || null,
+        headline: normalized.headline || null,
+        bio: normalized.bio || null,
+        profileImage: normalized.profileImage || null,
+        skills: normalized.skills || [],
+        education: normalized.education || [],
+        experience: normalized.experience || [],
+        dob: normalized.dob || null,
+        gender: normalized.gender || null,
+        disabilityStatus: normalized.disabilityStatus || null,
+        deviceIds: normalized.deviceIds || [],
+        jobType: normalized.jobType || null,
+        workMode: normalized.workMode || null,
+        mobility: normalized.mobility || null,
+        expectedJob: normalized.expectedJob || null,
+        conditions: normalized.conditions || [],
+        certificates: normalized.certificates || [],
+        customSections: normalized.customSections || [],
+        cvPayload: normalized.cvPayload || {},
       })
 
       const profile = await CandidateRepository.findByUserId(userId)
@@ -76,14 +94,15 @@ class CandidateService {
 
   async updateProfile(userId, data) {
     try {
-      this.validateUpdateData(data)
+      const normalized = ensureNormalizedCvPayload(data)
+      this.validateUpdateData(normalized)
 
       const existing = await CandidateRepository.findByUserId(userId)
       if (!existing) {
         throw new NotFoundException('Candidate profile not found')
       }
 
-      await CandidateRepository.updateByUserId(userId, data)
+      await CandidateRepository.updateByUserId(userId, normalized)
 
       const updated = await CandidateRepository.findByUserId(userId)
       return this.formatProfile(updated)
@@ -181,6 +200,16 @@ class CandidateService {
         return []
       }
     }
+    const parseObject = (value) => {
+      if (!value) return {}
+      if (typeof value === 'object' && !Array.isArray(value)) return value
+      try {
+        const parsed = JSON.parse(value)
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
+      } catch (_error) {
+        return {}
+      }
+    }
 
     return {
       id: profile.id,
@@ -192,12 +221,40 @@ class CandidateService {
       headline: profile.headline || undefined,
       bio: profile.bio || undefined,
       profileImage: profile.profile_image || undefined,
+      dob: this.formatDate(profile.dob),
+      gender: profile.gender || undefined,
+      disabilityStatus: profile.disability_status || undefined,
+      deviceIds: parseJson(profile.device_ids),
+      jobType: profile.job_type || undefined,
+      workMode: profile.work_mode || undefined,
+      mobility: profile.mobility || undefined,
+      expectedJob: profile.expected_job || undefined,
+      conditions: parseJson(profile.conditions),
+      certificates: parseJson(profile.certificates),
+      customSections: parseJson(profile.custom_sections),
       skills: parseJson(profile.skills),
       education: parseJson(profile.education),
       experience: parseJson(profile.experience),
+      cv: {
+        ...parseObject(profile.cv_payload),
+        deviceIds: parseJson(profile.device_ids),
+        jobType: profile.job_type || undefined,
+        workMode: profile.work_mode || undefined,
+        mobility: profile.mobility || undefined,
+        expectedJob: profile.expected_job || undefined,
+        conditions: parseJson(profile.conditions),
+        certificates: parseJson(profile.certificates),
+        customSections: parseJson(profile.custom_sections),
+      },
       createdAt: profile.created_at?.toISOString(),
       updatedAt: profile.updated_at?.toISOString(),
     }
+  }
+
+  formatDate(value) {
+    if (!value) return undefined
+    if (typeof value === 'string') return value.slice(0, 10)
+    return value.toISOString?.().slice(0, 10)
   }
 
   validateUpdateData(data) {
@@ -223,6 +280,18 @@ class CandidateService {
 
     if (data.skills && !Array.isArray(data.skills)) {
       throw new UnprocessableEntityException('skills must be an array')
+    }
+
+    if (data.deviceIds && !Array.isArray(data.deviceIds)) {
+      throw new UnprocessableEntityException('deviceIds must be an array')
+    }
+
+    if (data.conditions && !Array.isArray(data.conditions)) {
+      throw new UnprocessableEntityException('conditions must be an array')
+    }
+
+    if (data.certificates && !Array.isArray(data.certificates)) {
+      throw new UnprocessableEntityException('certificates must be an array')
     }
   }
 

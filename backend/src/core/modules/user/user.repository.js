@@ -4,6 +4,7 @@ class Repository extends DataRepository {
     findByEmail(email) {
         return this.query()
             .innerJoin('roles', 'roles.id', 'users.role_id')
+            .leftJoin('profiles', 'profiles.user_id', 'users.id')
             .whereNull('users.deleted_at')
             .where('users.email', '=', email)
             .select(
@@ -11,7 +12,7 @@ class Repository extends DataRepository {
                 'users.email',
                 { password: 'users.password_hash' },
                 { role: 'roles.name' },
-                { fullName: 'users.full_name' },
+                { fullName: 'profiles.full_name' },
                 { createdAt: 'users.created_at' },
                 { updatedAt: 'users.updated_at' },
                 { deletedAt: 'users.deleted_at' },
@@ -21,12 +22,13 @@ class Repository extends DataRepository {
     findById(id) {
         return this.query()
             .innerJoin('roles', 'roles.id', 'users.role_id')
+            .leftJoin('profiles', 'profiles.user_id', 'users.id')
             .whereNull('users.deleted_at')
             .where('users.id', '=', id)
             .select(
                 'users.id',
                 'users.email',
-                { fullName: 'users.full_name' },
+                { fullName: 'profiles.full_name' },
                 { role: 'roles.name' },
                 { createdAt: 'users.created_at' },
                 { updatedAt: 'users.updated_at' },

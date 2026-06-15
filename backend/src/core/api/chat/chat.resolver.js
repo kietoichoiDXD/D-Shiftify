@@ -1,5 +1,7 @@
 import { CreateRoomInterceptor, MessageHistoryQueryInterceptor, RoomIdParamInterceptor } from 'core/modules/chat';
 import { Module } from 'packages/handler/Module';
+// Register Chat Swagger models (side-effect import)
+import 'core/common/swagger/chat.swagger';
 import { ChatController } from './chat.controller';
 
 export const ChatResolver = Module.builder()
@@ -19,6 +21,7 @@ export const ChatResolver = Module.builder()
             route: '/rooms',
             method: 'post',
             interceptors: [CreateRoomInterceptor],
+            body: 'CreateRoomDto',
             controller: ChatController.createRoom,
             preAuthorization: true,
         },

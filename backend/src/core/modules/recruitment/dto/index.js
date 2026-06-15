@@ -1,6 +1,25 @@
 import { z } from 'zod';
+import { ApiDocument } from 'core/config/swagger.config';
+import { SwaggerDocument } from 'packages/swagger';
 
-// ── CreateJob ──────────────────────────────────────────────────────────────────
+ApiDocument.addModel('CreateJobDto', {
+    title: SwaggerDocument.ApiProperty({ type: 'string', example: 'Senior Frontend Developer' }),
+    description: SwaggerDocument.ApiProperty({ type: 'string', example: 'We are looking for an experienced React developer...' }),
+    requiredSkills: SwaggerDocument.ApiProperty({ type: 'array', model: 'string', required: false, example: 'React' }),
+    salaryMin: SwaggerDocument.ApiProperty({ type: 'int', required: false, example: 1500 }),
+    salaryMax: SwaggerDocument.ApiProperty({ type: 'int', required: false, example: 3000 }),
+    hasInsurance: SwaggerDocument.ApiProperty({ type: 'bool', required: false }),
+    isRemote: SwaggerDocument.ApiProperty({ type: 'bool', required: false }),
+    locationLat: SwaggerDocument.ApiProperty({ type: 'string', required: false, example: '10.7769' }),
+    locationLng: SwaggerDocument.ApiProperty({ type: 'string', required: false, example: '106.7009' }),
+    workEnvironment: SwaggerDocument.ApiProperty({ type: 'string', required: false, example: 'Office, Hybrid' }),
+    status: SwaggerDocument.ApiProperty({ type: 'string', required: false, example: 'open' }),
+});
+
+ApiDocument.addModel('ApplyJobDto', {
+    job_id: SwaggerDocument.ApiProperty({ type: 'string', example: '550e8400-e29b-41d4-a716-446655440000' }),
+});
+
 const JobPayloadSchema = z.object({
     title: z.string().trim().min(3).max(255),
     description: z.string().trim().min(20).max(10000),
@@ -77,7 +96,6 @@ export const UpdateJobDto = body => {
     return data;
 };
 
-// ── ApplyJob ───────────────────────────────────────────────────────────────────
 export const ApplyJobSchema = z.object({
     job_id: z.string().trim().uuid(),
 }).strict();
@@ -87,7 +105,6 @@ export const ApplyJobDto = (body, candidateId) => ({
     candidate_id: candidateId,
 });
 
-// ── JobFilter query params ─────────────────────────────────────────────────────
 export const JobFilterSchema = z.object({
     keyword: z.string().trim().max(200).optional(),
     status: z.enum(['open', 'paused', 'closed']).optional(),
@@ -99,7 +116,6 @@ export const JobFilterSchema = z.object({
     salaryMin: z.coerce.number().int().nonnegative().optional(),
     salaryMax: z.coerce.number().int().nonnegative().optional(),
     skills: z.preprocess(v => {
-        // Accept ?skills=React,Node or ?skills[]=React&skills[]=Node
         if (typeof v === 'string') return v.split(',').map(s => s.trim()).filter(Boolean);
         if (Array.isArray(v)) return v;
         return undefined;
@@ -108,7 +124,6 @@ export const JobFilterSchema = z.object({
     offset: z.coerce.number().int().nonnegative().default(0),
 }).strict();
 
-// ── UpdateApplicationStatus ───────────────────────────────────────────────────
 export const APPLICATION_STATUSES = ['PENDING', 'ACCEPTED', 'REJECTED'];
 
 export const UpdateApplicationStatusSchema = z.object({

@@ -1,12 +1,9 @@
+const mockDataFlag = String(import.meta.env.VITE_USE_MOCK_DATA ?? import.meta.env.USE_MOCK_DATA ?? 'true').toLowerCase()
+
 const config = {
   baseUrl: import.meta.env.VITE_API_URL || '',
-  firebase: {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || ''
-  },
-  maxSizeUploadAvatar: 1048576
+  maxSizeUploadAvatar: 1048576,
+  useMockData: ['true', '1', 'yes'].includes(mockDataFlag) || (!import.meta.env.VITE_API_URL && mockDataFlag !== 'false')
 }
 
 export default config

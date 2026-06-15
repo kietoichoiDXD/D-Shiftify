@@ -64,6 +64,6 @@ export const matchNode = async state => {
       nextStep: USE_LLM_XAI ? 'xai' : 'end',
     };
   } catch (err) {
-    return { errors: [err.message], nextStep: 'end' };
+    return { errors: [err.message], error: err.message, nextStep: 'end' };
   }
 };

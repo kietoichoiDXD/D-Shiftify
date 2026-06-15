@@ -1,5 +1,5 @@
-import { SkillProfile } from '../models/skill.profile.model.js';
-import { AccessibilityAlert } from '../models/alert.model.js';
+import { SkillProfileRepository } from '../repositories/skill.profile.repository.js';
+import { AlertRepository } from '../repositories/alert.repository.js';
 import { hybridScore } from '../../../ai/agents/match/match.scoring.js';
 import { JobRepository } from '../repositories/job.repository.js';
 
@@ -12,11 +12,7 @@ const ALERT_THRESHOLD = parseInt(process.env.ALERT_SCORE_THRESHOLD || '65', 10);
  */
 export const runAlertJob = async job => {
     try {
-        const profiles = await SkillProfile.find(
-            { narrative_embedding: { $exists: true, $ne: null } },
-            { user_id: 1, hard_skills: 1, soft_skills: 1, inferred_skills: 1,
-                experience: 1, accessibility_needs: 1, location_lat: 1, location_lng: 1 },
-        ).lean();
+        const profiles = await SkillProfileRepository.getAllProfiles();
 
         const alerts = [];
         for (const profile of profiles) {
@@ -27,7 +23,7 @@ export const runAlertJob = async job => {
         }
 
         if (alerts.length) {
-            await AccessibilityAlert.insertMany(alerts, { ordered: false }).catch(() => {});
+            await AlertRepository.saveAlerts(alerts);
         }
     } catch {
     // background job — never throw

@@ -11,6 +11,10 @@ import { ChatResolver } from './chat';
 import { CvResolver } from './cv';
 import { JobResolver } from './job';
 
+// Eagerly load DTO definitions to register them with ApiDocument (SwaggerBuilder)
+import 'core/modules/recruitment/dto';
+import 'core/modules/education/dto';
+
 export const ModuleResolver = HandlerResolver
     .builder()
     .addSwaggerBuilder(ApiDocument)

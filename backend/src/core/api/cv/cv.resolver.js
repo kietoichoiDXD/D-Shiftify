@@ -8,6 +8,8 @@ import {
     CvProfileCreateSchema,
     CvProfileUpdateSchema,
 } from 'core/modules/candidate/candidate.schema';
+// Register CV Swagger models (side-effect import)
+import 'core/common/swagger/cv.swagger';
 import { CvController } from './cv.controller';
 
 const CvProfileCreateInterceptor = new ZodValidatorInterceptor(CvProfileCreateSchema, 'body');
@@ -34,6 +36,7 @@ export const CvResolver = Module.builder()
             route: '/',
             method: 'post',
             interceptors: [CvProfileCreateInterceptor],
+            body: 'CvProfileCreateDto',
             controller: CvController.create,
             preAuthorization: true,
         },
@@ -41,6 +44,7 @@ export const CvResolver = Module.builder()
             route: '/me',
             method: 'patch',
             interceptors: [CvProfileUpdateInterceptor],
+            body: 'CvProfileUpdateDto',
             controller: CvController.update,
             preAuthorization: true,
         },
@@ -48,6 +52,7 @@ export const CvResolver = Module.builder()
             route: '/education',
             method: 'post',
             interceptors: [CvEducationCreateInterceptor],
+            body: 'CvEducationCreateDto',
             controller: CvController.addEducation,
             preAuthorization: true,
         },
@@ -55,6 +60,7 @@ export const CvResolver = Module.builder()
             route: '/education/:educationId',
             method: 'patch',
             interceptors: [CvEducationUpdateInterceptor],
+            body: 'CvEducationUpdateDto',
             controller: CvController.updateEducation,
             preAuthorization: true,
         },
@@ -68,6 +74,7 @@ export const CvResolver = Module.builder()
             route: '/experience',
             method: 'post',
             interceptors: [CvExperienceCreateInterceptor],
+            body: 'CvExperienceCreateDto',
             controller: CvController.addExperience,
             preAuthorization: true,
         },
@@ -75,6 +82,7 @@ export const CvResolver = Module.builder()
             route: '/experience/:experienceId',
             method: 'patch',
             interceptors: [CvExperienceUpdateInterceptor],
+            body: 'CvExperienceUpdateDto',
             controller: CvController.updateExperience,
             preAuthorization: true,
         },

@@ -8,24 +8,52 @@ import { ValidHttpResponse } from '../../../packages/handler/response/validHttp.
 import { getUserContext } from '../../../packages/authModel/module/user';
 import { BadRequestException } from '../../../packages/httpException';
 
+const isSessionAbortedError = (err) =>
+    err?.name === 'AbortError' ||
+    err?.message?.includes('ExecutionStateError') ||
+    err?.message?.includes('is not running') ||
+    err?.message?.includes('aborted') ||
+    err?.message?.includes('AI graph timeout') ||
+    err?.message?.includes('TimeoutError');
+
+const sessionExpiredResponse = () => ({
+    statusCode: 410,
+    error: 'SESSION_EXPIRED',
+    message: 'Phiên làm việc đã hết hạn hoặc bị ngắt. Vui lòng bắt đầu lại.',
+    action: 'CREATE_NEW_SESSION',
+});
+
 class Controller {
-  /** POST /ai/chat  { session_id, message } */
   chat = async req => {
       const { session_id, message } = req.body;
       if (!session_id || !message) throw new BadRequestException('session_id and message are required');
-      const result = await AiService.chat(_resolveOwnedSessionId(req, session_id), message);
-      return ValidHttpResponse.toOkResponse(_format(result));
+      try {
+          const result = await AiService.chat(_resolveOwnedSessionId(req, session_id), message);
+          return ValidHttpResponse.toOkResponse(_format(result));
+      } catch (err) {
+          if (isSessionAbortedError(err)) {
+              AiService.clearSession(String(session_id)).catch(() => {});
+              return ValidHttpResponse.toOkResponse(sessionExpiredResponse());
+          }
+          throw err;
+      }
   };
 
-  /** POST /ai/voice  { session_id, audio, encoding? } */
   voice = async req => {
       const { session_id, audio, encoding } = req.body;
       if (!session_id || !audio) throw new BadRequestException('session_id and audio are required');
-      const result = await AiService.voiceChat(_resolveOwnedSessionId(req, session_id), audio, encoding);
-      return ValidHttpResponse.toOkResponse(_format(result));
+      try {
+          const result = await AiService.voiceChat(_resolveOwnedSessionId(req, session_id), audio, encoding);
+          return ValidHttpResponse.toOkResponse(_format(result));
+      } catch (err) {
+          if (isSessionAbortedError(err)) {
+              AiService.clearSession(String(session_id)).catch(() => {});
+              return ValidHttpResponse.toOkResponse(sessionExpiredResponse());
+          }
+          throw err;
+      }
   };
 
-  /** POST /ai/audit-jd  { jd } */
   auditJD = async req => {
       const { jd } = req.body;
       if (!jd) throw new BadRequestException('jd is required');
@@ -41,21 +69,18 @@ class Controller {
       });
   };
 
-  /** POST /ai/jobs  { employer_id, title, description_raw, ... } */
   postJob = async req => {
       const { id } = getUserContext(req);
       const result = await ingestJob({ ...req.body, employer_user_id: id });
       return ValidHttpResponse.toOkResponse(result);
   };
 
-  /** DELETE /ai/session/:id */
   clearSession = async req => {
       await AiService.clearSession(_resolveOwnedSessionId(req, req.params.id));
       return ValidHttpResponse.toOkResponse({ cleared: true });
   };
 
-  /** GET /ai/voice/stream?text=... — SSE streaming TTS */
-  streamTts = async (req, res) => {
+  streamTts = async req => {
       const { text } = req.query;
       if (!text || typeof text !== 'string') {
           throw new BadRequestException('text is required');
@@ -66,22 +91,25 @@ class Controller {
       } catch (_error) {
           throw new BadRequestException('text is malformed');
       }
+      const { res } = req;
       await streamSpeech(decodedText, res);
+      
+      const response = ValidHttpResponse.toOkResponse(null);
+      response.toResponse = () => {};
+      return response;
   };
 
-  /** GET /ai/market-trends */
   marketTrends = async _req => {
       const trends = await getMarketTrends();
       return ValidHttpResponse.toOkResponse(trends);
   };
 
-  /** GET /ai/jobs/:id/skill-gap?score=65  (body or query: profile JSON) */
   skillGap = async req => {
       const { id } = req.params;
-      const score = parseFloat(req.query.score ?? '0');
+      const { score = '0' } = req.query;
       const { id: userId } = getUserContext(req);
       const profile = await SkillProfileRepository.findByUserId(userId);
-      const gap = await getSkillGapForJob(id, profile, score);
+      const gap = await getSkillGapForJob(id, profile, parseFloat(score));
       return ValidHttpResponse.toOkResponse(gap);
   };
 
@@ -104,14 +132,15 @@ const _resolveOwnedSessionId = (req, sessionId) => {
 };
 
 const _format = r => ({
-    tts_text: r.tts_text,
-    audio_base64: r.audio_base64,
-    profile: r.profile,
+    tts_text:            r.tts_text,
+    audio_base64:        r.audio_base64,
+    profile:             r.profile,
     profile_completeness: r.profile?.profile_completeness,
-    matches: r.matches,
-    profile_coach: r.profile_coach,
-    nextStep: r.nextStep,
-    errors: r.errors,
+    matches:             r.matches,
+    profile_coach:       r.profile_coach,
+    nextStep:            r.nextStep,
+    errors:              r.errors,
+    error:               r.error,
 });
 
 export const AiController = new Controller();

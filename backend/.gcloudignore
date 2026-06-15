@@ -1,0 +1,7 @@
+.git
+.hg
+.svn
+node_modules/
+dist/
+.env
+*.log

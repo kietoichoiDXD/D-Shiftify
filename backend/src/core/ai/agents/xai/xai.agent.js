@@ -74,6 +74,6 @@ export const xaiNode = async (state) => {
       nextStep: 'end',
     };
   } catch (err) {
-    return { errors: [err.message], nextStep: 'end' };
+    return { errors: [err.message], error: err.message, nextStep: 'end' };
   }
 };

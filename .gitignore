@@ -1,0 +1,9 @@
+*.csv
+*.xlsx
+*.txt
+.env
+.env.*
+.agents/
+.mcp.json
+skills-lock.json
+/backend/scratch/

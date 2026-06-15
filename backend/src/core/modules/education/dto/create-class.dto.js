@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+// NOTE: Swagger model registration is done lazily in dto/index.js
+// to avoid circular-import issues (swagger.config → this file → swagger.config).
+
 const ClassStatus = z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']);
 
 export const CreateClassSchema = z

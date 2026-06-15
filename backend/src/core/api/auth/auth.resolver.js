@@ -3,6 +3,8 @@ import { ZodValidatorInterceptor } from 'core/infrastructure/interceptor';
 import { ForgotPasswordSchema, ResetPasswordSchema } from 'core/modules/auth/dto/password-reset.dto';
 import { CreateUserInterceptor } from 'core/modules/user/interceptor';
 import { Module } from 'packages/handler/Module';
+// Register Auth Swagger models for forgot/reset password (side-effect import)
+import 'core/common/swagger/auth.swagger';
 import { AuthController } from './auth.controller';
 
 const ForgotPasswordInterceptor = new ZodValidatorInterceptor(ForgotPasswordSchema, 'body');
@@ -60,12 +62,14 @@ export const AuthResolver = Module.builder()
             route: '/forgot-password',
             method: 'post',
             interceptors: [ForgotPasswordInterceptor],
+            body: 'ForgotPasswordDto',
             controller: AuthController.forgotPassword,
         },
         {
             route: '/reset-password',
             method: 'post',
             interceptors: [ResetPasswordInterceptor],
+            body: 'ResetPasswordDto',
             controller: AuthController.resetPassword,
         },
     ]);

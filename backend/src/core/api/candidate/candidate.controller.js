@@ -1,5 +1,5 @@
 import { SkillProfileRepository } from '../../modules/ai/repositories/skill.profile.repository.js';
-import { AccessibilityAlert } from '../../modules/ai/models/alert.model.js';
+import { AlertRepository } from '../../modules/ai/repositories/alert.repository.js';
 import { ValidHttpResponse } from '../../../packages/handler/response/validHttp.response.js';
 import { NotFoundException, UnAuthorizedException } from '../../../packages/httpException';
 import { getUserContext } from '../../../packages/authModel/module/user';
@@ -20,12 +20,9 @@ class Controller {
     const { id } = getUserContext(req);
     if (!id) throw new UnAuthorizedException('Authentication required');
 
-    const alerts = await AccessibilityAlert.find({ user_id: id, read: false })
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .lean();
+    const alerts = await AlertRepository.findUnreadByUserId(id);
 
-    await AccessibilityAlert.updateMany({ user_id: id, read: false }, { $set: { read: true } });
+    await AlertRepository.markAllRead(id);
 
     return ValidHttpResponse.toOkResponse(alerts);
   };

@@ -27,3 +27,4 @@ yarn.lock
 pnpm-lock.yaml
 /yarn.lock
 .history/
+package-lock.json

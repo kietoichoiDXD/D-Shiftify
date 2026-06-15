@@ -26,6 +26,7 @@
         "smoke": "node scripts/smoke-test.js"
     },
     "dependencies": {
+        "@babel/runtime": "^7.14.0",
         "@google/generative-ai": "^0.24.1",
         "@langchain/core": "^1.1.44",
         "@langchain/google-genai": "^2.1.30",
@@ -44,6 +45,7 @@
         "express-rate-limit": "^6.11.2",
         "firebase-admin": "^13.10.0",
         "glob": "^7.2.0",
+        "google-auth-library": "^10.7.0",
         "groq-sdk": "^1.1.2",
         "helmet": "^8.2.0",
         "http-status": "^1.5.0",
@@ -75,7 +77,6 @@
         "@babel/plugin-transform-runtime": "^7.10.4",
         "@babel/preset-env": "^7.10.4",
         "@babel/register": "^7.10.5",
-        "@babel/runtime": "^7.14.0",
         "@commitlint/cli": "^17.5.0",
         "@commitlint/config-conventional": "^17.4.4",
         "babel-eslint": "^10.1.0",

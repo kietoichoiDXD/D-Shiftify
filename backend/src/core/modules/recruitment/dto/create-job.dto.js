@@ -1,4 +1,19 @@
 import { z } from 'zod';
+import { ApiDocument } from 'core/config/swagger.config';
+import { SwaggerDocument } from 'packages/swagger';
+
+ApiDocument.addModel('CreateJobDto', {
+    title: SwaggerDocument.ApiProperty({ type: 'string' }),
+    description: SwaggerDocument.ApiProperty({ type: 'string' }),
+    requiredSkills: SwaggerDocument.ApiProperty({ type: 'array', model: 'string', required: false }),
+    salaryMin: SwaggerDocument.ApiProperty({ type: 'int', required: false }),
+    salaryMax: SwaggerDocument.ApiProperty({ type: 'int', required: false }),
+    hasInsurance: SwaggerDocument.ApiProperty({ type: 'bool', required: false }),
+    isRemote: SwaggerDocument.ApiProperty({ type: 'bool', required: false }),
+    locationLat: SwaggerDocument.ApiProperty({ type: 'int', required: false }),
+    locationLng: SwaggerDocument.ApiProperty({ type: 'int', required: false }),
+    workEnvironment: SwaggerDocument.ApiProperty({ type: 'string', required: false }),
+});
 
 export const CreateJobSchema = z.object({
     title: z.string().trim().min(3).max(255),

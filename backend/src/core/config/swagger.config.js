@@ -17,23 +17,6 @@ const options = {
         {
             url: `${API_PUBLIC_URL}/api`,
             description: 'Production/Staging API',
-            variables: {
-                env: {
-                    default: 'app-dev',
-                    description: 'Dev Environment',
-                },
-                port: {
-                    enum: ['8443', '5000', '443'],
-                    default: PORT,
-                },
-                basePath: {
-                    default: 'api',
-                },
-            },
-        },
-        {
-            url: `http://localhost:${PORT}/api`,
-            description: 'Dev Env',
         },
     ],
     basePath: '/api',
