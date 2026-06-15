@@ -1,9 +1,25 @@
 import { GoogleGenerativeAIEmbeddings } from '@langchain/google-genai';
 import { JobRepository } from '../../../modules/ai/repositories/job.repository.js';
 
-const embedder = new GoogleGenerativeAIEmbeddings({
+class CustomGoogleGenerativeAIEmbeddings extends GoogleGenerativeAIEmbeddings {
+  constructor(fields) {
+    super(fields);
+    this.dimensions = fields?.dimensions ?? 768;
+  }
+
+  _convertToContent(text) {
+    const base = super._convertToContent(text);
+    return {
+      ...base,
+      outputDimensionality: this.dimensions,
+    };
+  }
+}
+
+const embedder = new CustomGoogleGenerativeAIEmbeddings({
   apiKey: process.env.GEMINI_API_KEY,
-  model: 'text-embedding-004',
+  model: 'gemini-embedding-001',
+  dimensions: 768,
 });
 
 export const embedText = async (text) => embedder.embedQuery(text);

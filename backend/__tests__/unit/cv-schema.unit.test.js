@@ -81,6 +81,20 @@ describe('CV validation schemas', () => {
         })).toThrow();
     });
 
+    it('preserves undefined/absent fields in nested partial updates', () => {
+        const payload = CvProfileUpdateSchema.parse({
+            profile: {
+                fullName: 'Nguyen Anh Thu',
+            }
+        });
+
+        expect(payload.fullName).toBe('Nguyen Anh Thu');
+        expect(payload.deviceIds).toBeUndefined();
+        expect(payload.skills).toBeUndefined();
+        expect(payload.experience).toBeUndefined();
+        expect(payload.education).toBeUndefined();
+    });
+
     it('requires education and experience minimum fields', () => {
         expect(() => CvEducationCreateSchema.parse({
             school: 'DUT',

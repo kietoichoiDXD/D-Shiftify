@@ -206,48 +206,101 @@ const normalizeSkillDetails = (skills = [], hardSkills = '', softSkills = '') =>
 const normalizeCompositePayload = payload => {
     const profile = payload.profile || {};
     const cv = payload.cv || {};
-    const skillDetails = normalizeSkillDetails(cv.skills || []);
-    const customSections = cv.customSections || [];
-    const experiences = mapNestedExperiences(cv.experiences);
+
+    const hasProfile = payload.profile !== undefined;
+    const hasCv = payload.cv !== undefined;
+
+    // fields from profile
+    const fullName = hasProfile ? profile.fullName : undefined;
+    const phone = hasProfile ? profile.phone : undefined;
+    const location = hasProfile ? profile.location : undefined;
+    const bio = hasProfile ? profile.bio : undefined;
+    const profileImage = hasProfile ? profile.profileImage : undefined;
+    const dob = hasProfile ? profile.dob : undefined;
+    const gender = hasProfile ? profile.gender : undefined;
+    const disabilityStatus = hasProfile ? profile.disabilityStatus : undefined;
+
+    // fields from cv
+    const headline = profile.headline !== undefined 
+        ? profile.headline 
+        : (cv.expectedJob !== undefined ? cv.expectedJob : undefined);
+
+    const { expectedJob, jobType, workMode, mobility, deviceIds, conditions, certificates, customSections } = cv;
+
+    // array properties that are normalized
+    const skills = cv.skills !== undefined ? normalizeSkills(cv.skills) : undefined;
+    const skillDetails = cv.skills !== undefined ? normalizeSkillDetails(cv.skills) : undefined;
+    const education = cv.customSections !== undefined ? mapEducationSections(cv.customSections) : undefined;
+    const experience = cv.experiences !== undefined ? mapNestedExperiences(cv.experiences) : undefined;
+
+    // build cvPayload properly preserving only defined fields
+    const cvPayload = hasCv ? {
+        ...cv,
+        ...(skillDetails !== undefined ? { skills: skillDetails } : {}),
+        ...(experience !== undefined ? { experiences: experience } : {}),
+    } : undefined;
 
     return {
-        fullName: profile.fullName,
-        phone: profile.phone,
-        location: profile.location,
-        headline: profile.headline || cv.expectedJob,
-        bio: profile.bio,
-        profileImage: profile.profileImage,
-        dob: profile.dob,
-        gender: profile.gender,
-        disabilityStatus: profile.disabilityStatus,
-        deviceIds: cv.deviceIds || [],
-        jobType: cv.jobType,
-        workMode: cv.workMode,
-        mobility: cv.mobility,
-        expectedJob: cv.expectedJob,
-        conditions: cv.conditions || [],
-        certificates: cv.certificates || [],
+        fullName,
+        phone,
+        location,
+        headline,
+        bio,
+        profileImage,
+        dob,
+        gender,
+        disabilityStatus,
+        deviceIds,
+        jobType,
+        workMode,
+        mobility,
+        expectedJob,
+        conditions,
+        certificates,
         customSections,
-        skills: normalizeSkills(cv.skills || []),
+        skills,
         skillDetails,
-        education: mapEducationSections(customSections),
-        experience: experiences,
-        cvPayload: {
-            ...cv,
-            skills: skillDetails,
-            experiences,
-        },
+        education,
+        experience,
+        cvPayload,
     };
 };
 
 const normalizeFlatPayload = payload => {
-    const skillDetails = normalizeSkillDetails(payload.skills || [], payload.hardSkills, payload.softSkills);
-    const customSections = payload.customSections || [];
-    const experiences = mapFlatExperiences(payload);
-    const education = [
+    const hasSkills = payload.skills !== undefined || payload.hardSkills !== undefined || payload.softSkills !== undefined;
+    const skills = hasSkills ? normalizeSkills(payload.skills || [], payload.hardSkills, payload.softSkills) : undefined;
+    const skillDetails = hasSkills ? normalizeSkillDetails(payload.skills || [], payload.hardSkills, payload.softSkills) : undefined;
+
+    const hasEducation = payload.schoolName !== undefined || payload.major !== undefined || payload.education !== undefined || payload.customSections !== undefined;
+    const education = hasEducation ? [
         ...mapFlatEducation(payload),
-        ...mapEducationSections(customSections),
-    ];
+        ...(payload.customSections !== undefined ? mapEducationSections(payload.customSections) : []),
+    ] : undefined;
+
+    const hasExperience = payload.workExperiences !== undefined || payload.jobTitle !== undefined || payload.companyName !== undefined || payload.experience !== undefined || payload.experiences !== undefined;
+    const experience = hasExperience ? mapFlatExperiences(payload) : undefined;
+
+    const deviceIds = payload.deviceIds !== undefined || payload.availableEquipment !== undefined
+        ? (payload.deviceIds || payload.availableEquipment || [])
+        : undefined;
+
+    const jobType = payload.jobType !== undefined || payload.workTime !== undefined
+        ? (payload.jobType || payload.workTime)
+        : undefined;
+
+    const workMode = payload.workMode !== undefined || payload.workExperiences?.[0]?.workMode !== undefined
+        ? (payload.workMode || payload.workExperiences?.[0]?.workMode)
+        : undefined;
+
+    const conditions = payload.conditions !== undefined || payload.workConditions !== undefined
+        ? (payload.conditions || payload.workConditions || [])
+        : undefined;
+
+    const certificates = payload.certificates !== undefined || payload.certifications !== undefined
+        ? splitTextList(payload.certificates || payload.certifications)
+        : undefined;
+
+    const { customSections } = payload;
 
     return {
         fullName: payload.fullName,
@@ -259,32 +312,36 @@ const normalizeFlatPayload = payload => {
         dob: payload.dob || payload.birthday,
         gender: payload.gender,
         disabilityStatus: payload.disabilityStatus,
-        deviceIds: payload.deviceIds || payload.availableEquipment || [],
-        jobType: payload.jobType || payload.workTime,
-        workMode: payload.workMode || payload.workExperiences?.[0]?.workMode,
+        deviceIds,
+        jobType,
+        workMode,
         mobility: payload.mobility,
         expectedJob: payload.expectedJob || payload.careerGoals,
-        conditions: payload.conditions || payload.workConditions || [],
-        certificates: splitTextList(payload.certificates || payload.certifications),
+        conditions,
+        certificates,
         customSections,
-        skills: normalizeSkills(payload.skills || [], payload.hardSkills, payload.softSkills),
+        skills,
         skillDetails,
         education,
-        experience: experiences,
-        cvPayload: {
+        experience,
+        cvPayload: payload !== undefined ? {
             ...payload,
-            skills: skillDetails,
-            experiences,
-            education,
-        },
+            ...(skillDetails !== undefined ? { skills: skillDetails } : {}),
+            ...(experience !== undefined ? { experiences: experience } : {}),
+            ...(education !== undefined ? { education } : {}),
+        } : undefined,
     };
 };
 
-export const normalizeCvProfilePayload = payload => (
-    payload && (payload.profile || payload.cv)
-        ? normalizeCompositePayload(payload)
-        : normalizeFlatPayload(payload || {})
-);
+export const normalizeCvProfilePayload = payload => {
+    if (payload && (payload.profile || payload.cv)) {
+        const validated = CvCompositeSchema.parse(payload);
+        return normalizeCompositePayload(validated);
+    }
+    const validated = CvFlatSchema.parse(payload || {});
+    return normalizeFlatPayload(validated);
+};
+
 
 const CvIncomingSchema = z.object({
     profile: z.record(z.any()).optional(),

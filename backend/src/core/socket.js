@@ -35,7 +35,12 @@ const normalizeSocketError = error => ({
 export const initSocket = server => {
     const io = new Server(server, {
         cors: {
-            origin: CORS_ORIGINS,
+            origin: (origin, callback) => {
+                if (!origin || CORS_ORIGINS.includes(origin) || CORS_ORIGINS.includes('*')) {
+                    return callback(null, true);
+                }
+                return callback(new Error('Origin not allowed by CORS'));
+            },
             methods: ['GET', 'POST'],
             credentials: true,
         },

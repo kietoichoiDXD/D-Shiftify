@@ -97,7 +97,7 @@ export class AppBundle {
         }
         const corsOptions = {
             origin: (origin, callback) => {
-                if (!origin || CORS_ORIGINS.includes(origin)) {
+                if (!origin || CORS_ORIGINS.includes(origin) || CORS_ORIGINS.includes('*')) {
                     return callback(null, true);
                 }
                 return callback(new Error('Origin is not allowed by CORS'));

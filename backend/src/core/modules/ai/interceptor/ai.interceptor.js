@@ -56,6 +56,7 @@ export const AiMatchQueryInterceptor = new ZodValidatorInterceptor(z.object({
     minScore: z.coerce.number().int().min(0).max(100).default(0),
     explain: z.coerce.boolean().default(false),
     includeDescription: z.coerce.boolean().default(true),
+    priorities: z.string().trim().optional(),
 }).strict(), 'query');
 
 export const AiStreamTtsQueryInterceptor = new ZodValidatorInterceptor(z.object({

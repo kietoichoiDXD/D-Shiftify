@@ -36,4 +36,15 @@ module.exports = {
             directory: `${__dirname}/../database/seeds`,
         },
     },
+
+    test: {
+        client: process.env.DB_TYPE || 'pg',
+        connection: baseConnection,
+        migrations: {
+            directory: `${__dirname}/../database/migrations`,
+        },
+        seeds: {
+            directory: `${__dirname}/../database/seeds`,
+        },
+    },
 };

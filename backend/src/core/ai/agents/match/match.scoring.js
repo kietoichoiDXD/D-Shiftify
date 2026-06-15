@@ -105,67 +105,327 @@ export const inferWeights = async job => {
   }
 };
 
-const atMatchScore = (needs = [], job) => {
-  let score = 0;
-  const env = (job.work_environment || '').toLowerCase();
+/* ==========================================================================
+   NEW 8-CRITERIA PRIORITY MATCHING ALGORITHM IMPLEMENTATION
+   ========================================================================== */
 
-  if (needs.includes('screen_reader')) {
-    if (['nvda', 'jaws', 'screen_reader'].some(key => env.includes(key))) score += 0.5;
-    else if (job.accessibility_level === 'AAA') score += 0.3;
-    else if (job.accessibility_level === 'AA') score += 0.15;
+export const STANDARD_WEIGHTS = [0.25, 0.20, 0.15, 0.15, 0.10, 0.05, 0.05, 0.05];
+export const DEFAULT_CRITERIA = [
+  'priority',
+  'experience',
+  'devices',
+  'career_goal',
+  'hard_skills',
+  'soft_skills',
+  'certificates',
+  'custom'
+];
+
+export const calculateWeights = (tickedPriorities = []) => {
+  let ticked = tickedPriorities;
+  if (typeof tickedPriorities === 'string') {
+    ticked = tickedPriorities.split(',').map(s => s.trim());
+  }
+  if (!Array.isArray(ticked)) {
+    ticked = [];
   }
 
-  if (needs.includes('voice_control') && job.is_remote) score += 0.3;
-  if (job.accessibility_level === 'AAA') score += 0.2;
-  else if (job.accessibility_level === 'AA') score += 0.1;
-  if (needs.length > 0 && score === 0) return 0.3;
-  return Math.min(score, 1);
+  const mapPriorityKey = (key) => {
+    const k = String(key || '').trim().toLowerCase();
+    if (k === 'priority' || k.includes('ưu tiên') || k.includes('dia_chi') || k.includes('điều kiện')) return 'priority';
+    if (k === 'experience' || k.includes('kinh nghiệm') || k.includes('work_exp')) return 'experience';
+    if (k === 'devices' || k.includes('thiết bị') || k.includes('equipment')) return 'devices';
+    if (k === 'career_goal' || k === 'career' || k.includes('mục tiêu') || k.includes('goal')) return 'career_goal';
+    if (k === 'hard_skills' || k.includes('kỹ năng cứng') || k.includes('hard')) return 'hard_skills';
+    if (k === 'soft_skills' || k.includes('kỹ năng mềm') || k.includes('soft')) return 'soft_skills';
+    if (k === 'certificates' || k.includes('chứng chỉ') || k.includes('cert')) return 'certificates';
+    if (k === 'custom' || k.includes('trường phụ') || k.includes('phụ') || k.includes('extra')) return 'custom';
+    return null;
+  };
+
+  const normalizedTicked = ticked
+    .map(mapPriorityKey)
+    .filter((k) => k !== null && DEFAULT_CRITERIA.includes(k));
+
+  const uniqueTicked = [...new Set(normalizedTicked)];
+  const unticked = DEFAULT_CRITERIA.filter(c => !uniqueTicked.includes(c));
+  const finalOrder = [...uniqueTicked, ...unticked];
+
+  const weights = {};
+  for (let i = 0; i < finalOrder.length; i++) {
+    weights[finalOrder[i]] = STANDARD_WEIGHTS[i];
+  }
+  return weights;
 };
 
-const skillScore = (candidateSkills = [], jobSkills = [], semanticScore = 0) => {
-  if (!jobSkills.length) return semanticScore;
-  const normalizedJobSkills = jobSkills.map(skill => String(skill).toLowerCase());
-  const exact = candidateSkills.filter(skill => normalizedJobSkills.includes(String(skill).toLowerCase())).length;
-  return Math.min(exact / jobSkills.length + semanticScore * 0.3, 1);
+// 1. Job Priority (Ưu tiên công việc - 25%)
+export const calculatePriorityScore = (profile, job) => {
+  if (job.is_remote && (profile.work_mode === 'remote' || profile.cv_data?.workMode === 'remote')) {
+    return 100;
+  }
+  const candidateLat = profile.location_lat;
+  const candidateLng = profile.location_lng;
+  const jobLat = job.location_lat;
+  const jobLng = job.location_lng;
+  if (candidateLat !== null && candidateLng !== null && jobLat !== null && jobLng !== null) {
+    const distanceScore = geoScore(candidateLat, candidateLng, jobLat, jobLng);
+    if (distanceScore >= 0.8) return 100; // close (approx 10km)
+  }
+  const candidateConditions = profile.conditions || profile.cv_data?.conditions || [];
+  if (candidateConditions.includes('health_insurance') && job.has_insurance) return 100;
+  if (candidateConditions.includes('flexible_working_hours') && (job.work_environment || '').toLowerCase().includes('flexible')) return 100;
+
+  return 50;
 };
 
-const expScore = (experience = []) =>
-  experience.length >= 3 ? 1 : experience.length >= 1 ? 0.6 : 0.2;
+// 2. Work Experience (Kinh nghiệm làm việc - 20%)
+export const getTitleMatchLevel = (expTitle = '', jobTitle = '') => {
+  const t1 = String(expTitle || '').toLowerCase().trim();
+  const t2 = String(jobTitle || '').toLowerCase().trim();
+  if (!t1 || !t2) return 4;
+  if (t1 === t2) return 1;
+
+  const isIntern1 = t1.includes('intern') || t1.includes('thực tập') || t1.includes('thuc tap') || t1.includes('học việc') || t1.includes('hoc viec');
+  const isIntern2 = t2.includes('intern') || t2.includes('thực tập') || t2.includes('thuc tap') || t2.includes('học việc') || t2.includes('hoc viec');
+  if (isIntern1 !== isIntern2) {
+    const keywords1 = t1.split(/[\s_-]+/).filter(w => w.length > 2);
+    const keywords2 = t2.split(/[\s_-]+/).filter(w => w.length > 2);
+    const common = keywords1.filter(w => keywords2.includes(w) && !['intern'].includes(w));
+    if (common.length > 0 || (t1.includes('backend') && t2.includes('backend')) || (t1.includes('frontend') && t2.includes('frontend'))) {
+      return 2;
+    }
+    return 4;
+  }
+
+  const synonyms1 = ['backend', 'developer', 'engineer', 'lap trinh', 'coder', 'programmer'];
+  const synonyms2 = ['frontend', 'react', 'vue', 'angular', 'javascript', 'ui'];
+  const synonyms3 = ['design', 'designer', 'ui/ux', 'ux'];
+  const synonyms4 = ['sale', 'sales', 'ban hang', 'bán hàng', 'kinh doanh'];
+  const synonyms5 = ['marketing', 'pr', 'content', 'writer', 'viet lach'];
+
+  const checkSynonyms = (syns) => syns.some(s => t1.includes(s)) && syns.some(s => t2.includes(s));
+  if (checkSynonyms(synonyms1) || checkSynonyms(synonyms2) || checkSynonyms(synonyms3) || checkSynonyms(synonyms4) || checkSynonyms(synonyms5)) {
+    return 1;
+  }
+
+  const keywords1 = t1.split(/[\s_-]+/).filter(w => w.length > 2);
+  const keywords2 = t2.split(/[\s_-]+/).filter(w => w.length > 2);
+  const common = keywords1.filter(w => keywords2.includes(w));
+  if (common.length > 0) return 2;
+
+  if ((t1.includes('tech') || t1.includes('software') || t1.includes('it') || t1.includes('máy tính')) &&
+      (t2.includes('tech') || t2.includes('software') || t2.includes('it') || t2.includes('máy tính'))) {
+    return 2;
+  }
+
+  if (t1.includes('giao tiếp') || t1.includes('giao tiep') || t1.includes('communication') || t1.includes('support') || t1.includes('cskh') || t1.includes('admin')) {
+    return 3;
+  }
+  return 4;
+};
+
+const parseRequiredExperience = (jdText = '') => {
+  const lower = jdText.toLowerCase();
+  const match = lower.match(/(\d+)\s*(năm|year)/);
+  if (match) return parseInt(match[1], 10) * 12;
+  const matchMonth = lower.match(/(\d+)\s*(tháng|month)/);
+  if (matchMonth) return parseInt(matchMonth[1], 10);
+  return 12; // default 12 months
+};
+
+const parseExperienceMonths = (exp) => {
+  if (exp.startDate) {
+    const start = new Date(exp.startDate);
+    const end = exp.endDate ? new Date(exp.endDate) : new Date();
+    const diffYears = end.getFullYear() - start.getFullYear();
+    const diffMonths = end.getMonth() - start.getMonth();
+    return Math.max(1, diffYears * 12 + diffMonths);
+  }
+  const dur = String(exp.duration || '').toLowerCase();
+  const matchYear = dur.match(/(\d+)\s*(năm|year)/);
+  if (matchYear) return parseInt(matchYear[1], 10) * 12;
+  const matchMonth = dur.match(/(\d+)\s*(tháng|month)/);
+  if (matchMonth) return parseInt(matchMonth[1], 10);
+  return 6;
+};
+
+export const calculateExperienceScore = (profile, job) => {
+  const experiences = profile.experience || profile.cv_data?.experience || [];
+  if (!experiences.length) return 0;
+
+  let maxTitleScore = 0;
+  let totalValidMonths = 0;
+  const jobTitle = job.title;
+
+  for (const exp of experiences) {
+    const level = getTitleMatchLevel(exp.title, jobTitle);
+    let titleScore = 0;
+    let coeff = 0;
+    if (level === 1) { titleScore = 75; coeff = 1.0; }
+    else if (level === 2) { titleScore = 50; coeff = 0.5; }
+    else if (level === 3) { titleScore = 25; coeff = 0.25; }
+
+    if (titleScore > maxTitleScore) maxTitleScore = titleScore;
+    const months = parseExperienceMonths(exp);
+    totalValidMonths += months * coeff;
+  }
+
+  const requiredMonths = parseRequiredExperience(job.description_raw);
+  let durationScore = 25;
+  if (totalValidMonths < requiredMonths) {
+    durationScore = (totalValidMonths / requiredMonths) * 25;
+  }
+
+  return Math.min(maxTitleScore + durationScore, 100);
+};
+
+// 3. Available Equipment (Thiết bị hiện có - 15%)
+export const calculateDevicesScore = (profile, job) => {
+  const env = String(job.work_environment || '').toLowerCase();
+  const possibleDevices = ['screen_reader', 'braille', 'magnifier', 'voice_control'];
+  const required = possibleDevices.filter(d => env.includes(d));
+
+  if (!required.length) return 100;
+
+  const candidateDevices = [
+    ...(profile.device_ids || []),
+    ...(profile.deviceIds || []),
+    ...(profile.cv_data?.deviceIds || []),
+    ...(profile.accessibility_needs || [])
+  ].map(d => String(d).toLowerCase());
+
+  let matchingCount = 0;
+  for (const req of required) {
+    if (candidateDevices.some(cd => cd.includes(req))) {
+      matchingCount++;
+    }
+  }
+  return Math.round((matchingCount / required.length) * 100);
+};
+
+// 4. Career Goal (Mục tiêu nghề nghiệp - 15%)
+export const calculateCareerGoalScore = (profile, job, semanticScore) => {
+  let score = 40;
+  if (semanticScore >= 0.75) {
+    score = 70 + Math.round((semanticScore - 0.75) * 120);
+  } else if (semanticScore >= 0.5) {
+    score = 40 + Math.round((semanticScore - 0.5) * 116);
+  } else {
+    score = Math.round(semanticScore * 80);
+  }
+  return Math.min(Math.max(score, 0), 100);
+};
+
+// 5. Hard Skills (Kỹ năng cứng - 10%)
+export const calculateHardSkillsScore = (profile, job) => {
+  const jobSkills = job.required_skills || [];
+  if (!jobSkills.length) return 100;
+
+  const candidateHardSkills = [
+    ...(profile.hard_skills || []),
+    ...(profile.cv_data?.hard_skills || [])
+  ].map(s => String(s).toLowerCase());
+
+  const matchingCount = jobSkills.filter(s => candidateHardSkills.includes(String(s).toLowerCase())).length;
+  const ratio = matchingCount / jobSkills.length;
+
+  if (ratio >= 0.8) {
+    return 80 + Math.round((ratio - 0.8) * 100);
+  } else if (ratio >= 0.5) {
+    return 50 + Math.round((ratio - 0.5) * 96.6);
+  } else {
+    return Math.round(ratio * 98);
+  }
+};
+
+// 6. Kỹ năng mềm (Kỹ năng mềm - 5%)
+export const calculateSoftSkillsScore = (profile) => {
+  const softSkills = [
+    ...(profile.soft_skills || []),
+    ...(profile.cv_data?.soft_skills || [])
+  ];
+  if (softSkills.length >= 3) {
+    return 85 + Math.min(Math.round((softSkills.length - 3) * 5), 15);
+  } else if (softSkills.length >= 1) {
+    return 65;
+  }
+  return 30;
+};
+
+// 7. Certificates (Chứng chỉ - 5%)
+export const calculateCertificatesScore = (profile) => {
+  const certs = [
+    ...(profile.certificates || []),
+    ...(profile.cv_data?.certificates || [])
+  ];
+  if (!certs.length) return 0;
+
+  let maxScore = 55;
+  for (const cert of certs) {
+    const c = String(cert).toLowerCase();
+    if (['bachelor', 'bằng', 'degree', 'đại học', 'cao đẳng', 'university', 'college'].some(k => c.includes(k))) {
+      maxScore = 90;
+      break;
+    }
+    if (['online', 'coursera', 'udemy', 'chứng chỉ', 'certificate', 'khóa học', 'vocational', 'trung tâm'].some(k => c.includes(k))) {
+      if (maxScore < 65) maxScore = 65;
+    }
+  }
+  return maxScore;
+};
+
+// 8. Custom Fields (Trường phụ - 5%)
+export const calculateCustomScore = (profile) => {
+  const customs = profile.custom_sections || profile.cv_data?.customSections || [];
+  if (!customs.length) return 100;
+
+  let filled = 0;
+  for (const sec of customs) {
+    if (sec.items?.length || sec.title) filled++;
+  }
+  return Math.round((filled / customs.length) * 100);
+};
 
 export const hybridScore = (profile, job, semanticScore = 0, weights = null) => {
-  const selectedWeights = weights || DEFAULTS;
-  const allSkills = [
-    ...(profile.hard_skills || []),
-    ...(profile.soft_skills || []),
-    ...(profile.inferred_skills || []),
-  ];
+  const selectedWeights = weights || calculateWeights([]);
+
+  const sPriority = calculatePriorityScore(profile, job);
+  const sExperience = calculateExperienceScore(profile, job);
+  const sDevices = calculateDevicesScore(profile, job);
+  const sCareerGoal = calculateCareerGoalScore(profile, job, semanticScore);
+  const sHardSkills = calculateHardSkillsScore(profile, job);
+  const sSoftSkills = calculateSoftSkillsScore(profile);
+  const sCertificates = calculateCertificatesScore(profile);
+  const sCustom = calculateCustomScore(profile);
+
   const score =
-    selectedWeights.skill * skillScore(allSkills, job.required_skills, semanticScore) +
-    selectedWeights.exp * expScore(profile.experience) +
-    selectedWeights.at * atMatchScore(profile.accessibility_needs, job) +
-    selectedWeights.geo * geoScore(profile.location_lat, profile.location_lng, job.location_lat, job.location_lng) +
-    selectedWeights.culture_fit * semanticScore;
-  return Math.round(score * 100);
+    selectedWeights.priority * sPriority +
+    selectedWeights.experience * sExperience +
+    selectedWeights.devices * sDevices +
+    selectedWeights.career_goal * sCareerGoal +
+    selectedWeights.hard_skills * sHardSkills +
+    selectedWeights.soft_skills * sSoftSkills +
+    selectedWeights.certificates * sCertificates +
+    selectedWeights.custom * sCustom;
+
+  return Math.round(score);
 };
 
 export const buildMatchExplanation = (profile, job, weights, finalScore) => {
-  const dominant = Object.entries(weights || DEFAULTS).sort((a, b) => b[1] - a[1])[0]?.[0] || 'skill';
-  const allSkills = [
-    ...(profile.hard_skills || []),
-    ...(profile.soft_skills || []),
-    ...(profile.inferred_skills || []),
-  ];
-  const jobSkills = job.required_skills || [];
-  const normalizedJobSkills = jobSkills.map(skill => String(skill).toLowerCase());
-  const matchedSkills = allSkills
-    .filter(skill => normalizedJobSkills.includes(String(skill).toLowerCase()))
-    .slice(0, 3);
+  const w = weights || calculateWeights([]);
+  const dominant = Object.entries(w).sort((a, b) => b[1] - a[1])[0]?.[0] || 'priority';
+
+  const sPriority = calculatePriorityScore(profile, job);
+  const sExperience = calculateExperienceScore(profile, job);
+  const sDevices = calculateDevicesScore(profile, job);
+  const sHardSkills = calculateHardSkillsScore(profile, job);
 
   const reasons = [];
-  if (matchedSkills.length) reasons.push(`matched skills: ${matchedSkills.join(', ')}`);
-  if (job.is_remote) reasons.push('remote-friendly');
-  if (job.accessibility_level) reasons.push(`accessibility ${job.accessibility_level}`);
-  if (!reasons.length) reasons.push(`strong ${dominant} fit`);
+  if (sPriority >= 80) reasons.push('thuận tiện di chuyển/làm việc');
+  if (sExperience >= 70) reasons.push('kinh nghiệm phù hợp');
+  if (sDevices >= 80) reasons.push('sở hữu thiết bị hỗ trợ cần thiết');
+  if (sHardSkills >= 80) reasons.push('đáp ứng tốt kỹ năng cứng');
+  if (!reasons.length) reasons.push(`tối ưu theo trọng số ${dominant}`);
 
-  return `Match ${finalScore}/100 based on ${reasons.join('; ')}.`;
+  return `Phù hợp ${finalScore}/100 dựa trên: ${reasons.join(', ')}.`;
 };

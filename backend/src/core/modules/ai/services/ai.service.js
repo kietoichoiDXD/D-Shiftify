@@ -117,9 +117,36 @@ class AiServiceImpl {
         } catch { /* ignore */ }
     }
 
-    async recommendJobs(profileId, { limit = 10, minScore = 0, explain = false, includeDescription = true } = {}) {
-        const profile = await SkillProfileRepository.findByUserId(profileId);
-        if (!profile) throw new BadRequestException('Candidate AI profile not found');
+    async recommendJobs(profileId, { limit = 10, minScore = 0, explain = false, includeDescription = true, priorities } = {}) {
+        let profile = await SkillProfileRepository.findByUserId(profileId);
+        if (!profile) {
+            const { CandidateRepository } = await import('../../candidate/candidate.repository.js');
+            const pgProfile = await CandidateRepository.findByUserId(profileId);
+            if (!pgProfile) {
+                throw new BadRequestException('Candidate AI profile not found');
+            }
+
+            const { embedText } = await import('../../../ai/agents/shared/embedding.js');
+            const rawText = pgProfile.bio || pgProfile.full_name || '';
+            const embedding = await embedText(rawText).catch(() => null);
+
+            profile = await SkillProfileRepository.upsert(profileId, {
+                name: pgProfile.full_name,
+                phone: pgProfile.phone,
+                address_label: pgProfile.location,
+                location_lat: pgProfile.location_lat || null,
+                location_lng: pgProfile.location_lng || null,
+                hard_skills: typeof pgProfile.skills === 'string' ? JSON.parse(pgProfile.skills || '[]') : (pgProfile.skills || []),
+                soft_skills: [],
+                inferred_skills: [],
+                experience: typeof pgProfile.experience === 'string' ? JSON.parse(pgProfile.experience || '[]') : (pgProfile.experience || []),
+                education: typeof pgProfile.education === 'string' ? JSON.parse(pgProfile.education || '[]') : (pgProfile.education || []),
+                accessibility_needs: typeof pgProfile.device_ids === 'string' ? JSON.parse(pgProfile.device_ids || '[]') : (pgProfile.device_ids || []),
+                narrative_raw: rawText,
+                narrative_embedding: embedding,
+                cv_data: typeof pgProfile.cv_payload === 'string' ? JSON.parse(pgProfile.cv_payload || '{}') : (pgProfile.cv_payload || {}),
+            });
+        }
 
         const resultLimit     = clampInt(limit,    1,  MAX_MATCH_RESULTS,   10);
         const minimumScore    = clampInt(minScore,  0,  100,                  0);
@@ -129,9 +156,11 @@ class AiServiceImpl {
             ? await JobRepository.vectorSearch(profile.narrative_embedding, candidateLimit)
             : await JobRepository.listAccessible(candidateLimit);
 
+        const { calculateWeights } = await import('../../../ai/agents/match/match.scoring.js');
+        const customWeights = calculateWeights(priorities);
+
         const scored = candidates.map(job => {
-            const weights    = getJobWeights(job);
-            const finalScore = hybridScore(profile, job, parseFloat(job.semantic_score || 0), weights);
+            const finalScore = hybridScore(profile, job, parseFloat(job.semantic_score || 0), customWeights);
             const match = {
                 jobId:             job.job_id,
                 title:             job.title,
@@ -143,11 +172,11 @@ class AiServiceImpl {
                 accessibilityLevel: job.accessibility_level,
                 accessibilityScore: job.accessibility_score,
                 finalScore,
-                weights,
+                weights: customWeights,
                 semanticScore: parseFloat(job.semantic_score || 0),
             };
             if (toBoolean(explain)) {
-                match.explanation = buildMatchExplanation(profile, job, weights, finalScore);
+                match.explanation = buildMatchExplanation(profile, job, customWeights, finalScore);
             }
             return match;
         });

@@ -7,7 +7,7 @@ export const PORT = process.env.PORT || 3000;
 export const HOST = process.env.HOST || 'http://localhost:3000';
 export const API_PUBLIC_URL = process.env.API_PUBLIC_URL || HOST;
 export const FRONTEND_URL = process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:5173';
-export const CORS_ORIGINS = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || FRONTEND_URL)
+export const CORS_ORIGINS = (process.env.CORS_ORIGINS || process.env.CORS_ORIGIN || process.env.CORS_ALLOW || FRONTEND_URL)
     .split(',')
     .map(origin => origin.trim())
     .filter(Boolean);
