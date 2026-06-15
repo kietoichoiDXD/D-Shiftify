@@ -7,6 +7,7 @@ import { BadRequestException } from '../../../../packages/httpException';
 import { SkillProfileRepository } from '../repositories/skill.profile.repository.js';
 import { JobRepository } from '../repositories/job.repository.js';
 import { buildMatchExplanation, getJobWeights, hybridScore } from '../../../ai/retrieval/match.scoring.js';
+import { hardFilterJob, normalizeProfile } from '../../../ai/matching/index.js';
 import { logger } from '../../../../packages/logger/index.js';
 
 const MAX_MATCH_RESULTS  = Number.parseInt(process.env.AI_MATCH_MAX_RESULTS    || '20',  10);
@@ -156,10 +157,33 @@ class AiServiceImpl {
             ? await JobRepository.vectorSearch(profile.narrative_embedding, candidateLimit)
             : await JobRepository.listAccessible(candidateLimit);
 
-        const { calculateWeights } = await import('../../../ai/agents/match/match.scoring.js');
+        const { calculateWeights } = await import('../../../ai/retrieval/match.scoring.js');
         const customWeights = calculateWeights(priorities);
 
+        const normalizedProfile = normalizeProfile(profile);
+
         const scored = candidates.map(job => {
+            const gate = hardFilterJob(normalizedProfile, job);
+            if (!gate.passed) {
+                return {
+                    jobId: job.job_id,
+                    title: job.title,
+                    description: toBoolean(includeDescription) ? truncate(job.description_raw) : undefined,
+                    requiredSkills: job.required_skills || [],
+                    salaryMin: job.salary_min,
+                    salaryMax: job.salary_max,
+                    isRemote: job.is_remote,
+                    accessibilityLevel: job.accessibility_level,
+                    accessibilityScore: job.accessibility_score,
+                    finalScore: 0,
+                    weights: customWeights,
+                    semanticScore: parseFloat(job.semantic_score || 0),
+                    filteredOut: true,
+                    filterReasons: gate.reasons,
+                    compatibilityScore: gate.compatibility.score,
+                };
+            }
+
             const finalScore = hybridScore(profile, job, parseFloat(job.semantic_score || 0), customWeights);
             const match = {
                 jobId:             job.job_id,
@@ -174,14 +198,19 @@ class AiServiceImpl {
                 finalScore,
                 weights: customWeights,
                 semanticScore: parseFloat(job.semantic_score || 0),
+                compatibilityScore: gate.compatibility.score,
             };
             if (toBoolean(explain)) {
                 match.explanation = buildMatchExplanation(profile, job, customWeights, finalScore);
+                if (gate.reasons.length) {
+                    match.explanation = `${match.explanation} Ly do han che: ${gate.reasons.join(', ')}.`;
+                }
             }
             return match;
         });
 
         return scored
+            .filter(job => !job.filteredOut)
             .filter(job => job.finalScore >= minimumScore)
             .sort((a, b) => b.finalScore - a.finalScore)
             .slice(0, resultLimit);

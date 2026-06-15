@@ -8,6 +8,7 @@ export * from './nlp/vncorenlp.client.js';
 export * from './retrieval/hybrid.retriever.js';
 export * from './retrieval/match.scoring.js';
 export * from './retrieval/reranker.js';
+export * from './matching/index.js';
 export * from './utils/ableist.js';
 export * from './utils/at_detector.js';
 export * from './utils/geo.js';

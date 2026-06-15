@@ -1,5 +1,6 @@
 import { JobRepository } from '../../modules/ai/repositories/job.repository.js';
 import { buildMatchExplanation, getJobWeights, hybridScore } from '../retrieval/match.scoring.js';
+import { hardFilterJob, normalizeProfile } from '../matching/index.js';
 import { synthesizeSpeech } from '../utils/tts.js';
 
 
@@ -13,11 +14,16 @@ export const matchNode = async state => {
   if (!narrative_embedding) return { errors: ['narrative_embedding missing'], nextStep: 'end' };
 
   try {
+    const normalizedProfile = normalizeProfile(profile);
     const candidateLimit = Math.min(Math.max(TOP_K * 8, 20), MAX_CANDIDATES);
     const candidates = await JobRepository.vectorSearch(narrative_embedding, candidateLimit);
 
     const scored = candidates
       .map(job => {
+        const gate = hardFilterJob(normalizedProfile, job);
+        if (!gate.passed) {
+          return null;
+        }
         const weights = getJobWeights(job);
         const finalScore = hybridScore(profile, job, parseFloat(job.semantic_score || 0), weights);
         return {
@@ -25,8 +31,10 @@ export const matchNode = async state => {
           final_score: finalScore,
           weights,
           explanation: buildMatchExplanation(profile, job, weights, finalScore),
+          compatibility_score: gate.compatibility.score,
         };
       })
+      .filter(Boolean)
       .filter(job => job.final_score >= MIN_SCORE)
       .sort((a, b) => b.final_score - a.final_score)
       .slice(0, TOP_K);
