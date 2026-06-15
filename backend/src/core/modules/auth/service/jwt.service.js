@@ -25,6 +25,13 @@ class Jwt {
         });
     }
 
+    signPasswordResetToken(payload) {
+        return sign({ ...payload, tokenType: 'password_reset' }, JWT_REFRESH_SECRET, {
+            algorithm: 'HS256',
+            expiresIn: '15m',
+        });
+    }
+
     decode(token) {
         return decode(token);
     }
@@ -35,6 +42,14 @@ class Jwt {
 
     verifyRefreshToken(token) {
         return verify(token, JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
+    }
+
+    verifyPasswordResetToken(token) {
+        const payload = verify(token, JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
+        if (payload?.tokenType !== 'password_reset') {
+            throw new Error('Invalid reset token type');
+        }
+        return payload;
     }
 }
 

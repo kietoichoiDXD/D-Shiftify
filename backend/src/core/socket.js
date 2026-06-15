@@ -1,9 +1,8 @@
 import { Server } from 'socket.io';
-import { JwtService } from 'core/utils';
 import { ChatService, SendMessageSchema } from 'core/modules/chat';
-import { TokenRevocationService } from 'core/modules/auth/service/token-revocation.service';
+import { AccessTokenVerifierService } from 'core/modules/auth/service/access-token-verifier.service';
 import { logger } from 'packages/logger';
-import { CORS_ORIGIN } from './env';
+import { CORS_ORIGINS } from './env';
 
 const extractToken = socket => {
     const authToken = socket.handshake.auth?.token;
@@ -17,11 +16,7 @@ const authenticateSocket = async (socket, next) => {
         const token = extractToken(socket);
         if (!token) return next(new Error('Unauthorized'));
 
-        if (await TokenRevocationService.isRevoked(token)) {
-            return next(new Error('Unauthorized'));
-        }
-
-        const payload = JwtService.verify(token);
+        const payload = await AccessTokenVerifierService.verify(token);
         if (!payload?.id) return next(new Error('Unauthorized'));
 
         socket.data.userId = payload.id;
@@ -40,8 +35,14 @@ const normalizeSocketError = error => ({
 export const initSocket = server => {
     const io = new Server(server, {
         cors: {
-            origin: CORS_ORIGIN,
+            origin: (origin, callback) => {
+                if (!origin || CORS_ORIGINS.includes(origin) || CORS_ORIGINS.includes('*')) {
+                    return callback(null, true);
+                }
+                return callback(new Error('Origin not allowed by CORS'));
+            },
             methods: ['GET', 'POST'],
+            credentials: true,
         },
     });
 

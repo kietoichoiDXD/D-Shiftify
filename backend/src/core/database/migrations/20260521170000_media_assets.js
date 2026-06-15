@@ -3,7 +3,7 @@ exports.up = async knex => {
         table.increments('id').unsigned().primary();
         table.string('public_id', 255).notNullable().unique();
         table.string('url', 1000).notNullable();
-        table.integer('owner_id').unsigned().nullable();
+        table.uuid('owner_id').nullable();
         table.string('folder', 255).nullable();
         table.string('original_name', 255).nullable();
         table.dateTime('created_at').notNullable().defaultTo(knex.fn.now());

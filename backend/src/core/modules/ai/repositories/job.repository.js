@@ -5,7 +5,6 @@ const TABLE = 'job_descriptions';
 const vecLiteral = v => `[${v.join(',')}]`;
 
 export const JobRepository = {
-    /** Insert or update a job (upsert on job_id) */
     async save(job) {
         const [row] = await db(TABLE)
             .insert(job)
@@ -27,26 +26,47 @@ export const JobRepository = {
         return db(TABLE).where({ job_id: jobId }).delete();
     },
 
-    /**
-   * Hybrid vector search — returns top-K jobs ordered by cosine similarity.
-   * Filters out level 'A' (blocked) jobs.
-   * @param {number[]} queryVec  768-dim embedding
-   * @param {number}   topK
-   */
     async vectorSearch(queryVec, topK = 30) {
         const vec = vecLiteral(queryVec);
         return db.raw(
             `SELECT job_id, employer_id, title, description_raw,
               required_skills, salary_min, salary_max,
               has_insurance, is_remote, location_lat, location_lng,
-              work_environment, accessibility_score, accessibility_level,
+              work_environment, accessibility_score, accessibility_level, weights_json,
               1 - (embedding_vector <=> ?::vector) AS semantic_score
        FROM ${TABLE}
        WHERE embedding_vector IS NOT NULL
          AND accessibility_level IN ('AA', 'AAA')
+         AND deleted_at IS NULL
        ORDER BY embedding_vector <=> ?::vector
        LIMIT ?`,
             [vec, vec, topK],
         ).then(r => r.rows);
+    },
+
+    async listAccessible(limit = 30) {
+        return db(TABLE)
+            .whereIn('accessibility_level', ['AA', 'AAA'])
+            .whereNull('deleted_at')
+            .select(
+                'job_id',
+                'employer_id',
+                'title',
+                'description_raw',
+                'required_skills',
+                'salary_min',
+                'salary_max',
+                'has_insurance',
+                'is_remote',
+                'location_lat',
+                'location_lng',
+                'work_environment',
+                'accessibility_score',
+                'accessibility_level',
+                'weights_json',
+                db.raw('0 as semantic_score'),
+            )
+            .orderBy('created_at', 'desc')
+            .limit(limit);
     },
 };

@@ -4,6 +4,7 @@ import { analyzeSkillGap } from './skill_gap.js';
 import { sanitizeAbleist } from '../shared/ableist.js';
 
 const GAP_THRESHOLD = parseInt(process.env.SKILL_GAP_THRESHOLD || '70', 10);
+const MAX_XAI_JOBS = Math.min(parseInt(process.env.AI_MATCH_XAI_LIMIT || '3', 10), 5);
 
 const computeProfileCoach = (profile, matches) => {
   if (!matches?.length) return null;
@@ -48,8 +49,10 @@ export const xaiNode = async (state) => {
   if (!matches?.length) return { nextStep: 'end' };
 
   try {
-    const enriched = await Promise.all(
-      matches.map(async (m) => {
+    const detailedMatches = matches.slice(0, MAX_XAI_JOBS);
+    const untouchedMatches = matches.slice(MAX_XAI_JOBS);
+    const enrichedDetailed = await Promise.all(
+      detailedMatches.map(async (m) => {
         const [explanation, gap] = await Promise.all([
           explainMatch(profile, m, narrative_raw || ''),
           m.final_score < GAP_THRESHOLD ? analyzeSkillGap(profile, m) : Promise.resolve(null),
@@ -57,6 +60,7 @@ export const xaiNode = async (state) => {
         return { ...m, explanation, skill_gap: gap };
       }),
     );
+    const enriched = [...enrichedDetailed, ...untouchedMatches];
 
     const ttsText = enriched
       .map((m, i) => `Việc ${i + 1}: ${m.title}. ${m.explanation}` + (m.skill_gap ? ` ${m.skill_gap.tts_text}` : ''))
@@ -70,6 +74,6 @@ export const xaiNode = async (state) => {
       nextStep: 'end',
     };
   } catch (err) {
-    return { errors: [err.message], nextStep: 'end' };
+    return { errors: [err.message], error: err.message, nextStep: 'end' };
   }
 };

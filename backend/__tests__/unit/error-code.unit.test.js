@@ -4,7 +4,7 @@
  * Run: npm run test:unit
  */
 
-import { ERROR_CODE } from '../src/packages/httpException/error.enum';
+import { ERROR_CODE } from 'packages/httpException/error.enum';
 
 describe('Error Codes Enum', () => {
     test('should have all required error codes', () => {

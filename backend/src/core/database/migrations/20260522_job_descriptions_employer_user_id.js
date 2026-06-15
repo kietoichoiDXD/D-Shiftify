@@ -1,5 +1,5 @@
 exports.up = knex => knex.schema.alterTable('job_descriptions', table => {
-    table.integer('employer_user_id').unsigned().nullable();
+    table.uuid('employer_user_id').nullable();
     table.foreign('employer_user_id').references('id').inTable('users').onDelete('CASCADE');
     table.index(['employer_user_id']);
 });

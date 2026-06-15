@@ -2,8 +2,8 @@ exports.up = async knex => {
     await knex.schema.createTable('chat_rooms', table => {
         table.uuid('id').primary().defaultTo(knex.raw('gen_random_uuid()'));
         table.uuid('job_id').notNullable();
-        table.integer('employer_id').unsigned().notNullable();
-        table.integer('candidate_id').unsigned().notNullable();
+        table.uuid('employer_id').notNullable();
+        table.uuid('candidate_id').notNullable();
         table.dateTime('created_at').notNullable().defaultTo(knex.fn.now());
         table.dateTime('updated_at').notNullable().defaultTo(knex.fn.now());
 

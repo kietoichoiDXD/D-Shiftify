@@ -3,8 +3,9 @@ import { SwaggerDocument } from 'packages/swagger';
 
 ApiDocument.addModel('RefreshTokenDto', {
     refreshToken: SwaggerDocument.ApiProperty({ type: 'string' }),
+    refresh_token: SwaggerDocument.ApiProperty({ type: 'string' }),
 });
 
 export const RefreshTokenDto = body => ({
-    refreshToken: body.refreshToken,
+    refreshToken: body.refreshToken || body.refresh_token,
 });

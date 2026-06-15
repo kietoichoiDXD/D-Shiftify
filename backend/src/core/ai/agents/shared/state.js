@@ -1,11 +1,15 @@
 import { Annotation } from '@langchain/langgraph';
 
 export const AgentState = Annotation.Root({
-  session_id:  Annotation({ reducer: (_, y) => y, default: () => null }),
-  intent:      Annotation({ reducer: (_, y) => y, default: () => 'intake' }),
-  nextStep:    Annotation({ reducer: (_, y) => y, default: () => 'intake' }),
+  session_id: Annotation({ reducer: (_, y) => y,                       default: () => null }),
+  intent:     Annotation({ reducer: (_, y) => y,                       default: () => 'intake' }),
 
-  messages: Annotation({ reducer: (x, y) => x.concat(y), default: () => [] }),
+  // nextStep drives the conditional edges.
+  // Valid values: 'intake' | 'resume' | 'match' | 'xai' | 'hr' | 'end'
+  // 'end' (and null/undefined) all cause the graph to exit via the END constant.
+  nextStep:   Annotation({ reducer: (_, y) => y,                       default: () => 'intake' }),
+
+  messages:      Annotation({ reducer: (x, y) => x.concat(y),          default: () => [] }),
   narrative_raw: Annotation({ reducer: (x, y) => (x ? `${x}\n${y}` : y), default: () => '' }),
 
   profile: Annotation({
@@ -27,8 +31,15 @@ export const AgentState = Annotation.Root({
   matches:       Annotation({ reducer: (_, y) => y, default: () => [] }),
   profile_coach: Annotation({ reducer: (_, y) => y, default: () => null }),
 
-  hr_result:    Annotation({ reducer: (_, y) => y, default: () => null }),
+  hr_result: Annotation({ reducer: (_, y) => y, default: () => null }),
+
   tts_text:     Annotation({ reducer: (_, y) => y, default: () => '' }),
   audio_base64: Annotation({ reducer: (_, y) => y, default: () => null }),
-  errors:       Annotation({ reducer: (x, y) => x.concat(y), default: () => [] }),
+
+  // `errors` — accumulated list of all error messages across nodes this run
+  errors: Annotation({ reducer: (x, y) => x.concat(y), default: () => [] }),
+
+  // `error` — the most-recent single error string (last-write wins).
+  //  Useful for callers that only want to check `state.error` quickly.
+  error: Annotation({ reducer: (_, y) => y, default: () => null }),
 });

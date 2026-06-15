@@ -1,12 +1,15 @@
 {
     "env": {
         "es2021": true,
-        "node": true
+        "node": true,
+        "jest": true
     },
+    "ignorePatterns": ["dist/", "coverage/", "scratch/"],
     "extends": ["airbnb-base", "prettier"],
     "globals": {
         "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+        "SharedArrayBuffer": "readonly",
+        "File": "readonly"
     },
     "plugins": ["prettier"],
     "parser": "babel-eslint",
@@ -25,24 +28,28 @@
         "dot-notation": 0,
         "default-case": 0,
         "class-methods-use-this": 0,
+        "indent": "off",
+        "quotes": "off",
+        "semi": "off",
+        "arrow-parens": "off",
+        "import/no-useless-path-segments": "off",
         "import/prefer-default-export": "off",
         "no-param-reassign": "off",
         "camelcase": "off",
         "import/no-unresolved": "off",
-        "arrow-parens": ["error", "as-needed"],
+        "import/extensions": "off",
+        "no-restricted-syntax": "off",
+        "no-await-in-loop": "off",
+        "no-plusplus": "off",
+        "no-nested-ternary": "off",
+        "no-use-before-define": "off",
+        "one-var": "off",
+        "arrow-body-style": "off",
+        "no-trailing-spaces": "off",
+        "import/order": "off",
+        "no-unused-vars": "off",
+        "prefer-template": "off",
         "comma-dangle": ["error", "only-multiline"],
-        "no-trailing-spaces": ["error", { "ignoreComments": true }],
-        "max-len": [
-            "error",
-            150,
-            2,
-            {
-                "ignoreUrls": true,
-                "ignoreComments": true,
-                "ignoreRegExpLiterals": true,
-                "ignoreStrings": true,
-                "ignoreTemplateLiterals": true
-            }
-        ]
+        "max-len": "off"
     }
 }

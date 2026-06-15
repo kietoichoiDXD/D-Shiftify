@@ -1,5 +1,5 @@
 import { JobRepository } from '../repositories/job.repository.js';
-import { analyzeSkillGap } from '../../../ai/agents/xai/skill_gap.js';
+import { analyzeSkillGap } from '../../../ai/agents/skill_gap.js';
 import { NotFoundException } from '../../../../packages/httpException';
 
 /**

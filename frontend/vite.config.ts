@@ -7,7 +7,10 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   server: {
     port: 4000,
-    open: true
+    open: true,
+    watch: {
+      usePolling: true,
+    },
   },
   plugins: [react()],
   resolve: {

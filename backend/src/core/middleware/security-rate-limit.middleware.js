@@ -7,7 +7,7 @@ const WINDOWS = [
     {
         name: 'auth-sensitive',
         methods: ['POST'],
-        paths: ['/api/auth/login', '/api/auth/refresh-token', '/api/users/'],
+        paths: ['/api/auth/', '/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/refresh-token', '/api/users/'],
         windowMs: 60 * 1000,
         max: 10,
     },
@@ -102,7 +102,8 @@ const applyLocalLimit = (rule, key, now, res, next) => {
 const rejectRequest = (res, retryAfterSeconds) => {
     res.setHeader('Retry-After', retryAfterSeconds);
     return res.status(TOO_MANY_REQUESTS).json({
-        statusCode: TOO_MANY_REQUESTS,
+        status: TOO_MANY_REQUESTS,
+        code: 'RATE_LIMIT_EXCEEDED',
         message: 'Too many requests',
     });
 };

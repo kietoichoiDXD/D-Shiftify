@@ -1,5 +1,4 @@
-import { JwtService } from 'core/utils';
-import { TokenRevocationService } from 'core/modules/auth/service/token-revocation.service';
+import { AccessTokenVerifierService } from 'core/modules/auth/service/access-token-verifier.service';
 import { UnAuthorizedException } from '../../../httpException';
 import { AUTH_CONTEXT } from '../../common/enum/authContext';
 
@@ -24,10 +23,7 @@ export class JwtValidator {
     async validate() {
         if (this.#accessToken) {
             try {
-                if (await TokenRevocationService.isRevoked(this.#accessToken)) {
-                    throw new UnAuthorizedException();
-                }
-                this.#payload = JwtService.verify(this.#accessToken);
+                this.#payload = await AccessTokenVerifierService.verify(this.#accessToken);
             } catch (e) {
                 throw new UnAuthorizedException();
             }

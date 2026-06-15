@@ -9,6 +9,10 @@ const sessionParamSchema = z.object({
     id: z.string().trim().min(1).max(255),
 }).strict();
 
+const profileParamSchema = z.object({
+    profileId: z.string().trim().min(1).max(80),
+}).strict();
+
 export const AiChatInterceptor = new ZodValidatorInterceptor(z.object({
     session_id: z.string().trim().min(1).max(255),
     message: z.string().trim().min(1).max(2000),
@@ -43,6 +47,16 @@ export const AiSessionParamInterceptor = new ZodValidatorInterceptor(sessionPara
 
 export const AiSkillGapQueryInterceptor = new ZodValidatorInterceptor(z.object({
     score: z.coerce.number().min(0).max(100).default(0),
+}).strict(), 'query');
+
+export const AiMatchParamInterceptor = new ZodValidatorInterceptor(profileParamSchema, 'params');
+
+export const AiMatchQueryInterceptor = new ZodValidatorInterceptor(z.object({
+    limit: z.coerce.number().int().positive().max(20).default(10),
+    minScore: z.coerce.number().int().min(0).max(100).default(0),
+    explain: z.coerce.boolean().default(false),
+    includeDescription: z.coerce.boolean().default(true),
+    priorities: z.string().trim().optional(),
 }).strict(), 'query');
 
 export const AiStreamTtsQueryInterceptor = new ZodValidatorInterceptor(z.object({

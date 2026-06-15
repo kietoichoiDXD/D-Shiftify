@@ -33,6 +33,23 @@ class Repository {
             .first();
     }
 
+    findRoomByMembers(jobId, employerId, candidateId) {
+        return db('chat_rooms')
+            .where({
+                job_id: jobId,
+                employer_id: employerId,
+                candidate_id: candidateId,
+            })
+            .first();
+    }
+
+    createRoom(data) {
+        return db('chat_rooms')
+            .insert(data)
+            .returning('*')
+            .then(rows => rows[0]);
+    }
+
     findMessages(roomId, limit, offset) {
         return db('chat_messages')
             .where({ room_id: roomId })

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { analystModel } from '../shared/llm.js';
 import { synthesizeSpeech } from '../shared/tts.js';
+import { logger } from '../../../../packages/logger/index.js';
 
 const ABLEIST = [
   { pattern: /nhìn thấy vấn đề/gi,  suggestion: 'nhận ra vấn đề' },
@@ -27,6 +28,7 @@ const hrModel = analystModel.withStructuredOutput(HRSchema);
 const scoreToLevel = (s) => s >= 80 ? 'AAA' : s >= 50 ? 'AA' : 'A';
 
 export const hrNode = async (state) => {
+  try {
   const jdText = state.messages[state.messages.length - 1]?.content || '';
   const ableistFound = detectAbleist(jdText);
 
@@ -48,4 +50,16 @@ export const hrNode = async (state) => {
     audio_base64: await synthesizeSpeech(result.audio_summary).catch(() => null),
     nextStep: 'end',
   };
+  } catch (err) {
+    logger.error('[hrNode] Error:', err.message);
+    return {
+      hr_result:    { score: 0, level: 'A', issues: [err.message], suggestions: [], rewritten_jd: '', ableist_found: [] },
+      messages:     [{ role: 'assistant', content: 'Xin lỗi, không thể phân tích JD lúc này. Vui lòng thử lại.' }],
+      tts_text:     'Xin lỗi, không thể phân tích JD lúc này. Vui lòng thử lại.',
+      audio_base64: null,
+      nextStep:     'end',
+      errors:       [err.message],
+      error:        err.message,
+    };
+  }
 };

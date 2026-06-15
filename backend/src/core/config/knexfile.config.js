@@ -3,17 +3,21 @@ import { join } from 'path';
 
 dotenv.config({ path: join(__dirname, '../../../.env') });
 
+const baseConnection = process.env.DATABASE_URL
+    ? process.env.DATABASE_URL
+    : {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASS,
+        database: process.env.DB_NAME,
+        charset: 'utf8',
+    };
+
 module.exports = {
     development: {
         client: process.env.DB_TYPE,
-        connection: {
-            host: process.env.DB_HOST,
-            port: process.env.DB_PORT,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASS,
-            database: process.env.DB_NAME,
-            charset: 'utf8',
-        },
+        connection: baseConnection,
         migrations: {
             directory: `${__dirname}/../database/migrations`,
         },
@@ -24,14 +28,18 @@ module.exports = {
 
     production: {
         client: process.env.DB_TYPE,
-        connection: {
-            host: process.env.DB_HOST,
-            port: process.env.DB_PORT,
-            user: process.env.DB_USER,
-            password: process.env.DB_PASS,
-            database: process.env.DB_NAME,
-            charset: 'utf8',
+        connection: baseConnection,
+        migrations: {
+            directory: `${__dirname}/../database/migrations`,
         },
+        seeds: {
+            directory: `${__dirname}/../database/seeds`,
+        },
+    },
+
+    test: {
+        client: process.env.DB_TYPE || 'pg',
+        connection: baseConnection,
         migrations: {
             directory: `${__dirname}/../database/migrations`,
         },

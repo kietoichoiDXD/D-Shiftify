@@ -11,6 +11,7 @@ const PUBLIC = {
 // Common private routes: shared routes accessible after authentication.
 const COMMON_PRIVATE = {
   ACCOUNT_SETTINGS: '/account/settings',
+  CHAT: '/chat',
   CALL: '/call',
   VIDEO_CALL: '/video-call'
 } as const
@@ -28,9 +29,10 @@ const DISABILITY = {
   PROFILE: '/disability/profile',
   PROFILE_UPDATE: '/disability/profile/update',
   CV: '/disability/cv',
-  CV_CREATE: '/disability/cv/create',
+  CV_PREVIEW: '/disability/cv/preview',
   CV_EDIT: '/disability/cv/edit/:id',
-  CV_UPDATE: '/disability/cv/update'
+  CV_UPDATE: '/disability/cv/update',
+  ROOT: '/'
 } as const
 
 // Business routes: private routes for business users and recruiters.

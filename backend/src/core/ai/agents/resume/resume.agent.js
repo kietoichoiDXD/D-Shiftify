@@ -4,6 +4,7 @@ import { embedText } from '../shared/embedding.js';
 import { synthesizeSpeech } from '../shared/tts.js';
 import { SkillProfileRepository } from '../../../modules/ai/repositories/skill.profile.repository.js';
 import { sanitizeAbleist } from '../shared/ableist.js';
+import { logger } from '../../../../packages/logger/index.js';
 
 const CvSchema = z.object({
   summary:     z.string(),
@@ -15,7 +16,6 @@ const CvSchema = z.object({
 
 const cvModel = analystModel.withStructuredOutput(CvSchema);
 
-// ── Verification sections (ordered) ──────────────────────────────────────────
 const SECTIONS = ['skills', 'experience', 'education', 'summary'];
 
 const readSection = (cv, section) => {
@@ -37,7 +37,6 @@ const readSection = (cv, section) => {
   }
 };
 
-// ── Intent detection from last user message ───────────────────────────────────
 const detectIntent = (text = '') => {
   const t = text.toLowerCase();
   if (['xác nhận', 'đúng rồi', 'ok', 'được', 'lưu', 'đúng', 'tiếp'].some((k) => t.includes(k))) return 'confirm';
@@ -47,41 +46,46 @@ const detectIntent = (text = '') => {
   return null;
 };
 
-// ── Resume Node ───────────────────────────────────────────────────────────────
 export const resumeNode = async (state) => {
-  const { profile, narrative_raw, messages, cv_data } = state;
-  const lastMsg = messages[messages.length - 1];
-  const intent = detectIntent(lastMsg?.content);
+  try {
+    const { profile, narrative_raw, messages, cv_data } = state;
+    const lastMsg = messages[messages.length - 1];
+    const intent = detectIntent(lastMsg?.content);
 
-  // ── Phase 2: CV already generated → section-by-section verification ─────────
-  if (cv_data) {
-    const verifiedSections = state.verified_sections || [];
+    if (cv_data) {
+      const verifiedSections = state.verified_sections || [];
 
-    // User confirmed current section → advance
-    if (intent === 'confirm') {
-      const nextSection = SECTIONS.find((s) => !verifiedSections.includes(s));
+      if (intent === 'confirm') {
+        const nextSection = SECTIONS.find((s) => !verifiedSections.includes(s));
 
-      if (!nextSection) {
-        // All sections confirmed → save + go to match
-        const tts = 'Hồ sơ đã được lưu. Đang tìm việc làm phù hợp cho bạn.';
-        return {
-          tts_text: tts,
-          audio_base64: await synthesizeSpeech(tts).catch(() => null),
-          nextStep: 'match',
-        };
-      }
-
-      const sectionText = readSection(cv_data, nextSection);
-      if (!sectionText) {
-        // Skip empty sections without recursion — find next non-empty section
-        const remaining = SECTIONS.filter((s) => ![...verifiedSections, nextSection].includes(s));
-        const nextNonEmpty = remaining.find((s) => readSection(cv_data, s));
-        if (!nextNonEmpty) {
+        if (!nextSection) {
           const tts = 'Hồ sơ đã được lưu. Đang tìm việc làm phù hợp cho bạn.';
-          return { tts_text: tts, audio_base64: await synthesizeSpeech(tts).catch(() => null), nextStep: 'match' };
+          return {
+            tts_text: tts,
+            audio_base64: await synthesizeSpeech(tts).catch(() => null),
+            nextStep: 'match',
+          };
         }
-        const text = readSection(cv_data, nextNonEmpty);
-        const tts = `${text} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;
+
+        const sectionText = readSection(cv_data, nextSection);
+        if (!sectionText) {
+          const remaining = SECTIONS.filter((s) => ![...verifiedSections, nextSection].includes(s));
+          const nextNonEmpty = remaining.find((s) => readSection(cv_data, s));
+          if (!nextNonEmpty) {
+            const tts = 'Hồ sơ đã được lưu. Đang tìm việc làm phù hợp cho bạn.';
+            return { tts_text: tts, audio_base64: await synthesizeSpeech(tts).catch(() => null), nextStep: 'match' };
+          }
+          const text = readSection(cv_data, nextNonEmpty);
+          const tts = `${text} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;
+          return {
+            verified_sections: [...verifiedSections, nextSection],
+            tts_text: tts,
+            audio_base64: await synthesizeSpeech(tts).catch(() => null),
+            nextStep: 'resume',
+          };
+        }
+
+        const tts = `${sectionText} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;
         return {
           verified_sections: [...verifiedSections, nextSection],
           tts_text: tts,
@@ -90,72 +94,70 @@ export const resumeNode = async (state) => {
         };
       }
 
-      const tts = `${sectionText} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;
-      return {
-        verified_sections: [...verifiedSections, nextSection],
-        tts_text: tts,
-        audio_base64: await synthesizeSpeech(tts).catch(() => null),
-        nextStep: 'resume',
-      };
+      if (intent === 'reject') {
+        const tts = 'Bạn muốn sửa phần nào? Hãy nói tên phần cần sửa, ví dụ: kỹ năng, kinh nghiệm.';
+        return {
+          tts_text: tts,
+          audio_base64: await synthesizeSpeech(tts).catch(() => null),
+          nextStep: 'intake',
+        };
+      }
+
+      const pendingSection = SECTIONS.find((s) => !verifiedSections.includes(s));
+      if (pendingSection) {
+        const sectionText = readSection(cv_data, pendingSection);
+        const tts = sectionText
+          ? `${sectionText} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`
+          : 'Nói xác nhận để lưu hồ sơ.';
+        return {
+          tts_text: tts,
+          audio_base64: await synthesizeSpeech(tts).catch(() => null),
+          nextStep: 'resume',
+        };
+      }
     }
 
-    // User rejected → go back to intake for that field
-    if (intent === 'reject') {
-      const tts = 'Bạn muốn sửa phần nào? Hãy nói tên phần cần sửa, ví dụ: kỹ năng, kinh nghiệm.';
-      return {
-        tts_text: tts,
-        audio_base64: await synthesizeSpeech(tts).catch(() => null),
-        nextStep: 'intake',
-      };
+    const [cv, embedding] = await Promise.all([
+      cvModel.invoke(
+        `Tạo CV ATS-friendly 1 cột cho người khiếm thị. Không bảng, không ký tự đặc biệt.\n` +
+        `Thứ tự: Thông tin cá nhân → Tóm tắt → Kỹ năng → Kinh nghiệm → Học vấn.\n` +
+        `Profile: ${JSON.stringify(profile)}\nNarrative: ${narrative_raw}`,
+      ),
+      embedText(narrative_raw || JSON.stringify(profile)),
+    ]);
+
+    if (state.session_id) {
+      SkillProfileRepository.upsert(state.session_id, {
+        ...profile,
+        narrative_raw,
+        narrative_embedding: embedding,
+        cv_data: cv,
+      }).catch(() => {});
     }
 
-    // No clear intent → re-read current pending section
-    const pendingSection = SECTIONS.find((s) => !verifiedSections.includes(s));
-    if (pendingSection) {
-      const sectionText = readSection(cv_data, pendingSection);
-      const tts = sectionText
-        ? `${sectionText} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`
-        : 'Nói xác nhận để lưu hồ sơ.';
-      return {
-        tts_text: tts,
-        audio_base64: await synthesizeSpeech(tts).catch(() => null),
-        nextStep: 'resume',
-      };
-    }
-  }
+    const firstSection = SECTIONS[0];
+    const sectionText = readSection(cv, firstSection);
+    const tts = `Hồ sơ đã được tạo. Tôi sẽ đọc từng phần để bạn xác nhận. ${sectionText} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;
+    const audio = await synthesizeSpeech(tts).catch(() => null);
 
-  // ── Phase 1: Generate CV + embed narrative_raw ────────────────────────────────
-  const [cv, embedding] = await Promise.all([
-    cvModel.invoke(
-      `Tạo CV ATS-friendly 1 cột cho người khiếm thị. Không bảng, không ký tự đặc biệt.\n` +
-      `Thứ tự: Thông tin cá nhân → Tóm tắt → Kỹ năng → Kinh nghiệm → Học vấn.\n` +
-      `Profile: ${JSON.stringify(profile)}\nNarrative: ${narrative_raw}`,
-    ),
-    embedText(narrative_raw || JSON.stringify(profile)),
-  ]);
-
-  // Persist to MongoDB (fire-and-forget, don't block TTS)
-  if (state.session_id) {
-    SkillProfileRepository.upsert(state.session_id, {
-      ...profile,
-      narrative_raw,
-      narrative_embedding: embedding,
+    return {
       cv_data: cv,
-    }).catch(() => {});
+      narrative_embedding: embedding,
+      verified_sections: [firstSection],
+      tts_text: tts,
+      audio_base64: audio,
+      nextStep: 'resume',
+    };
+  } catch (err) {
+    logger.error('[resumeNode] Error:', err.message);
+    const ttsText = 'Xin lỗi, có lỗi khi tạo hồ sơ. Bạn có thể thử lại không?';
+    return {
+      messages:     [{ role: 'assistant', content: ttsText }],
+      tts_text:     ttsText,
+      audio_base64: null,
+      nextStep:     'resume',
+      errors:       [err.message],
+      error:        err.message,
+    };
   }
-
-  // Start verification with first section
-  const firstSection = SECTIONS[0];
-  const sectionText = readSection(cv, firstSection);
-  const tts = `Hồ sơ đã được tạo. Tôi sẽ đọc từng phần để bạn xác nhận. ${sectionText} Nói 'đúng rồi' để tiếp tục hoặc 'sửa lại' để chỉnh sửa.`;
-  const audio = await synthesizeSpeech(tts).catch(() => null);
-
-  return {
-    cv_data: cv,
-    narrative_embedding: embedding,
-    verified_sections: [firstSection],
-    tts_text: tts,
-    audio_base64: audio,
-    nextStep: 'resume', // stay until all sections confirmed
-  };
 };

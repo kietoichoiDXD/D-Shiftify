@@ -4,10 +4,10 @@
  * Run: npm run test:integration
  */
 
-import { HttpException } from '../src/packages/httpException/HttpException';
-import { ForbiddenException } from '../src/packages/httpException/ForbiddenException';
-import { BadRequestException } from '../src/packages/httpException/BadRequestException';
 import { FORBIDDEN, BAD_REQUEST } from 'http-status';
+import { HttpException } from 'packages/httpException/HttpException';
+import { ForbiddenException } from 'packages/httpException/ForbiddenException';
+import { BadRequestException } from 'packages/httpException/BadRequestException';
 
 describe('Exception Classes Integration', () => {
     describe('HttpException', () => {
@@ -51,7 +51,7 @@ describe('Exception Classes Integration', () => {
         test('all exceptions should be instances of HttpException', () => {
             const forbidden = new ForbiddenException();
             const badRequest = new BadRequestException();
-            
+
             expect(forbidden).toBeInstanceOf(HttpException);
             expect(badRequest).toBeInstanceOf(HttpException);
         });

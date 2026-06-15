@@ -1,3 +1,4 @@
+import { randomUUID } from 'crypto';
 import { DataRepository } from 'packages/restBuilder/core/dataHandler/data.repository'
 import { NotFoundException } from '../../../packages/httpException'
 
@@ -20,6 +21,20 @@ class Repository extends DataRepository {
       bio: data.bio || null,
       profile_image: data.profileImage || null,
       skills: JSON.stringify(data.skills || []),
+      education: JSON.stringify(this.withGeneratedIds(data.education || [])),
+      experience: JSON.stringify(this.withGeneratedIds(data.experience || [])),
+      dob: data.dob || null,
+      gender: data.gender || null,
+      disability_status: data.disabilityStatus || null,
+      device_ids: JSON.stringify(data.deviceIds || []),
+      job_type: data.jobType || null,
+      work_mode: data.workMode || null,
+      mobility: data.mobility || null,
+      expected_job: data.expectedJob || null,
+      conditions: JSON.stringify(data.conditions || []),
+      certificates: JSON.stringify(data.certificates || []),
+      custom_sections: JSON.stringify(data.customSections || []),
+      cv_payload: JSON.stringify(data.cvPayload || {}),
       created_at: new Date(),
       updated_at: new Date(),
     })
@@ -37,6 +52,20 @@ class Repository extends DataRepository {
     if (data.bio !== undefined) updateData.bio = data.bio
     if (data.profileImage !== undefined) updateData.profile_image = data.profileImage
     if (data.skills !== undefined) updateData.skills = JSON.stringify(data.skills)
+    if (data.education !== undefined) updateData.education = JSON.stringify(this.withGeneratedIds(data.education))
+    if (data.experience !== undefined) updateData.experience = JSON.stringify(this.withGeneratedIds(data.experience))
+    if (data.dob !== undefined) updateData.dob = data.dob
+    if (data.gender !== undefined) updateData.gender = data.gender
+    if (data.disabilityStatus !== undefined) updateData.disability_status = data.disabilityStatus
+    if (data.deviceIds !== undefined) updateData.device_ids = JSON.stringify(data.deviceIds)
+    if (data.jobType !== undefined) updateData.job_type = data.jobType
+    if (data.workMode !== undefined) updateData.work_mode = data.workMode
+    if (data.mobility !== undefined) updateData.mobility = data.mobility
+    if (data.expectedJob !== undefined) updateData.expected_job = data.expectedJob
+    if (data.conditions !== undefined) updateData.conditions = JSON.stringify(data.conditions)
+    if (data.certificates !== undefined) updateData.certificates = JSON.stringify(data.certificates)
+    if (data.customSections !== undefined) updateData.custom_sections = JSON.stringify(data.customSections)
+    if (data.cvPayload !== undefined) updateData.cv_payload = JSON.stringify(data.cvPayload)
 
     return this.query()
       .where('user_id', '=', userId)
@@ -188,7 +217,14 @@ class Repository extends DataRepository {
   }
 
   generateId() {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    return randomUUID();
+  }
+
+  withGeneratedIds(items) {
+    return (items || []).map(item => ({
+      id: item.id || this.generateId(),
+      ...item,
+    }))
   }
 }
 
