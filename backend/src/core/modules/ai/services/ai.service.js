@@ -1,12 +1,12 @@
 import { HumanMessage } from '@langchain/core/messages';
-import { aiGraph } from '../../../ai/orchestrator/graph.js';
-import { detectIntent } from '../../../ai/orchestrator/router.js';
-import { transcribeAudio } from '../../../ai/agents/shared/stt.js';
+import { aiGraph } from '../../../ai/agents/graph.js';
+import { detectIntent } from '../../../ai/agents/router.js';
+import { transcribeAudio } from '../../../ai/utils/stt.js';
 import { SessionStore } from '../../../infrastructure/session.store.js';
 import { BadRequestException } from '../../../../packages/httpException';
 import { SkillProfileRepository } from '../repositories/skill.profile.repository.js';
 import { JobRepository } from '../repositories/job.repository.js';
-import { buildMatchExplanation, getJobWeights, hybridScore } from '../../../ai/agents/match/match.scoring.js';
+import { buildMatchExplanation, getJobWeights, hybridScore } from '../../../ai/retrieval/match.scoring.js';
 import { logger } from '../../../../packages/logger/index.js';
 
 const MAX_MATCH_RESULTS  = Number.parseInt(process.env.AI_MATCH_MAX_RESULTS    || '20',  10);
@@ -126,7 +126,7 @@ class AiServiceImpl {
                 throw new BadRequestException('Candidate AI profile not found');
             }
 
-            const { embedText } = await import('../../../ai/agents/shared/embedding.js');
+            const { embedText } = await import('../../../ai/embeddings/embedder.js');
             const rawText = pgProfile.bio || pgProfile.full_name || '';
             const embedding = await embedText(rawText).catch(() => null);
 

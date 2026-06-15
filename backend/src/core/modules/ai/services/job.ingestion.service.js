@@ -1,9 +1,9 @@
 import { HumanMessage } from '@langchain/core/messages';
-import { embedText } from '../../../ai/agents/shared/embedding.js';
-import { hrNode } from '../../../ai/agents/hr/hr.agent.js';
+import { embedText } from '../../../ai/embeddings/embedder.js';
+import { hrNode } from '../../../ai/agents/hr.agent.js';
 import { JobRepository } from '../repositories/job.repository.js';
 import { runAlertJob } from './alert.job.service.js';
-import { inferWeights } from '../../../ai/agents/match/match.scoring.js';
+import { inferWeights } from '../../../ai/retrieval/match.scoring.js';
 
 /**
  * Called when HR posts a new job.

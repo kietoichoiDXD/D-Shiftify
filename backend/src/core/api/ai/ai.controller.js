@@ -3,7 +3,7 @@ import { ingestJob } from '../../modules/ai/services/job.ingestion.service.js';
 import { getMarketTrends } from '../../modules/ai/services/market.trend.service.js';
 import { getSkillGapForJob } from '../../modules/ai/services/skill.gap.service.js';
 import { SkillProfileRepository } from '../../modules/ai/repositories/skill.profile.repository.js';
-import { streamSpeech } from '../../ai/agents/shared/tts.js';
+import { streamSpeech } from '../../ai/utils/tts.js';
 import { ValidHttpResponse } from '../../../packages/handler/response/validHttp.response.js';
 import { getUserContext } from '../../../packages/authModel/module/user';
 import { BadRequestException } from '../../../packages/httpException';

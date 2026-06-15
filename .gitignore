@@ -1,0 +1,26 @@
+# Secrets and local env
+.env
+.env.*
+env (1).txt
+backend/.env
+backend/.env.*
+frontend/.env
+frontend/.env.*
+
+# Generated outputs
+backend/dist/
+frontend/dist/
+backend/node_modules/
+frontend/node_modules/
+backend/logs/
+backend/scratch/
+frontend/public/fonts/
+
+# Local scratch and temp files
+*.log
+replacements.txt
+skills-lock.json
+hiretab-temp/
+*.csv
+.mcp.json
+.agents/

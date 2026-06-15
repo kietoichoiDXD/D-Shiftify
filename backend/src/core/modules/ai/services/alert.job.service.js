@@ -1,6 +1,6 @@
 import { SkillProfileRepository } from '../repositories/skill.profile.repository.js';
 import { AlertRepository } from '../repositories/alert.repository.js';
-import { hybridScore } from '../../../ai/agents/match/match.scoring.js';
+import { hybridScore } from '../../../ai/retrieval/match.scoring.js';
 import { JobRepository } from '../repositories/job.repository.js';
 
 const ALERT_THRESHOLD = parseInt(process.env.ALERT_SCORE_THRESHOLD || '65', 10);

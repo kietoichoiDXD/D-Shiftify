@@ -15,7 +15,7 @@ const options = {
     },
     servers: [
         {
-            url: `${API_PUBLIC_URL}/api`,
+            url: API_PUBLIC_URL,
             description: 'Production/Staging API',
         },
     ],

@@ -17,7 +17,7 @@ const {
     calculateSoftSkillsScore,
     calculateCertificatesScore,
     calculateCustomScore,
-} = require('../../src/core/ai/agents/match/match.scoring.js');
+} = require('../../src/core/ai/retrieval/match.scoring.js');
 
 describe('AI match API contract', () => {
     it('parses recommendation query defaults and constraints', async () => {
