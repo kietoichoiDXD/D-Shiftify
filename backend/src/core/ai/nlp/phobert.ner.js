@@ -1,6 +1,6 @@
 import { createClient } from 'redis';
 import { z } from 'zod';
-import { routerModel } from '../agents/shared/llm.js';
+import { routerModel } from '../llm/gemini.client.js';
 import { segment, isAvailable as vncoreAvailable } from './vncorenlp.client.js';
 
 const MODEL_ID  = process.env.PHOBERT_MODEL || 'Xenova/bert-base-multilingual-cased-ner-hrl';
