@@ -1,81 +1,75 @@
 {
   "home": {
     "hero": {
-      "title": "React TypeScript Boilerplate",
-      "description": "Một React TypeScript boilerplate hiện đại, đầy đủ tính năng với các best practices, tối ưu hiệu năng và trải nghiệm phát triển.",
-      "getStarted": "Bắt đầu",
-      "viewGithub": "Xem trên GitHub"
+      "title": "Shiftify",
+      "description": "Nền tảng matching việc làm và CV cho người khuyết tật, tối ưu cho khả năng tiếp cận, giải thích kết quả và hỗ trợ giọng nói."
     },
     "features": {
-      "title": "Tính năng",
-      "description": "Mọi thứ bạn cần để xây dựng ứng dụng React hiện đại",
+      "title": "Năng lực sản phẩm",
+      "description": "Thiết kế để ứng viên, nhà tuyển dụng và đơn vị đào tạo có thể làm việc nhanh, rõ ràng và dễ tiếp cận.",
       "typescript": {
-        "title": "TypeScript",
-        "description": "Được xây dựng với TypeScript để có trải nghiệm phát triển tốt hơn và an toàn về kiểu dữ liệu"
+        "title": "Cấu trúc chặt chẽ",
+        "description": "Mã nguồn được tổ chức rõ ràng, dễ mở rộng và phù hợp để phối hợp trong đội."
       },
       "modernStack": {
-        "title": "Stack Hiện đại",
-        "description": "Các tính năng React mới nhất, Vite, TailwindCSS và nhiều hơn nữa"
+        "title": "Stack hiện đại",
+        "description": "Frontend, backend và AI được nối theo kiến trúc production-friendly."
       },
       "performance": {
         "title": "Hiệu năng",
-        "description": "Tối ưu hiệu năng với code splitting và lazy loading"
+        "description": "Giữ trải nghiệm mượt, phản hồi nhanh và tải có kiểm soát."
       },
       "developerExperience": {
-        "title": "Trải nghiệm phát triển",
-        "description": "Trải nghiệm phát triển tuyệt vời với hot reload và hỗ trợ TypeScript"
+        "title": "Developer experience",
+        "description": "Luồng dev rõ ràng, dễ sửa lỗi và dễ bàn giao."
       },
       "bestPractices": {
-        "title": "Best Practices",
-        "description": "Tuân thủ các best practices của React và tiêu chuẩn phát triển hiện đại"
+        "title": "Best practices",
+        "description": "Ưu tiên tính ổn định, accessibility và khả năng duy trì lâu dài."
       },
       "readyToUse": {
-        "title": "Sẵn sàng sử dụng",
-        "description": "Bao gồm xác thực, routing và các tính năng phổ biến khác"
+        "title": "Sẵn sàng dùng",
+        "description": "Có thể kết nối API, auth, matching và media workflow ngay."
       }
     },
     "techStack": {
-      "title": "Công nghệ",
-      "description": "Được xây dựng với những công nghệ mới nhất"
+      "title": "Công nghệ chính",
+      "description": "Các thành phần đang dùng trong dự án Shiftify"
     },
     "gettingStarted": {
-      "title": "Bắt đầu",
-      "description": "Bắt đầu xây dựng ứng dụng React tiếp theo của bạn trong vài phút",
-      "clone": {
-        "title": "Clone repository",
-        "description": "Bắt đầu bằng cách clone repository về máy local",
-        "code": "git clone https://github.com/vophuocthanh/react-boilerplate-practices-2025"
+      "title": "Triển khai nhanh",
+      "description": "Kết nối đúng môi trường, xác thực, dữ liệu và hạ tầng để chạy production an toàn.",
+      "login": {
+        "title": "Đăng nhập",
+        "description": "Dùng tài khoản hợp lệ để truy cập đúng vai trò và route."
       },
-      "install": {
-        "title": "Cài đặt dependencies",
-        "description": "Cài đặt tất cả dependencies cần thiết bằng package manager yêu thích của bạn",
-        "code": "yarn install"
+      "database": {
+        "title": "Kết nối dữ liệu",
+        "description": "Chuẩn hoá PostgreSQL/Supabase để backend đọc và ghi ổn định."
       },
-      "start": {
-        "title": "Bắt đầu phát triển",
-        "description": "Khởi động development server và bắt đầu code",
-        "code": "yarn dev"
+      "cloud": {
+        "title": "Kết nối Cloud",
+        "description": "Bảo đảm Cloud Run, Cloudinary và các secrets được cấu hình đúng."
       },
-      "build": {
-        "title": "Build cho production",
-        "description": "Build ứng dụng của bạn để triển khai production",
-        "code": "yarn build"
+      "ready": {
+        "title": "Sẵn sàng chạy",
+        "description": "Kiểm tra health, docs, auth và một write endpoint trước khi bàn giao."
       }
     },
     "footer": {
-      "description": "Một React TypeScript boilerplate hiện đại với best practices và trải nghiệm phát triển.",
+      "description": "Shiftify - nền tảng tuyển dụng và matching có hỗ trợ accessibility.",
       "documentation": {
         "title": "Tài liệu",
-        "gettingStarted": "Bắt đầu",
-        "features": "Tính năng",
-        "apiReference": "Tham khảo API",
+        "gettingStarted": "Triển khai nhanh",
+        "features": "Năng lực sản phẩm",
+        "apiReference": "API",
         "examples": "Ví dụ"
       },
       "resources": {
         "title": "Tài nguyên",
         "github": "GitHub",
         "discord": "Discord",
-        "twitter": "Twitter",
+        "twitter": "X",
         "blog": "Blog"
       },
       "legal": {
@@ -84,7 +78,7 @@
         "terms": "Điều khoản dịch vụ",
         "license": "Giấy phép"
       },
-      "copyright": "© {{year}} D Shiftify. Bảo lưu mọi quyền."
+      "copyright": "© {{year}} Shiftify. Bảo lưu mọi quyền."
     }
   }
 }

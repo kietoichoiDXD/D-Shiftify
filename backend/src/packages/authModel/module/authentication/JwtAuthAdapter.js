@@ -8,6 +8,8 @@ export class JwtAuthAdapter {
 
     #token;
 
+    #payload;
+
     #userDetail;
 
     static builder() {
@@ -34,19 +36,23 @@ export class JwtAuthAdapter {
     }
 
     collectRequest(req) {
-        this.#token = req.headers[AUTH_CONTEXT.AUTHORIZATION_HEADER];
+        this.#token = req.headers[AUTH_CONTEXT.AUTHORIZATION_HEADER] || req.cookies?.access_token;
         return this;
     }
 
     async transfer(req) {
         if (this.#token) {
-            const validator = JwtValidator
+            const body = await JwtValidator
                 .builder()
-                .applyToken(this.#token);
-            const body = (await validator.validate()).getPayload();
-            this.#userDetail = new JwtAuthAdapter.USER_DETAIL_CLASS(body);
-            this.#applyPreAuthorizationToUserDetail();
-            this.#attachAuthContextToReq(req);
+                .applyToken(this.#token)
+                .validate();
+
+            this.#payload = body.getPayload();
+            if (this.#payload) {
+                this.#userDetail = new JwtAuthAdapter.USER_DETAIL_CLASS(this.#payload);
+                this.#applyPreAuthorizationToUserDetail();
+                this.#attachAuthContextToReq(req);
+            }
         }
     }
 }

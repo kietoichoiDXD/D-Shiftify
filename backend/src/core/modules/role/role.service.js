@@ -12,13 +12,6 @@ class Service {
 
         return sector.get();
     }
-
-    async findByName(name) {
-        const role = Optional.of(await this.roleRepository.findByName(name))
-            .throwIfNotPresent(new NotFoundException('Role not found'));
-
-        return role.get();
-    }
 }
 
 export const RoleService = new Service();

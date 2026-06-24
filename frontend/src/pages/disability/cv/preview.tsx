@@ -1,5 +1,5 @@
-import CvPreviewPage from './components/cv-preview-page'
+import { FigmaCvPreviewPage } from './components/figma-cv-screens'
 
 export default function DisabilityCvPreviewPage() {
-  return <CvPreviewPage />
+  return <FigmaCvPreviewPage />
 }

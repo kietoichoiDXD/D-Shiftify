@@ -1,10 +1,14 @@
-import { DataRepository } from 'packages/restBuilder/core/dataHandler/data.repository';
+import { BaseRepository } from '../../../infrastructure/repository/base.repository';
 
-class Repository extends DataRepository {
-    findByName(name) {
-        return this.query()
-            .where('name', '=', name)
-            .first();
+class Repository extends BaseRepository {
+    createUserRole(id_user, id_role, trx = null) {
+        const queryBuilder = this.query()
+            .insert({
+                id_user,
+                id_role,
+            });
+        if (trx) queryBuilder.transacting(trx);
+        return queryBuilder;
     }
 }
 

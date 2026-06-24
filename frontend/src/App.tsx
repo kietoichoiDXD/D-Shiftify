@@ -1,5 +1,6 @@
 import { ThemeProvider } from '@/app/providers/theme-provider'
 import AutoScrollToTop from '@/components/scroll/auto-scroll-to-top'
+import { SocketProvider } from '@/contexts/SocketContext'
 import useRoutesElements from '@/hooks/routes/use-router-element'
 import '@/styles/theme.css'
 
@@ -8,8 +9,10 @@ const App = () => {
 
   return (
     <ThemeProvider>
-      <AutoScrollToTop behavior='smooth' />
-      {router}
+      <SocketProvider>
+        <AutoScrollToTop behavior='smooth' />
+        {router}
+      </SocketProvider>
     </ThemeProvider>
   )
 }

@@ -3,30 +3,31 @@ import { UserResolver } from 'core/api/user/user.resolver';
 import { ApiDocument } from 'core/config/swagger.config';
 import { HandlerResolver } from '../../packages/handler/HandlerResolver';
 import { AuthResolver } from './auth/auth.resolver';
-import { AiResolver } from './ai/ai.resolver';
-import { CandidateResolver } from './candidate/candidate.resolver';
-import { EducationResolver } from './education';
-import { RecruitmentResolver } from './recruitment';
-import { ChatResolver } from './chat';
-import { CvResolver } from './cv';
-import { JobResolver } from './job';
+import {ChatResolver} from './chat/chat.resolver';
+import { CVResolver } from './cv/cv.resolver';
+import { ProfileResolver } from './profile/profile.resolver';
+import { ApplicationsResolver } from './applications/applications.resolver';
+import { JobResolver, AdminJobResolver, RecruiterJobResolver } from './job/job.resolver';
+import { MatchingResolver } from './ai/matching.resolver';
+import { SpeechResolver } from './ai/speech.resolver';
+import { CompanyResolver } from './company/company.resolver';
+import { TrainingResolver } from './training/training.resolver';
 
-// Eagerly load DTO definitions to register them with ApiDocument (SwaggerBuilder)
-import 'core/modules/recruitment/dto';
-import 'core/modules/education/dto';
-
-export const ModuleResolver = HandlerResolver
-    .builder()
+export const ModuleResolver = HandlerResolver.builder()
     .addSwaggerBuilder(ApiDocument)
     .addModule([
         AuthResolver,
         UserResolver,
         MediaResolver,
-        AiResolver,
-        CandidateResolver,
-        EducationResolver,
-        RecruitmentResolver,
         ChatResolver,
-        CvResolver,
+        CVResolver,
+        ProfileResolver,
+        ApplicationsResolver,
         JobResolver,
+        AdminJobResolver,
+        RecruiterJobResolver,
+        MatchingResolver,
+        SpeechResolver,
+        CompanyResolver,
+        TrainingResolver,
     ]);

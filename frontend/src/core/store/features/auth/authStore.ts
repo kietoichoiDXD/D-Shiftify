@@ -1,15 +1,14 @@
 import { create } from 'zustand'
 
+import { authApi } from '@/core/services/auth.service'
 import { getPersistedAuth } from '@/core/shared/auth'
-import { clearLS } from '@/core/shared/storage'
+import { clearAuthClientState } from '@/core/shared/storage'
 import { type LoginResponse } from '@/models/interface/auth.interfaces'
 
 import { type AuthState, type AuthStore } from './types'
 
 const initialState: AuthState = {
   user: null,
-  access_token: null,
-  refresh_token: null,
   isAuthenticated: false,
   isLoading: false,
   error: null
@@ -30,9 +29,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({
       isLoading: false,
       isAuthenticated: true,
-      user: data?.user,
-      access_token: data?.access_token,
-      refresh_token: data?.refresh_token,
+      user: {
+        ...data.user,
+        name: data.user.fullName || data.user.email
+      },
       error: null
     })
   },
@@ -45,9 +45,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
 
   logout: () => {
-    clearLS()
-    set({
-      ...initialState
+    void authApi.logout().finally(() => {
+      clearAuthClientState()
+      set({
+        ...initialState
+      })
     })
   },
 

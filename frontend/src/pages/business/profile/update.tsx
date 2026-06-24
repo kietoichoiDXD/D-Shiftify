@@ -1,5 +1,6 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { FigmaBusinessProfilePage } from '@/pages/_shared/figma-web-screens'
 
 export default function BusinessProfileUpdatePage() {
-  return <PlaceholderPage title='Update Business Profile' description='Update company profile and recruiter details.' />
+  return <FigmaBusinessProfilePage edit={true} />
 }
+

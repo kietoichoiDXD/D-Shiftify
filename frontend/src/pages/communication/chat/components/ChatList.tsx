@@ -51,7 +51,9 @@ export default function ChatList({ conversations, onSelectConversation, onReadLi
                   >
                     <div className='flex w-full items-start justify-between gap-3'>
                       <div className='min-w-0 flex-1'>
-                        <p className='truncate text-xl font-black leading-tight text-black'>{conversation.contactName}</p>
+                        <p className='truncate text-xl font-black leading-tight text-black'>
+                          {conversation.contactName}
+                        </p>
                         <p className='mt-1 text-lg font-bold leading-tight text-black'>{roleLabel}</p>
                       </div>
 

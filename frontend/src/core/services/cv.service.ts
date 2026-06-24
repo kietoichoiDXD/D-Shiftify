@@ -1,5 +1,6 @@
 import { type AxiosInstance } from 'axios'
 
+import { mockCvRecord, mockDisabilityOptions } from '@/_mocks/data-cv.mock'
 import config from '@/core/configs/env'
 import axiosClient from '@/core/services/axios-client'
 import {
@@ -9,57 +10,103 @@ import {
   type DisabilityOptionsResponse,
   type UploadAvatarResponse
 } from '@/models/interface/cv.interfaces'
-import { mockCvRecord, mockDisabilityOptions } from '@/_mocks/data-cv.mock'
 
-const API_CV_URL = '/cv'
-const API_DISABILITY_OPTIONS_URL = '/cv/disability-options'
-const API_UPLOAD_AVATAR_URL = '/uploads'
-const API_PREVIEW_CV_URL = '/cv/preview'
-const MOCK_DELAY_IN_MS = 450
+const API_CV_URL = '/api/v1/cv'
+const MOCK_DELAY_IN_MS = 250
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+type ApiEnvelope<T> = { data: T; status?: string }
 
 const withMockDelay = async <T>(data: T): Promise<T> => {
-  await new Promise((resolve) => {
-    window.setTimeout(resolve, MOCK_DELAY_IN_MS)
-  })
-
+  await new Promise((resolve) => window.setTimeout(resolve, MOCK_DELAY_IN_MS))
   return data
 }
 
-const countCompletedFields = (payload: CvPayload) => {
-  const importantFields = [
+const splitValues = (value = '') =>
+  value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+const createPreview = (payload: CvPayload): CvPreviewResponse => {
+  const fields = [
     payload.fullName,
-    payload.disabilityStatus,
     payload.email || payload.phone,
-    payload.experience,
-    payload.education || payload.schoolName || payload.major,
+    payload.disabilityStatus,
+    payload.careerGoals,
     payload.hardSkills,
     payload.softSkills,
-    payload.careerGoals,
-    payload.supportNeeds
+    payload.education || payload.schoolName,
+    payload.experience || payload.workExperiences?.[0]?.experience
   ]
-
-  return importantFields.filter((value) => (value || '').trim().length > 0).length
-}
-
-const createMockPreview = (payload: CvPayload): CvPreviewResponse => {
-  const completedFields = countCompletedFields(payload)
-  const completenessScore = Math.round((completedFields / 9) * 100)
-  const warnings = [
-    payload.email || payload.phone ? '' : 'Vui lòng bổ sung ít nhất một thông tin liên hệ.',
-    payload.experience ? '' : 'Bổ sung kinh nghiệm để hồ sơ nổi bật hơn.',
-    payload.hardSkills ? '' : 'Bổ sung kỹ năng cứng để tăng khả năng phù hợp.'
-  ].filter(Boolean)
+  const completenessScore = Math.round((fields.filter((item) => String(item || '').trim()).length / fields.length) * 100)
 
   return {
     completenessScore,
     summary: `${payload.fullName || 'Ứng viên'} đang xác nhận hồ sơ năng lực.`,
-    warnings,
+    warnings: completenessScore < 75 ? ['Bổ sung thêm kỹ năng và kinh nghiệm để tăng độ phù hợp.'] : [],
     sections: [
       { label: 'Mục tiêu nghề nghiệp', value: payload.careerGoals || '' },
-      { label: 'Kinh nghiệm', value: payload.experience || '' },
-      { label: 'Học vấn', value: payload.education || [payload.schoolName, payload.major].filter(Boolean).join(' - ') || '' },
-      { label: 'Hỗ trợ cần thiết', value: payload.supportNeeds || '' }
-    ].filter((section) => section.value.trim().length > 0)
+      { label: 'Kinh nghiệm', value: payload.experience || payload.workExperiences?.[0]?.experience || '' },
+      { label: 'Học vấn', value: payload.education || [payload.schoolName, payload.major].filter(Boolean).join(' - ') }
+    ].filter((section) => section.value)
+  }
+}
+
+const toBackendPayload = (payload: CvPayload) => ({
+  profile: {
+    fullName: payload.fullName,
+    dob: payload.birthday || undefined,
+    gender: payload.gender || undefined,
+    phone: payload.phone || undefined,
+    disabilityStatus: payload.disabilityStatus || undefined
+  },
+  cv: {
+    deviceIds: payload.availableEquipment.filter((id) => UUID_PATTERN.test(id)),
+    jobType: payload.workExperiences?.[0]?.workTime || payload.workTime || undefined,
+    workMode: payload.workExperiences?.[0]?.workMode || payload.workMode || undefined,
+    expectedJob: payload.careerGoals || payload.jobTitle || undefined,
+    skills: [
+      ...splitValues(payload.hardSkills).map((name) => ({ name, type: 'hard_skill' })),
+      ...splitValues(payload.softSkills).map((name) => ({ name, type: 'soft_skill' }))
+    ],
+    conditions: payload.workConditions,
+    experiences: (payload.workExperiences || []).map((item) => ({
+      company: item.companyName,
+      position: item.jobTitle,
+      description: item.experience,
+      startDate: item.contributionStart,
+      endDate: item.contributionEnd
+    })),
+    certificates: splitValues(payload.certifications),
+    customSections: [
+      {
+        title: 'education',
+        items: [
+          {
+            school: payload.schoolName,
+            major: payload.major,
+            startDate: payload.educationStart,
+            endDate: payload.educationEnd,
+            description: payload.achievement || payload.education
+          }
+        ]
+      },
+      { title: 'accessibility', items: [{ supportNeeds: payload.supportNeeds }] }
+    ]
+  }
+})
+
+const normalizeRecord = (value: unknown, payload?: CvPayload): CvRecord => {
+  const envelope = value as ApiEnvelope<unknown>
+  const raw = envelope?.data ?? value
+  const record = (Array.isArray(raw) ? raw[0] : raw) as Record<string, unknown>
+  return {
+    ...(payload || mockCvRecord),
+    id: String(record?.id || 'current'),
+    status: 'submitted',
+    updatedAt: String(record?.updatedAt || new Date().toISOString()),
+    previewScore: payload ? createPreview(payload).completenessScore : 0
   }
 }
 
@@ -73,73 +120,41 @@ export type CvApi = {
 }
 
 export const createCvApi = (client: AxiosInstance): CvApi => ({
-  getDisabilityOptions() {
-    if (config.useMockData) {
-      return withMockDelay(mockDisabilityOptions)
-    }
-
-    return client.get(API_DISABILITY_OPTIONS_URL) as Promise<DisabilityOptionsResponse>
+  async getDisabilityOptions() {
+    if (config.useMockData) return withMockDelay(mockDisabilityOptions)
+    return client.get(`${API_CV_URL}/disability-options`) as Promise<DisabilityOptionsResponse>
   },
-  getCvDetail(cvId) {
-    if (config.useMockData) {
-      return withMockDelay({
-        ...mockCvRecord,
-        id: cvId
-      })
-    }
-
-    return client.get(`${API_CV_URL}/${cvId}`) as Promise<CvRecord>
+  async getCvDetail(cvId) {
+    if (config.useMockData) return withMockDelay({ ...mockCvRecord, id: cvId })
+    const response = await client.get(`${API_CV_URL}/${cvId}`)
+    return normalizeRecord(response)
   },
-  createCv(payload) {
-    if (config.useMockData) {
-      return withMockDelay({
-        ...payload,
-        id: 'mock-cv-new',
-        status: 'submitted',
-        updatedAt: new Date().toISOString(),
-        previewScore: createMockPreview(payload).completenessScore
-      })
-    }
-
-    return client.post(API_CV_URL, payload) as Promise<CvRecord>
+  async createCv(payload) {
+    if (config.useMockData) return withMockDelay(normalizeRecord({ id: 'mock-cv-new' }, payload))
+    const response = await client.post(API_CV_URL, toBackendPayload(payload))
+    return normalizeRecord(response, payload)
   },
-  updateCv(cvId, payload) {
-    if (config.useMockData) {
-      return withMockDelay({
-        ...payload,
-        id: cvId,
-        status: 'submitted',
-        updatedAt: new Date().toISOString(),
-        previewScore: createMockPreview(payload).completenessScore
-      })
-    }
-
-    return client.put(`${API_CV_URL}/${cvId}`, payload) as Promise<CvRecord>
+  async updateCv(cvId, payload) {
+    if (config.useMockData) return withMockDelay(normalizeRecord({ id: cvId }, payload))
+    const response = await client.put(`${API_CV_URL}/${cvId}`, toBackendPayload(payload))
+    return normalizeRecord(response, payload)
   },
   async uploadAvatar(file) {
-    if (config.useMockData) {
-      return withMockDelay({
-        avatarUrl: URL.createObjectURL(file)
-      })
-    }
-
+    if (config.useMockData) return withMockDelay({ avatarUrl: URL.createObjectURL(file) })
     const formData = new FormData()
     formData.append('file', file)
-
-    const res = (await client.post(API_UPLOAD_AVATAR_URL, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    })) as { avatarUrl?: string; url?: string }
-
-    return { avatarUrl: res.avatarUrl || res.url || '' }
+    const response = (await client.post('/api/v1/media/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })) as { avatarUrl?: string; url?: string; data?: { url?: string } }
+    return { avatarUrl: response.avatarUrl || response.url || response.data?.url || '' }
   },
-  validatePreview(payload) {
-    if (config.useMockData) {
-      return withMockDelay(createMockPreview(payload))
+  async validatePreview(payload) {
+    if (config.useMockData) return withMockDelay(createPreview(payload))
+    try {
+      return (await client.post(`${API_CV_URL}/preview`, payload)) as CvPreviewResponse
+    } catch {
+      return createPreview(payload)
     }
-
-    return client.post(API_PREVIEW_CV_URL, payload) as Promise<CvPreviewResponse>
   }
 })
 

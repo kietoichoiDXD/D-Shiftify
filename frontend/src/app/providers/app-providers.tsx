@@ -1,6 +1,5 @@
 import { type ReactNode } from 'react'
 
-import { ReactLenis } from 'lenis/react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { BrowserRouter } from 'react-router-dom'
 import { Flip, ToastContainer } from 'react-toastify'
@@ -22,20 +21,12 @@ const AppProviders = ({ children }: AppProvidersProps) => {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback} onReset={handleReload}>
       <BrowserRouter>
-        <ReactLenis
-          root
-          options={{
-            lerp: 0.1,
-            duration: 1.4
-          }}
-        >
-          <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
-            <QueryProvider>
-              <ToastContainer className='rounded-lg' transition={Flip} />
-              {children}
-            </QueryProvider>
-          </ThemeProvider>
-        </ReactLenis>
+        <ThemeProvider defaultTheme='system' storageKey='vite-ui-theme'>
+          <QueryProvider>
+            <ToastContainer className='rounded-lg' transition={Flip} />
+            {children}
+          </QueryProvider>
+        </ThemeProvider>
       </BrowserRouter>
     </ErrorBoundary>
   )

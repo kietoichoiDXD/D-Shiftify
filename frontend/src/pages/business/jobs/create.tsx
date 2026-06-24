@@ -1,5 +1,6 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { FigmaBusinessJobCreatePage } from '@/pages/_shared/figma-web-screens'
 
 export default function BusinessJobCreatePage() {
-  return <PlaceholderPage title='Create Job' description='Create a new accessible job listing for candidates.' />
+  return <FigmaBusinessJobCreatePage />
 }
+

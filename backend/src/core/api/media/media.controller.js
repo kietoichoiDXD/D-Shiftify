@@ -1,6 +1,5 @@
 import { DeleteFileDto, MediaService } from 'core/modules/document';
 import { ValidHttpResponse } from 'packages/handler/response/validHttp.response';
-import { getUserContext } from 'packages/authModel/module/user';
 
 class Controller {
     constructor() {
@@ -8,14 +7,12 @@ class Controller {
     }
 
     uploadMany = async req => {
-        const { id } = getUserContext(req);
-        const data = await this.service.uploadMany(req.files, 'media', id);
+        const data = await this.service.uploadMany(req.files);
         return ValidHttpResponse.toOkResponse(data);
     };
 
     deleteMany = async req => {
-        const { id } = getUserContext(req);
-        const data = await this.service.deleteMany(DeleteFileDto(req.body).ids, id);
+        const data = await this.service.deleteMany(DeleteFileDto(req.body).ids);
         return ValidHttpResponse.toOkResponse(data);
     };
 }

@@ -1,5 +1,5 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { FigmaProfileUpdatePage } from '@/pages/disability/cv/components/figma-cv-screens'
 
 export default function DisabilityProfileUpdatePage() {
-  return <PlaceholderPage title='Update Disability Profile' description='Update disability user profile details and accessibility preferences.' />
+  return <FigmaProfileUpdatePage />
 }

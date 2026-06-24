@@ -4,30 +4,36 @@ import { numberConstants } from '@/core/configs/consts'
 
 import { validator } from '../helpers/validator'
 
-export const RegisterSchema = z.object({
-  name: z.string().min(numberConstants.TWO, {
-    message: 'Name is valid.'
-  }),
-  email: z.string().min(numberConstants.TWO, {
-    message: 'Email is valid.'
-  }),
-  password: z
-    .string()
-    .min(numberConstants.ONE, {
-      message: 'Password is required'
-    })
-    .regex(validator.passwordRegex, {
-      message: 'Password must be at least 5 characters long, contain at least one uppercase letter and one number'
+export const RegisterSchema = z
+  .object({
+    name: z.string().min(numberConstants.TWO, {
+      message: 'Họ và tên phải có ít nhất 2 ký tự.'
+    }).optional(),
+    full_name: z.string().min(numberConstants.TWO, {
+      message: 'Họ và tên phải có ít nhất 2 ký tự.'
+    }).optional(),
+    email: z.string().email({
+      message: 'Email không hợp lệ.'
     }),
-  confirmPassword: z
-    .string()
-    .min(numberConstants.ONE, {
-      message: 'Password is required'
-    })
-    .regex(validator.passwordRegex, {
-      message: 'Password must be at least 5 characters long, contain at least one uppercase letter and one number'
+    phone: z.string().min(numberConstants.TEN, {
+      message: 'Số điện thoại phải có ít nhất 10 ký tự.'
     }),
-  phone: z.string().min(numberConstants.TEN, {
-    message: 'Phone number must be at least 10 characters.'
+    password: z
+      .string()
+      .min(numberConstants.ONE, {
+        message: 'Vui lòng nhập mật khẩu.'
+      })
+      .regex(validator.passwordRegex, {
+        message: 'Mật khẩu phải có ít nhất 5 ký tự, một chữ in hoa và một số.'
+      }),
+    confirmPassword: z.string().min(numberConstants.ONE, {
+      message: 'Vui lòng nhập lại mật khẩu.'
+    }),
+    role: z.enum(['candidate', 'educator', 'business'], {
+      required_error: 'Vui lòng chọn vai trò.'
+    }).optional()
   })
-})
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Mật khẩu nhập lại không khớp.',
+    path: ['confirmPassword']
+  })

@@ -1,5 +1,6 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { FigmaCandidateJobsPage } from '@/pages/_shared/figma-web-screens'
 
 export default function DisabilityJobsPage() {
-  return <PlaceholderPage title='Job Discovery' description='Discover accessible jobs, filter opportunities, and compare matching scores.' />
+  return <FigmaCandidateJobsPage />
 }
+

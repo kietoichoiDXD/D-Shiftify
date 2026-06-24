@@ -1,5 +1,6 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { FigmaBusinessProfilePage } from '@/pages/_shared/figma-web-screens'
 
 export default function BusinessProfilePage() {
-  return <PlaceholderPage title='Business Profile' description='View business profile information for inclusive recruitment.' />
+  return <FigmaBusinessProfilePage edit={false} />
 }
+

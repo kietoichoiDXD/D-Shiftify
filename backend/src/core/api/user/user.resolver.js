@@ -30,12 +30,6 @@ export const UserResolver = Module.builder()
             preAuthorization: false,
         },
         {
-            route: '/me',
-            method: 'get',
-            controller: UserController.me,
-            preAuthorization: true,
-        },
-        {
             route: '/:id',
             method: 'get',
             params: [RecordId],

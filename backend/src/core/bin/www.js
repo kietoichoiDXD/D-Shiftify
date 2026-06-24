@@ -9,10 +9,9 @@ import debug from 'debug';
 import http from 'http';
 import app from '../index';
 import { PORT } from '../env';
-import { initSocket } from '../socket';
-import { closeDatabase } from '../database';
-import { markAppShuttingDown } from '../config/bundle.config';
 import { logger } from '../../packages/logger';
+import { initializeChatGateway } from '../modules/chat/socket';
+
 
 const dubugHelper = debug('mongoose:server');
 
@@ -48,7 +47,8 @@ app.set('port', port);
  */
 
 const server = http.createServer(app);
-const io = initSocket(server);
+
+initializeChatGateway(server);
 /**
  * Event listener for HTTP server "error" event.
  */
@@ -85,41 +85,6 @@ function onListening() {
     dubugHelper(`Listening on ${bind}`);
 }
 
-const closeHttpServer = () => new Promise((resolve, reject) => {
-    server.close(error => {
-        if (error) return reject(error);
-        logger.info('HTTP server closed');
-        return resolve();
-    });
-});
-
-const closeSocketServer = () => new Promise(resolve => {
-    io.close(() => {
-        logger.info('Socket.io server closed');
-        resolve();
-    });
-});
-
-let isShuttingDown = false;
-
-async function gracefulShutdown(signal) {
-    if (isShuttingDown) return;
-    isShuttingDown = true;
-    markAppShuttingDown();
-
-    logger.info(`${signal} received. Starting graceful shutdown`);
-
-    try {
-        await closeSocketServer();
-        await closeHttpServer();
-        await closeDatabase();
-        process.exit(0);
-    } catch (error) {
-        logger.error(`Graceful shutdown failed: ${error.message}`);
-        process.exit(1);
-    }
-}
-
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -129,5 +94,3 @@ server.listen(port, () => {
 });
 server.on('error', onError);
 server.on('listening', onListening);
-process.on('SIGINT', () => gracefulShutdown('SIGINT'));
-process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

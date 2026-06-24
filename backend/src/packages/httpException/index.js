@@ -5,4 +5,3 @@ export * from './InternalExeption';
 export * from './NotFoundException';
 export * from './UnprocessableEntityExeception';
 export * from './BadRequestException';
-export * from './ForbiddenException';

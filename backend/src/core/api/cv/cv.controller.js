@@ -1,61 +1,84 @@
-import { getUserContext } from 'packages/authModel/module/user';
-import { candidateService } from 'core/modules/candidate/candidate.service';
 import { ValidHttpResponse } from 'packages/handler/response/validHttp.response';
+import { CVService } from 'core/modules/cv/service/cv.service';
+import { getUserContext } from 'packages/authModel/module/user';
 
 class Controller {
-    getMine = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.getProfileByUserId(id);
-        return ValidHttpResponse.toOkResponse(profile);
-    };
+  constructor() {
+    this.service = CVService;
+  }
 
-    create = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.createProfile(id, req.body);
-        return ValidHttpResponse.toCreatedResponse(profile);
-    };
+  createOne = async req => {
+    const userId = getUserContext(req).payload.id;
+    const data = await this.service.createOne({ ...req.body, userId });
 
-    update = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.updateProfile(id, req.body);
-        return ValidHttpResponse.toOkResponse(profile);
-    };
+    return ValidHttpResponse.toCreatedResponse(data);
+  };
 
-    addEducation = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.addEducation(id, req.body);
-        return ValidHttpResponse.toCreatedResponse(profile);
-    };
+  findCurrent = async req => {
+    const userId = getUserContext(req).payload.id;
+    const data = await this.service.getCurrentCv(userId);
+    return ValidHttpResponse.toOkResponse({ status: 'success', data });
+  };
 
-    updateEducation = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.updateEducation(id, req.params.educationId, req.body);
-        return ValidHttpResponse.toOkResponse(profile);
-    };
+  findById = async req => {
+    const userId = getUserContext(req).payload.id;
+    const data = await this.service.getCvById(req.params.id, userId);
 
-    deleteEducation = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.deleteEducation(id, req.params.educationId);
-        return ValidHttpResponse.toOkResponse(profile);
-    };
+    return ValidHttpResponse.toOkResponse(data);
+  };
 
-    addExperience = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.addExperience(id, req.body);
-        return ValidHttpResponse.toCreatedResponse(profile);
-    };
+  updateCV = async req => {
+    const userId = getUserContext(req).payload.id;
+    const data = await this.service.updateCV(req.params.id, req.body, userId);
 
-    updateExperience = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.updateExperience(id, req.params.experienceId, req.body);
-        return ValidHttpResponse.toOkResponse(profile);
-    };
+    return ValidHttpResponse.toOkResponse(data);
+  };
 
-    deleteExperience = async req => {
-        const { id } = getUserContext(req);
-        const profile = await candidateService.deleteExperience(id, req.params.experienceId);
-        return ValidHttpResponse.toOkResponse(profile);
-    };
+  getDisabilityOptions = async () => ValidHttpResponse.toOkResponse({
+    statuses: [
+      { id: 'none', label: 'Không có' },
+      { id: 'visual_complete', label: 'Khiếm thị hoàn toàn' },
+      { id: 'visual_partial', label: 'Khiếm thị không hoàn toàn' },
+      { id: 'hearing', label: 'Khiếm thính' },
+      { id: 'mobility', label: 'Khuyết tật vận động' },
+      { id: 'other', label: 'Khác' },
+    ],
+    genders: [
+      { id: 'male', label: 'Nam' },
+      { id: 'female', label: 'Nữ' },
+      { id: 'other', label: 'Khác' },
+    ],
+    disabilityTypes: [],
+    disabilityLevels: [],
+    workTimes: [
+      { id: 'full_time', label: 'Toàn thời gian' },
+      { id: 'part_time', label: 'Bán thời gian' },
+    ],
+    workModes: [
+      { id: 'remote', label: 'Từ xa' },
+      { id: 'onsite', label: 'Tại văn phòng' },
+      { id: 'hybrid', label: 'Kết hợp' },
+    ],
+    softSkillOptions: [],
+    hardSkillOptions: [],
+    workConditions: [],
+    equipment: [],
+    certifications: [],
+  });
+
+  preview = async req => {
+    const value = req.body || {};
+    const fields = [value.fullName, value.phone || value.email, value.disabilityStatus,
+      value.careerGoals, value.hardSkills, value.softSkills, value.education, value.experience];
+    const completenessScore = Math.round((fields.filter(item => String(item || '').trim()).length / fields.length) * 100);
+    return ValidHttpResponse.toOkResponse({
+      completenessScore,
+      summary: `${value.fullName || 'Ứng viên'} đang xác nhận hồ sơ năng lực.`,
+      warnings: completenessScore < 75 ? ['Bổ sung thêm kỹ năng và kinh nghiệm để tăng độ phù hợp.'] : [],
+      sections: [],
+    });
+  };
+
 }
 
-export const CvController = new Controller();
+export const CVController = new Controller();

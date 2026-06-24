@@ -1,77 +1,117 @@
-import { hasAdminOrSuperAdminRole, hasEmployerRole } from 'core/modules/auth/guard';
-import {
-    CreateJobInterceptor,
-    JobFilterInterceptor,
-    UpdateJobInterceptor,
-} from 'core/modules/recruitment';
 import { Module } from 'packages/handler/Module';
-import { CompanyLogoInterceptor } from 'core/modules/document/interceptor';
-import { RecruitmentController } from '../recruitment/recruitment.controller';
+import { ValidateJobIdInterceptor, PostJobInterceptor, UpdateJobInterceptor, GetJobsInterceptor, GetAdminJobsInterceptor, GetRecruiterJobsInterceptor } from 'core/modules/job';
+import { hasRecruiterRole, hasAdminRole } from 'core/modules/auth/guard/role.manager';
+import { RecordUuid } from 'core/common/swagger/record-uuid';
+import { QueryCriteriaDocument } from 'core/common/swagger/filter';
+
+import { JobController } from './job.controller';
 
 export const JobResolver = Module.builder()
     .addPrefix({
-        prefixPath: '/v1',
-        tag: 'v1-jobs',
-        module: 'V1JobModule',
+        prefixPath: '/jobs',
+        tag: 'job',
+        module: 'JobModule',
     })
     .register([
         {
-            route: '/jobs',
+            route: '/assistive-devices',
             method: 'get',
-            interceptors: [JobFilterInterceptor],
-            controller: RecruitmentController.listJobs,
+            controller: JobController.getAssistiveDevices,
         },
         {
-            route: '/jobs/:jobId',
+            route: '/:id',
             method: 'get',
-            controller: RecruitmentController.getJobById,
+            params: [RecordUuid],
+            interceptors: [ValidateJobIdInterceptor],
+            controller: JobController.getJobById,
         },
         {
-            route: '/jobs',
-            method: 'post',
-            interceptors: [CreateJobInterceptor],
-            guards: [hasEmployerRole],
-            body: 'CreateJobDto',
-            controller: RecruitmentController.createJob,
-            preAuthorization: true,
-        },
-        {
-            route: '/jobs/:jobId',
-            method: 'patch',
-            interceptors: [UpdateJobInterceptor],
-            guards: [hasEmployerRole],
-            controller: RecruitmentController.updateJob,
-            preAuthorization: true,
-        },
-        {
-            route: '/jobs/:jobId',
+            route: '/:id',
             method: 'delete',
-            guards: [hasEmployerRole],
-            controller: RecruitmentController.deleteJob,
+            params: [RecordUuid],
+            interceptors: [ValidateJobIdInterceptor],
+            controller: JobController.deletedJobById,
             preAuthorization: true,
+            guards: [hasRecruiterRole]
         },
         {
-            route: '/jobs/:jobId/logo',
+            route: '/',
             method: 'post',
-            consumes: ['multipart/form-data'],
-            interceptors: [new CompanyLogoInterceptor()],
-            guards: [hasEmployerRole],
-            controller: RecruitmentController.uploadCompanyLogo,
+            body: 'PostJobDto',
+            interceptors: [PostJobInterceptor],
+            controller: JobController.createJob,
             preAuthorization: true,
+            guards: [hasRecruiterRole]
         },
         {
-            route: '/recruiter/jobs',
-            method: 'get',
-            guards: [hasEmployerRole],
-            controller: RecruitmentController.getMyJobs,
+            route: '/:id',
+            method: 'patch',
+            params: [RecordUuid],
+            body: 'UpdateJobDto',
+            interceptors: [ValidateJobIdInterceptor, UpdateJobInterceptor],
+            controller: JobController.updateJobById,
             preAuthorization: true,
+            guards: [hasRecruiterRole]
         },
         {
-            route: '/admin/jobs',
+            route: '/',
             method: 'get',
-            interceptors: [JobFilterInterceptor],
-            guards: [hasAdminOrSuperAdminRole],
-            controller: RecruitmentController.getAdminJobs,
-            preAuthorization: true,
-        },
+            params: [
+                QueryCriteriaDocument.page(),
+                QueryCriteriaDocument.limit(),
+                QueryCriteriaDocument.search('Search by title'),
+                QueryCriteriaDocument.job_type(),
+                QueryCriteriaDocument.work_mode(),
+                QueryCriteriaDocument.location(),
+                QueryCriteriaDocument.min_salary()
+            ],
+            interceptors: [GetJobsInterceptor],
+            controller: JobController.getJobs,
+        }
     ]);
+
+export const AdminJobResolver = Module.builder()
+    .addPrefix({
+        prefixPath: '/admin/jobs',
+        tag: 'job',
+        module: 'AdminJobModule',
+    })
+    .register([
+        {
+            route: '/',
+            method: 'get',
+            params: [
+                QueryCriteriaDocument.page(),
+                QueryCriteriaDocument.limit(),
+                QueryCriteriaDocument.search('Search by title or company name'),
+                QueryCriteriaDocument.status('Filter by status (open, closed, paused)'),
+            ],
+            interceptors: [GetAdminJobsInterceptor],
+            controller: JobController.getAdminJobs,
+            preAuthorization: true,
+            guards: [hasAdminRole],
+        }
+    ]);
+
+export const RecruiterJobResolver = Module.builder()
+    .addPrefix({
+        prefixPath: '/recruiter/jobs',
+        tag: 'job',
+        module: 'RecruiterJobModule',
+    })
+    .register([
+        {
+            route: '/',
+            method: 'get',
+            params: [
+                QueryCriteriaDocument.page(),
+                QueryCriteriaDocument.limit(),
+                QueryCriteriaDocument.status('Filter by status (open, closed, paused)'),
+            ],
+            interceptors: [GetRecruiterJobsInterceptor],
+            controller: JobController.getRecruiterJobs,
+            preAuthorization: true,
+            guards: [hasRecruiterRole],
+        }
+    ]);
+

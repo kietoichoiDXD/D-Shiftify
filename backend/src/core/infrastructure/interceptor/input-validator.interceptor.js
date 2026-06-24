@@ -19,31 +19,9 @@ export class AbstractInputValidatorInterceptor {
      */
     getResponseErrorHandler(res, error) { return responseJoiError(res, error); }
 
-    assignValidatedValue(req, value) {
-        switch (req.method) {
-            case 'POST':
-            case 'PUT':
-            case 'PATCH':
-            case 'DELETE':
-                req.body = value;
-                break;
-            case 'GET':
-            default:
-                req.query = value;
-        }
-    }
-
     intercept = async (req, res, next) => {
         try {
-            const value = await this.getSchema(req).validateAsync(
-                this.getValueToValidate(req),
-                {
-                    abortEarly: false,
-                    allowUnknown: false,
-                    stripUnknown: false,
-                },
-            );
-            this.assignValidatedValue(req, value);
+            await this.getSchema(req).validateAsync(this.getValueToValidate(req), { abortEarly: false });
             return next();
         } catch (error) {
             return this.getResponseErrorHandler(res, error);

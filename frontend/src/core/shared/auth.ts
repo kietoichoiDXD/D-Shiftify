@@ -1,13 +1,8 @@
-import { getAccessTokenFromLS, getRefreshTokenFromLS, getUserFromLocalStorage } from '@/core/shared/storage'
 import { type AuthState } from '@/core/store/features/auth/types'
+import { type AuthUser } from '@/models/interface/auth.interfaces'
 
-export const getPersistedAuth = (): Partial<AuthState> => {
-  const access_token = getAccessTokenFromLS()
-  const refresh_token = getRefreshTokenFromLS()
-  const user = getUserFromLocalStorage()
+export const getPersistedAuth = (): Partial<AuthState> => ({})
 
-  return access_token ? { access_token, refresh_token, user, isAuthenticated: true } : {}
-}
+export const isAuthenticated = (): boolean => false
 
-export const isAuthenticated = (): boolean => !!getPersistedAuth().access_token
-export const getCurrentUser = () => getPersistedAuth().user
+export const getCurrentUser = (): AuthUser | null => null

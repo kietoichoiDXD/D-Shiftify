@@ -1,0 +1,5 @@
+export { FigmaBusinessJobCreatePage } from './figma-web/business-job-create-page'
+export { FigmaBusinessProfilePage } from './figma-web/business-profile-page'
+export { FigmaCandidateJobsPage } from './figma-web/candidate-jobs-page'
+export { FigmaEducatorClassCreatePage } from './figma-web/educator-class-create-page'
+export { FigmaEducatorProfilePage } from './figma-web/educator-profile-page'

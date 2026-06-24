@@ -9,14 +9,14 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({ message, onReadMessage }: MessageBubbleProps) {
-  const isCandidate = message.sender === 'candidate'
+  const isMine = message.isMine
   const senderLabel = getRoleLabel(message.sender)
 
   return (
-    <article className={`flex ${isCandidate ? 'justify-end' : 'justify-start'}`}>
+    <article className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
       <div
         className={`w-full max-w-[86%] rounded-md border-2 border-black p-4 ${
-          isCandidate ? 'bg-black text-white' : 'bg-white text-black'
+          isMine ? 'bg-black text-white' : 'bg-white text-black'
         }`}
       >
         <div className='flex items-start justify-between gap-3'>

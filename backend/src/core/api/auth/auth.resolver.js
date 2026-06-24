@@ -1,29 +1,20 @@
-import { LoginInterceptor, RefreshTokenInterceptor } from 'core/modules/auth';
-import { ZodValidatorInterceptor } from 'core/infrastructure/interceptor';
-import { ForgotPasswordSchema, ResetPasswordSchema } from 'core/modules/auth/dto/password-reset.dto';
-import { CreateUserInterceptor } from 'core/modules/user/interceptor';
-import { Module } from 'packages/handler/Module';
-// Register Auth Swagger models for forgot/reset password (side-effect import)
-import 'core/common/swagger/auth.swagger';
-import { AuthController } from './auth.controller';
+import {
+    LoginInterceptor,
+    RegisterInterceptor,
 
-const ForgotPasswordInterceptor = new ZodValidatorInterceptor(ForgotPasswordSchema, 'body');
-const ResetPasswordInterceptor = new ZodValidatorInterceptor(ResetPasswordSchema, 'body');
+    ForgotPasswordInterceptor,
+    ResetPasswordInterceptor,
+} from 'core/modules/auth';
+import { Module } from 'packages/handler/Module';
+import { AuthController } from './auth.controller';
 
 export const AuthResolver = Module.builder()
     .addPrefix({
         prefixPath: '/auth',
         tag: 'auth',
-        module: 'AuthModule'
+        module: 'AuthModule',
     })
     .register([
-        {
-            route: '/',
-            method: 'post',
-            interceptors: [LoginInterceptor],
-            body: 'LoginDto',
-            controller: AuthController.login,
-        },
         {
             route: '/login',
             method: 'post',
@@ -34,29 +25,14 @@ export const AuthResolver = Module.builder()
         {
             route: '/register',
             method: 'post',
-            interceptors: [CreateUserInterceptor],
-            body: 'CreateUserDto',
+            interceptors: [RegisterInterceptor],
+            body: 'RegisterDto',
             controller: AuthController.register,
-        },
-        {
-            route: '/refresh-token',
-            method: 'post',
-            interceptors: [RefreshTokenInterceptor],
-            body: 'RefreshTokenDto',
-            controller: AuthController.refreshToken,
         },
         {
             route: '/refresh',
             method: 'post',
-            interceptors: [RefreshTokenInterceptor],
-            body: 'RefreshTokenDto',
-            controller: AuthController.refreshToken,
-        },
-        {
-            route: '/logout',
-            method: 'post',
-            controller: AuthController.logout,
-            preAuthorization: true,
+            controller: AuthController.refresh,
         },
         {
             route: '/forgot-password',
@@ -71,5 +47,10 @@ export const AuthResolver = Module.builder()
             interceptors: [ResetPasswordInterceptor],
             body: 'ResetPasswordDto',
             controller: AuthController.resetPassword,
+        },
+        {
+            route: '/logout',
+            method: 'post',
+            controller: AuthController.logout,
         },
     ]);

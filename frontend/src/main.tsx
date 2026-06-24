@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 
+import { Agentation } from 'agentation'
 import { createRoot } from 'react-dom/client'
 
 import AppProviders from './app/providers/app-providers'
@@ -17,6 +18,7 @@ createRoot(rootElement).render(
   <StrictMode>
     <AppProviders>
       <App />
+      {process.env.NODE_ENV === 'development' && <Agentation />}
     </AppProviders>
   </StrictMode>
 )

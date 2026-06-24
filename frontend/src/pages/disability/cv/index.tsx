@@ -1,5 +1,5 @@
-import CvBuilderPage from './components/cv-builder-page'
+import { FigmaCvUpdatePage } from './components/figma-cv-screens'
 
 export default function DisabilityCvPage() {
-  return <CvBuilderPage mode='create' />
+  return <FigmaCvUpdatePage />
 }

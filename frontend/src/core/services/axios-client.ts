@@ -8,9 +8,10 @@ import {
   getRefreshTokenFromLS,
   removeAccessTokenFromLS,
   removeRefreshTokenFromLS,
-  setAccessTokenToLS
+  setAccessTokenToLS,
+  setRefreshTokenToLS
 } from '@/core/shared/storage'
-import { type LoginResponse } from '@/models/interface/auth.interfaces'
+import { useAuthStore } from '@/core/store/features/auth/authStore'
 
 const controllers = new Map<string, AbortController>()
 let isRefreshing = false
@@ -34,21 +35,13 @@ const axiosClient = axios.create({
   }
 })
 
-const refreshTokenClient = axios.create({
+const refreshClient = axios.create({
   baseURL: config.baseUrl,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: true
 })
-
-const refreshAccessToken = async (refreshToken: string) => {
-  const response = await refreshTokenClient.post<LoginResponse>('/auth/refresh-token', {
-    refresh_token: refreshToken
-  })
-
-  return response.data
-}
-
 axiosClient.interceptors.request.use(
   (config) => {
     if (config.url) {
@@ -125,8 +118,26 @@ axiosClient.interceptors.response.use(
           return Promise.reject(error)
         }
 
-        const { access_token } = await refreshAccessToken(refresh_token)
+        const { data: refreshResponse } = await refreshClient.post('/api/v1/auth/refresh', {
+          refresh_token
+        })
+        const access_token = refreshResponse?.data?.access_token || refreshResponse?.access_token
+        const next_refresh_token = refreshResponse?.data?.refresh_token || refreshResponse?.refresh_token
+
+        if (!access_token) {
+          throw new Error('Refresh response is missing access_token')
+        }
+
+        // Save access token to LocalStorage and update Zustand store state
         setAccessTokenToLS(access_token)
+        useAuthStore.setState({ access_token, isAuthenticated: true })
+
+        // Save rotated refresh token if returned by backend to prevent token reuse failure
+        if (next_refresh_token) {
+          setRefreshTokenToLS(next_refresh_token)
+          useAuthStore.setState({ refresh_token: next_refresh_token })
+        }
+
         originalRequest.headers.Authorization = `Bearer ${access_token}`
         processQueue(null, access_token)
         return axiosClient(originalRequest)

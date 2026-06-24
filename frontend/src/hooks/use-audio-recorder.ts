@@ -6,6 +6,7 @@ export const useAudioRecorder = () => {
   const audioUrlRef = useRef('')
   const chunksRef = useRef<Blob[]>([])
   const [audioUrl, setAudioUrl] = useState('')
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [recorderError, setRecorderError] = useState('')
   const [isRecording, setIsRecording] = useState(false)
 
@@ -34,6 +35,7 @@ export const useAudioRecorder = () => {
     try {
       setRecorderError('')
       setNextAudioUrl('')
+      setAudioBlob(null)
       chunksRef.current = []
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -51,6 +53,7 @@ export const useAudioRecorder = () => {
         const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' })
 
         if (audioBlob.size > 0) {
+          setAudioBlob(audioBlob)
           setNextAudioUrl(URL.createObjectURL(audioBlob))
         }
 
@@ -80,6 +83,7 @@ export const useAudioRecorder = () => {
 
   const resetRecording = useCallback(() => {
     setNextAudioUrl('')
+    setAudioBlob(null)
     chunksRef.current = []
   }, [setNextAudioUrl])
 
@@ -101,6 +105,7 @@ export const useAudioRecorder = () => {
 
   return {
     audioUrl,
+    audioBlob,
     isRecording,
     recorderError,
     resetRecording,

@@ -11,14 +11,6 @@ export const Role = {
         name: 'ADMIN',
         permissions: ['TEST_AUTHORIZATION']
     },
-    EMPLOYER: {
-        name: 'EMPLOYER',
-        permissions: ['TEST_AUTHORIZATION']
-    },
-    CANDIDATE: {
-        name: 'CANDIDATE',
-        permissions: ['TEST_AUTHORIZATION']
-    },
     SUPER_ADMIN: {
         name: 'SUPER_ADMIN',
         permissions: ['TEST_AUTHORIZATION']

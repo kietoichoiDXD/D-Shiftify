@@ -22,6 +22,8 @@ const DISABILITY = {
   NOTIFICATIONS: '/disability/notifications',
   NOTIFICATION_DETAIL: '/disability/notifications/:id',
   MESSAGES: '/disability/messages',
+  MESSAGES_BUSINESS: '/disability/messages/business',
+  MESSAGES_EDUCATOR: '/disability/messages/educator',
   JOBS: '/disability/jobs',
   JOB_DETAIL: '/disability/jobs/:id',
   JOB_MATCH_DETAIL: '/disability/jobs/:id/match',
@@ -30,6 +32,7 @@ const DISABILITY = {
   PROFILE_UPDATE: '/disability/profile/update',
   CV: '/disability/cv',
   CV_PREVIEW: '/disability/cv/preview',
+  CV_CONFIRM: '/disability/cv/confirm',
   CV_EDIT: '/disability/cv/edit/:id',
   CV_UPDATE: '/disability/cv/update',
   ROOT: '/'
@@ -47,6 +50,13 @@ const BUSINESS = {
   SCHEDULE: '/business/schedule',
   PROFILE: '/business/profile',
   PROFILE_UPDATE: '/business/profile/update'
+} as const
+
+const EDUCATOR = {
+  DASHBOARD: '/dashboard/educator',
+  PROFILE_UPDATE: '/educator/profile/update',
+  COURSE_CREATE: '/educator/courses/create',
+  CLASS_CREATE: '/educator/classes/create'
 } as const
 
 const ADMIN = {
@@ -67,6 +77,7 @@ export const ROUTE = {
   COMMON_PRIVATE,
   DISABILITY,
   BUSINESS,
+  EDUCATOR,
   ADMIN
 } as const
 

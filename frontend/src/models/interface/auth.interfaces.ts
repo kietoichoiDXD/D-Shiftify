@@ -1,8 +1,8 @@
-import { User } from "./user.interfaces"
+import { type User } from './user.interfaces'
 
 export interface TokenResponse {
-  access_token: string
-  refresh_token: string
+  accessToken: string
+  refreshToken: string
 }
 
 export interface LoginRequest {
@@ -10,10 +10,41 @@ export interface LoginRequest {
   password: string
 }
 
+export interface AuthUser {
+  id: string
+  email: string
+  role: string
+  fullName: string | null
+  name?: string
+}
+
+export interface LoginResponse {
+  accessToken: string
+  refreshToken: string
+  expiresIn: number
+  user: AuthUser
+}
+
+export interface ApiError {
+  status: number
+  code: string
+  message: string
+}
+
 export interface RegisterRequest {
   email: string
+  phone: string
   password: string
-  confirm_password: string
+  role: string
+  full_name: string
+}
+
+export interface ForgotPasswordRequest {
+  email: string
+}
+
+export interface ForgotPasswordResponse {
+  message: string
 }
 
 export interface AuthState {
@@ -29,31 +60,12 @@ export interface APIResponse<T> {
   success?: boolean
 }
 
-export interface LoginApiResponse {
-  data: LoginResponse
-  message: string
-}
-
-export interface LoginResponse {
-  user: { id: string; name: string; email: string; role: string }
-  access_token: string
-  refresh_token: string
-}
-
-export interface Account {
-  email?: string
-  password?: string
-  confirmPassword?: string
-  name?: string
-  phone?: string
-}
-
 export interface RegisterReponse {
-  name: string
+  fullName?: string
+  full_name?: string
   email: string
-  password: string
-  confirmPassword: string
-  phone?: string
+  phone: string
+  role: string
 }
 
 export interface VerifyEmailReq {
@@ -63,10 +75,4 @@ export interface VerifyEmailReq {
 
 export interface VerifyEmailRes {
   message: string
-}
-
-export interface RememberMeData {
-  email: string
-  password: string
-  isRemembered: boolean
 }

@@ -1,5 +1,5 @@
 import { sign, decode, verify } from 'jsonwebtoken';
-import { JWT_REFRESH_SECRET, JWT_SECRET, EXPIRE_DAYS, REFRESH_EXPIRE_DAYS } from '../../../env';
+import { JWT_SECRET, EXPIRE_DAYS } from '../../../env';
 import { logger } from '../../../../packages/logger';
 
 class Jwt {
@@ -13,22 +13,7 @@ class Jwt {
 
     sign(payload) {
         return sign(payload, this.secret, {
-            algorithm: 'HS256',
             expiresIn: this.expiresIn
-        });
-    }
-
-    signRefreshToken(payload) {
-        return sign(payload, JWT_REFRESH_SECRET, {
-            algorithm: 'HS256',
-            expiresIn: REFRESH_EXPIRE_DAYS
-        });
-    }
-
-    signPasswordResetToken(payload) {
-        return sign({ ...payload, tokenType: 'password_reset' }, JWT_REFRESH_SECRET, {
-            algorithm: 'HS256',
-            expiresIn: '15m',
         });
     }
 
@@ -37,19 +22,7 @@ class Jwt {
     }
 
     verify(token) {
-        return verify(token, this.secret, { algorithms: ['HS256'] });
-    }
-
-    verifyRefreshToken(token) {
-        return verify(token, JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
-    }
-
-    verifyPasswordResetToken(token) {
-        const payload = verify(token, JWT_REFRESH_SECRET, { algorithms: ['HS256'] });
-        if (payload?.tokenType !== 'password_reset') {
-            throw new Error('Invalid reset token type');
-        }
-        return payload;
+        return verify(token, this.secret);
     }
 }
 

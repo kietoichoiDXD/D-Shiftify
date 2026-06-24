@@ -4,13 +4,18 @@ export class UnionRoleGuard {
     #unionRoles;
 
     constructor(...roles) {
-        this.#unionRoles = roles.flat();
+        this.#unionRoles = roles;
     }
 
     canActive(req) {
         const user = getUserContext(req);
-        return user.roles
-            .some(userRole => this.#unionRoles
-                .some(roleMayRequired => roleMayRequired === userRole));
+        if (!user || !user.roles) return false;
+        return user.roles.some(userRole =>
+            typeof userRole === 'string' &&
+            this.#unionRoles.some(roleMayRequired =>
+                typeof roleMayRequired === 'string' &&
+                roleMayRequired.toLowerCase() === userRole.toLowerCase()
+            )
+        );
     }
 }

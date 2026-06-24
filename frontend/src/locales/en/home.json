@@ -1,90 +1,84 @@
 {
   "home": {
     "hero": {
-      "title": "React TypeScript Boilerplate",
-      "description": "A modern, feature-rich React TypeScript boilerplate with best practices, performance optimizations, and developer experience in mind.",
-      "getStarted": "Get Started",
-      "viewGithub": "View on GitHub"
+      "title": "Shiftify",
+      "description": "An accessible job matching and CV platform built for people with disabilities, explainable AI, and voice-first workflows."
     },
     "features": {
-      "title": "Features",
-      "description": "Everything you need to build modern React applications",
+      "title": "Product capabilities",
+      "description": "Designed for candidates, employers, and educators to move quickly with clarity and accessibility.",
       "typescript": {
-        "title": "TypeScript",
-        "description": "Built with TypeScript for better development experience and type safety"
+        "title": "Strong structure",
+        "description": "The codebase is organized to stay maintainable and easy to extend."
       },
       "modernStack": {
-        "title": "Modern Stack",
-        "description": "Latest React features, Vite, TailwindCSS, and more"
+        "title": "Modern stack",
+        "description": "Frontend, backend, and AI are connected in a production-friendly architecture."
       },
       "performance": {
         "title": "Performance",
-        "description": "Optimized for performance with code splitting and lazy loading"
+        "description": "Fast response times and controlled loading keep the experience smooth."
       },
       "developerExperience": {
-        "title": "Developer Experience",
-        "description": "Great developer experience with hot reload and TypeScript support"
+        "title": "Developer experience",
+        "description": "Clear flows make debugging, onboarding, and handoff easier."
       },
       "bestPractices": {
-        "title": "Best Practices",
-        "description": "Follows React best practices and modern development standards"
+        "title": "Best practices",
+        "description": "Reliability, accessibility, and long-term maintainability come first."
       },
       "readyToUse": {
-        "title": "Ready to Use",
-        "description": "Includes authentication, routing, and other common features"
+        "title": "Ready to use",
+        "description": "APIs, auth, matching, and media workflows are ready to connect."
       }
     },
     "techStack": {
-      "title": "Tech Stack",
-      "description": "Built with the latest and greatest technologies"
+      "title": "Core technology",
+      "description": "The main pieces currently used in the Shiftify project"
     },
     "gettingStarted": {
-      "title": "Getting Started",
-      "description": "Start building your next React application in minutes",
-      "clone": {
-        "title": "Clone the repository",
-        "description": "Start by cloning the repository to your local machine",
-        "code": "git clone https://github.com/vophuocthanh/react-boilerplate-practices-2025"
+      "title": "Quick setup",
+      "description": "Connect the right environment, auth, data, and infrastructure before production handoff.",
+      "login": {
+        "title": "Log in",
+        "description": "Use a valid account to enter the correct role-specific route."
       },
-      "install": {
-        "title": "Install dependencies",
-        "description": "Install all required dependencies using your favorite package manager",
-        "code": "yarn install"
+      "database": {
+        "title": "Connect data",
+        "description": "Standardize PostgreSQL/Supabase so the backend can read and write reliably."
       },
-      "start": {
-        "title": "Start development",
-        "description": "Start the development server and begin coding",
-        "code": "yarn dev"
+      "cloud": {
+        "title": "Connect cloud",
+        "description": "Make sure Cloud Run, Cloudinary, and secrets are configured correctly."
       },
-      "build": {
-        "title": "Build for production",
-        "description": "Build your application for production deployment",
-        "code": "yarn build"
+      "ready": {
+        "title": "Ready to ship",
+        "description": "Check health, docs, auth, and one write endpoint before handoff."
       }
     },
     "footer": {
-      "description": "A modern React TypeScript boilerplate with best practices and developer experience in mind.",
+      "description": "Shiftify - an accessibility-first hiring and matching platform.",
       "documentation": {
         "title": "Documentation",
-        "gettingStarted": "Getting Started",
-        "features": "Features",
-        "apiReference": "API Reference",
+        "gettingStarted": "Quick setup",
+        "features": "Product capabilities",
+        "apiReference": "API reference",
         "examples": "Examples"
       },
       "resources": {
         "title": "Resources",
         "github": "GitHub",
         "discord": "Discord",
-        "twitter": "Twitter",
+        "twitter": "X",
         "blog": "Blog"
       },
       "legal": {
         "title": "Legal",
-        "privacy": "Privacy Policy",
-        "terms": "Terms of Service",
+        "privacy": "Privacy policy",
+        "terms": "Terms of service",
         "license": "License"
       },
-      "copyright": "© {{year}} D Shiftify. All rights reserved."
+      "copyright": "© {{year}} Shiftify. All rights reserved."
     }
   }
 }

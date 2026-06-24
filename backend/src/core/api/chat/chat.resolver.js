@@ -1,35 +1,34 @@
-import { CreateRoomInterceptor, MessageHistoryQueryInterceptor, RoomIdParamInterceptor } from 'core/modules/chat';
 import { Module } from 'packages/handler/Module';
-// Register Chat Swagger models (side-effect import)
-import 'core/common/swagger/chat.swagger';
 import { ChatController } from './chat.controller';
+import { CreateMessageInterceptor , JoinConversationInterceptor} from 'core/modules/chat/interceptor';
 
 export const ChatResolver = Module.builder()
-    .addPrefix({
+    .addPrefix({ 
         prefixPath: '/chat',
         tag: 'chat',
         module: 'ChatModule',
     })
     .register([
+                                                                                 
         {
-            route: '/rooms',
+            route: '/conversations',
             method: 'get',
-            controller: ChatController.getRooms,
+            controller: ChatController.getConversationsbyId,
             preAuthorization: true,
         },
+
         {
-            route: '/rooms',
-            method: 'post',
-            interceptors: [CreateRoomInterceptor],
-            body: 'CreateRoomDto',
-            controller: ChatController.createRoom,
-            preAuthorization: true,
-        },
-        {
-            route: '/rooms/:roomId/messages',
+            route: '/conversations/:id/messages',
             method: 'get',
-            interceptors: [RoomIdParamInterceptor, MessageHistoryQueryInterceptor],
             controller: ChatController.getMessages,
             preAuthorization: true,
         },
+
+        {
+            route: '/messages/:messageId',
+            method: 'get',
+            controller: ChatController.getMessageById,
+            preAuthorization: true,
+        },
+
     ]);

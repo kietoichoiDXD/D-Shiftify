@@ -19,6 +19,7 @@ Sentry.init({
     await AppBundle.builder()
         .applyAppContext(app)
         .init()
+        .applyHealthChecks()
         .applyGlobalFilters([new SecurityFilter()])
         .applyResolver(ModuleResolver)
         .applySwagger(ApiDocument)

@@ -3,8 +3,6 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
-
 export class MulterUploader {
     #destinationPath
 
@@ -30,9 +28,6 @@ export class MulterUploader {
 
             return cb(null, true);
         },
-        limits: {
-            fileSize: MAX_FILE_SIZE,
-        },
     }
 
     constructor(extensions, keyName, fileQuantity = 1, destinationPath = `${ROOT_DIR}/core/uploads`) {
@@ -54,7 +49,7 @@ export class MulterUploader {
 
         fs.access(destinationPath, error => {
             if (error) {
-                fs.mkdirSync(destinationPath, { recursive: true });
+                fs.mkdirSync(destinationPath);
             }
         });
 
@@ -69,8 +64,7 @@ export class MulterUploader {
 
     getFileName(file) {
         const originalname = file.originalname.substr(0, file.originalname.lastIndexOf('.')) || file.originalname;
-        const safeName = path.basename(originalname).replace(/[^a-zA-Z0-9-_]/g, '-');
-        return `${safeName}-${Date.now()}${path.extname(file.originalname).toLowerCase()}`;
+        return `${originalname}-${Date.now()}${path.extname(file.originalname)}`;
     }
 
     getHandler() {

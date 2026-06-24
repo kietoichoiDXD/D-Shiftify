@@ -1,44 +1,40 @@
 import { BcryptService } from 'core/modules/auth';
 import { getTransaction } from 'core/database';
+import { UserRoleRepository } from 'core/modules/role/userRole.repository';
 import { joinUserRoles } from 'core/utils/userFilter';
-import { logger } from 'core/utils';
-import { RoleService } from 'core/modules/role/role.service';
 import { Optional } from '../../../utils';
 import { NotFoundException, DuplicateException, BadRequestException } from '../../../../packages/httpException';
-import { UserRepository } from '../user.repository';
+import { UserRepository } from '../repository/user.repository';
 
 class Service {
     constructor() {
         this.repository = UserRepository;
-        this.roleService = RoleService;
+        this.userRoleRepository = UserRoleRepository;
         this.bcryptService = BcryptService;
     }
 
     async createOne(createUserDto) {
+        const trx = await getTransaction();
         Optional.of(await this.repository.findByEmail(createUserDto.email)).throwIfPresent(new DuplicateException('Email is being used'));
 
         if (createUserDto.password !== createUserDto.confirm_password) {
             throw new BadRequestException('Password does not match');
         }
+        createUserDto.password = this.bcryptService.hash(createUserDto.password);
 
-        const trx = await getTransaction();
+        let createdUser;
         try {
-            const candidateRole = await this.roleService.findByName('candidate');
-            createUserDto.password_hash = this.bcryptService.hash(createUserDto.password);
-            createUserDto.role_id = candidateRole.id;
-            delete createUserDto.password;
             delete createUserDto.confirm_password;
-            const createdUser = await this.repository.insert(createUserDto, trx);
-            await trx.commit();
-            return createdUser[0];
+            createdUser = await this.repository.insert(createUserDto, trx);
+            const ROLE_USER_ID = 3;
+            await this.userRoleRepository.createUserRole(createdUser[0].id, ROLE_USER_ID, trx);
         } catch (error) {
             await trx.rollback();
-            logger.error('[UserService.createOne]', { error: error.message });
-            if (error?.code === '23505') {
-                throw new DuplicateException('Email is being used');
-            }
-            throw error;
+            this.logger.error(error.message);
+            return null;
         }
+        trx.commit();
+        return createdUser[0];
     }
 
     async findById(id) {
@@ -47,14 +43,6 @@ class Service {
             .get();
 
         return joinUserRoles(data);
-    }
-
-    async updateOne(id, updateUserDto) {
-        Optional.of(await this.repository.findById(id))
-            .throwIfNotPresent(new NotFoundException('User not found'));
-
-        await this.repository.update(id, updateUserDto);
-        return this.findById(id);
     }
 }
 

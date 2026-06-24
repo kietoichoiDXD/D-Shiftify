@@ -7,7 +7,6 @@ export class UserDetail {
 
   constructor(payload) {
       this.payload = payload;
-      this.id = payload?.id;
   }
 
   toRoles() {

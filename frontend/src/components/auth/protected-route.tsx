@@ -1,27 +1,22 @@
 import { type ReactNode } from 'react'
 
-import { Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
+
+import { ROUTE } from '@/core/constants/path'
+import { useAuthStore } from '@/core/store/features/auth/authStore'
 
 interface ProtectedRouteProps {
   children?: ReactNode
   redirectPath?: string
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  // const { isAuthenticated } = useAuth()
-  // const location = useLocation()
-  // const navigate = useNavigate()
+const ProtectedRoute = ({ children, redirectPath = ROUTE.PUBLIC.LOGIN }: ProtectedRouteProps) => {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const location = useLocation()
 
-  // useEffect(() => {
-  //   const accessToken = getAccessTokenFromLS()
-  //   if (!accessToken) {
-  //     navigate(ROUTE.PUBLIC.HOME, { replace: true })
-  //   }
-  // }, [location.pathname, navigate])
-
-  // if (!isAuthenticated) {
-  //   return <Navigate to={redirectPath} state={{ from: location }} replace />
-  // }
+  if (!isAuthenticated) {
+    return <Navigate to={redirectPath} state={{ from: location }} replace />
+  }
 
   return children ? <>{children}</> : <Outlet />
 }
