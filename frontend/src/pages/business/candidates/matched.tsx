@@ -1,5 +1,5 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { CandidateListPage } from './components/candidate-list-page'
 
 export default function BusinessMatchedCandidatesPage() {
-  return <PlaceholderPage title='Matching Candidates' description='Review candidates matched to recruiter job requirements.' />
+  return <CandidateListPage defaultTab='suggested' />
 }

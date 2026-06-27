@@ -81,9 +81,9 @@ function FilterGroup({ title, options }: { title: string; options: string[] }) {
   )
 }
 
-export function CandidateListPage() {
+export function CandidateListPage({ defaultTab = 'applied' }: { defaultTab?: 'applied' | 'suggested' } = {}) {
   const navigate = useNavigate()
-  const [tab, setTab] = useState<'applied' | 'suggested'>('applied')
+  const [tab, setTab] = useState<'applied' | 'suggested'>(defaultTab)
   const [page, setPage] = useState(1)
 
   const candidates = useMemo(() => CANDIDATES, [])
