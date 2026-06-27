@@ -102,6 +102,11 @@ export const calculateWeights = (priorities = []) => {
     }), {});
 };
 
+// Per-job weight map used by the LangGraph agent path (match.agent.js / ai.service.js).
+// Honours any priority order stored on the job; otherwise returns the default v2 weights.
+export const getJobWeights = (job = {}) =>
+    calculateWeights(job.priorities || job.criteria_priorities || job.weightPriorities || []);
+
 export const getTitleMatchLevel = (candidateTitle = '', jobTitle = '') => {
     const candidate = normalizeText(candidateTitle);
     const job = normalizeText(jobTitle);

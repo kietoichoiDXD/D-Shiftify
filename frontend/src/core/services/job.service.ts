@@ -17,6 +17,20 @@ export type JobRecord = {
   deadline?: string
 }
 
+// Mirrors backend MATCHING_CRITERIA_V2 (match.scoring.js). Default order = default weights
+// [25,20,15,15,10,5,5,5]. Users can re-order via the priority selector; the chosen order is
+// sent as `priorities` and the backend re-assigns the fixed weight set top-down.
+export const MATCHING_CRITERIA: Array<{ key: string; label: string }> = [
+  { key: 'priority', label: 'Ưu tiên công việc' },
+  { key: 'experience', label: 'Kinh nghiệm làm việc' },
+  { key: 'devices', label: 'Thiết bị hiện có' },
+  { key: 'career_goal', label: 'Mục tiêu nghề nghiệp' },
+  { key: 'hard_skills', label: 'Kỹ năng cứng' },
+  { key: 'soft_skills', label: 'Kỹ năng mềm' },
+  { key: 'certificates', label: 'Chứng chỉ' },
+  { key: 'custom', label: 'Trường phụ' }
+]
+
 export type MatchCriterion = {
   key: string
   label: string
@@ -56,10 +70,11 @@ export const jobApi = {
     const response = (await axiosClient.get('/api/v1/cv/me')) as Envelope<{ id: string }>
     return response.data
   },
-  async match(cvId: string, jobIds: string[]) {
+  async match(cvId: string, jobIds: string[], priorities: string[] = []) {
     const response = (await axiosClient.post('/api/v1/ai/matching/jobs', {
       cvId,
       jobIds,
+      priorities,
       limit: Math.min(jobIds.length || 20, 50)
     })) as Envelope<{ matches: JobMatch[] }>
     return response.data.matches

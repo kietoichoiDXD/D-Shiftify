@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import {
+  Check,
   ChevronDown,
   ChevronsLeft,
   ChevronsRight,
   Loader2,
   Mic,
   Search,
+  SlidersHorizontal,
   Volume2,
   X
 } from 'lucide-react'
@@ -25,7 +27,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { ROUTE } from '@/core/constants/path'
 import { cn } from '@/core/lib/utils'
-import { type JobMatch, type JobRecord, jobApi } from '@/core/services/job.service'
+import { MATCHING_CRITERIA, type JobMatch, type JobRecord, jobApi } from '@/core/services/job.service'
 import { speakAccessibleText, speechApi } from '@/core/services/speech.service'
 import toastifyCommon from '@/core/lib/toastify-common'
 import { useAudioRecorder } from '@/hooks/use-audio-recorder'
@@ -113,11 +115,18 @@ function MatchDialog({ match, open, onOpenChange }: { match: JobMatch | null; op
                 const description = getCriterionDescription(criterion)
                 return (
                   <div key={criterion.key}>
-                    <div className='flex items-center gap-2'>
+                    <div className='flex flex-wrap items-center gap-2'>
                       <p className='text-[15px] font-black uppercase tracking-[0.02em] text-[#004080]'>{criterion.label}</p>
-                      <button type='button' aria-label={`Đọc ${criterion.label}`} onClick={() => void speakAccessibleText(`${criterion.label}. ${description}`)} className='text-[#004080] hover:text-[#003466]'>
+                      <span className='rounded-full bg-[#EAF4FF] px-2 py-0.5 text-[11px] font-bold text-[#004080]' title='Trọng số áp dụng'>
+                        {Math.round(criterion.weight * 100)}%
+                      </span>
+                      <span className='text-[13px] font-bold tabular-nums text-emerald-700'>{criterion.score}đ</span>
+                      <button type='button' aria-label={`Đọc ${criterion.label}`} onClick={() => void speakAccessibleText(`${criterion.label}. Trọng số ${Math.round(criterion.weight * 100)} phần trăm. ${criterion.score} điểm. ${description}`)} className='text-[#004080] hover:text-[#003466]'>
                         <Volume2 className='size-4' />
                       </button>
+                    </div>
+                    <div className='mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#EAF4FF]'>
+                      <div className='h-full rounded-full bg-[#004080]' style={{ width: `${Math.min(criterion.score, 100)}%` }} />
                     </div>
                     <p className='mt-1 text-pretty text-[14px] leading-6 text-[#334155]'>{description}</p>
                   </div>
@@ -146,6 +155,9 @@ export function JobDiscoveryPage() {
   const [filters, setFilters] = useState<FilterState>(initialFilters)
   const [page, setPage] = useState(1)
   const [selectedMatch, setSelectedMatch] = useState<JobMatch | null>(null)
+  const [priorities, setPriorities] = useState<string[]>([])
+  const [showPriority, setShowPriority] = useState(false)
+  const [isRematching, setIsRematching] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [applyingJobId, setApplyingJobId] = useState('')
   const [liveMessage, setLiveMessage] = useState('')
@@ -211,6 +223,28 @@ export function JobDiscoveryPage() {
 
   useEffect(() => setPage(1), [filters, search])
 
+  const togglePriority = (key: string) => {
+    setPriorities((current) => (current.includes(key) ? current.filter((item) => item !== key) : [...current, key]))
+  }
+
+  const applyPriorities = async (override?: string[]) => {
+    const nextPriorities = override ?? priorities
+    if (!cvId || jobs.length === 0) {
+      setLiveMessage('Bạn cần tạo CV để áp dụng tiêu chí ưu tiên.')
+      return
+    }
+    setIsRematching(true)
+    try {
+      const matchList = await jobApi.match(cvId, jobs.map((job) => job.id), nextPriorities)
+      setMatches(Object.fromEntries(matchList.map((match) => [match.job.id, match])))
+      setLiveMessage('Đã cập nhật độ phù hợp theo tiêu chí ưu tiên của bạn.')
+    } catch {
+      toastifyCommon.error('Không thể cập nhật độ phù hợp. Vui lòng thử lại.')
+    } finally {
+      setIsRematching(false)
+    }
+  }
+
   const handleApply = async (jobId: string) => {
     if (!cvId) {
       navigate(ROUTE.DISABILITY.CV)
@@ -270,6 +304,68 @@ export function JobDiscoveryPage() {
             </DropdownMenu>
           ))}
         </div>
+        <div>
+          <button
+            type='button'
+            onClick={() => setShowPriority((current) => !current)}
+            aria-expanded={showPriority}
+            className='inline-flex items-center gap-2 text-sm font-black uppercase tracking-[0.04em] text-[#004080] hover:text-[#003466]'
+          >
+            <SlidersHorizontal className='size-4' />
+            Tiêu chí ưu tiên của bạn
+            {priorities.length > 0 ? (
+              <span className='rounded-full bg-[#004080] px-2 py-0.5 text-[11px] font-bold text-white'>{priorities.length}</span>
+            ) : null}
+            <ChevronDown className={cn('size-4 transition', showPriority && 'rotate-180')} />
+          </button>
+
+          {showPriority ? (
+            <div className='mt-3 border border-[#CFE3F7] bg-white p-4'>
+              <p className='text-sm text-[#5A718B]'>
+                Bấm chọn theo thứ tự quan trọng. Tiêu chí chọn trước nhận trọng số cao hơn khi tính độ phù hợp.
+              </p>
+              <div className='mt-3 flex flex-wrap gap-2'>
+                {MATCHING_CRITERIA.map((criterion) => {
+                  const rank = priorities.indexOf(criterion.key)
+                  const selected = rank >= 0
+                  return (
+                    <button
+                      key={criterion.key}
+                      type='button'
+                      aria-pressed={selected}
+                      onClick={() => togglePriority(criterion.key)}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 border px-3 py-1.5 text-sm font-semibold transition',
+                        selected ? 'border-[#004080] bg-[#004080] text-white' : 'border-[#CFE3F7] bg-white text-[#33506E] hover:border-[#004080]'
+                      )}
+                    >
+                      {selected ? (
+                        <span className='inline-flex size-4 items-center justify-center rounded-full bg-white text-[11px] font-black text-[#004080]'>
+                          {rank + 1}
+                        </span>
+                      ) : (
+                        <Check className='size-3.5 opacity-30' />
+                      )}
+                      {criterion.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <div className='mt-4 flex flex-wrap items-center gap-3'>
+                <Button type='button' onClick={() => void applyPriorities()} disabled={isRematching} className='gap-1.5 rounded-none bg-[#004080] text-xs font-black uppercase text-white hover:bg-[#003466]'>
+                  {isRematching ? <Loader2 className='size-4 animate-spin' /> : null}
+                  Áp dụng
+                </Button>
+                {priorities.length > 0 ? (
+                  <Button type='button' variant='ghost' onClick={() => { setPriorities([]); void applyPriorities([]) }} className='text-xs font-bold uppercase text-[#5A718B]'>
+                    Đặt lại mặc định
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
         <div className='h-[3px] bg-black' />
       </div>
 
