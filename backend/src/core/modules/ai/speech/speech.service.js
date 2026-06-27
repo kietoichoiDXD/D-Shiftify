@@ -11,6 +11,11 @@ import {
     SPEECH_MAX_TEXT_LENGTH,
 } from 'core/env';
 import { parseVoiceCommand } from 'core/ai/utils/voice-commands';
+import { isGroqSttConfigured, transcribeWithGroq } from 'core/ai/utils/groq.stt';
+
+// STT provider: 'groq' (Groq Whisper, no Google billing) or 'google'. Defaults to Groq when
+// a real Groq key is present, otherwise Google Cloud Speech.
+const STT_PROVIDER = (process.env.STT_PROVIDER || (isGroqSttConfigured() ? 'groq' : 'google')).toLowerCase();
 
 const ENCODINGS = new Set([
     'WEBM_OPUS', 'OGG_OPUS', 'LINEAR16', 'FLAC', 'MULAW', 'MP3', 'AMR', 'AMR_WB',
@@ -88,6 +93,23 @@ class SpeechServiceClass {
         if (!ENCODINGS.has(encoding)) throw new BadRequestException('Unsupported audio encoding');
 
         const languageCode = input.languageCode || GOOGLE_SPEECH_LANGUAGE;
+
+        if (STT_PROVIDER === 'groq' && isGroqSttConfigured()) {
+            try {
+                const result = await transcribeWithGroq(audio, { encoding, languageCode });
+                await this.logUsage(userId, 'speech_to_text', `groq:${languageCode}`, 'success');
+                const command = result.transcript ? parseVoiceCommand(result.transcript) : null;
+                return {
+                    ...result,
+                    provider: 'groq',
+                    command: command && command.intent !== 'unknown' ? command : null,
+                };
+            } catch (error) {
+                await this.logUsage(userId, 'speech_to_text', `groq:${languageCode}`, 'failed');
+                throw error;
+            }
+        }
+
         const config = {
             encoding,
             languageCode,
@@ -119,6 +141,7 @@ class SpeechServiceClass {
                 transcript,
                 confidence,
                 languageCode,
+                provider: 'google',
                 command: command && command.intent !== 'unknown' ? command : null,
             };
         } catch (error) {
