@@ -169,9 +169,10 @@ export const AUTH_ERROR_MESSAGES = [
 ]
 
 export const AUTH_ENDPOINTS = [
-  '/api/auth/v1/login',
-  '/api/auth/v1/register',
-  '/api/auth/v1/forgot-password',
-  '/api/auth/v1/reset-password',
-  '/api/auth/v1/verify-email'
+  '/api/v1/auth/login',
+  '/api/v1/auth/register',
+  '/api/v1/auth/forgot-password',
+  '/api/v1/auth/reset-password',
+  '/api/v1/auth/verify-email',
+  '/api/v1/auth/refresh'
 ]

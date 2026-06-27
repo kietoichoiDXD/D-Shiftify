@@ -70,7 +70,9 @@ export default function MessageRoom({
         timestamp: socketMessage.createdAt,
         createdAt: socketMessage.createdAt,
         isMine: socketMessage.isMine,
-        sender: (participantRole as any) || 'candidate'
+        sender: socketMessage.isMine
+          ? participantRole === 'candidate' ? 'candidate' : (participantRole as any) || 'recruiter'
+          : participantRole === 'candidate' ? 'recruiter' : 'candidate'
       }
 
       // Append message to state

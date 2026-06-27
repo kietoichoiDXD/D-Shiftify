@@ -46,6 +46,16 @@ const filterDefinitions: Array<{ key: FilterKey; label: string; options: string[
 
 const getSkillNames = (job: JobRecord) => job.skills.map((skill) => skill.name).filter(Boolean)
 
+// Prefer a description supplied by the matching API; otherwise derive a short
+// sentence from the criterion score so the dialog mirrors the Figma layout.
+const getCriterionDescription = (criterion: JobMatch['criteria'][number]) => {
+  const provided = (criterion as { description?: string }).description
+  if (provided && provided.trim()) return provided.trim()
+  if (criterion.score >= 80) return `Đáp ứng tốt yêu cầu ở tiêu chí này (${criterion.score}/100).`
+  if (criterion.score >= 50) return `Phù hợp một phần với yêu cầu (${criterion.score}/100).`
+  return `Cần bổ sung thêm để đáp ứng tiêu chí này (${criterion.score}/100).`
+}
+
 function JobLogo({ job }: { job: JobRecord }) {
   if (job.company.logoUrl) {
     return <img src={job.company.logoUrl} alt={`Logo ${job.company.name}`} className='size-[72px] shrink-0 object-cover' />
@@ -89,29 +99,34 @@ function MatchDialog({ match, open, onOpenChange }: { match: JobMatch | null; op
                 <X className='size-5' />
               </Button>
             </Dialog.Close>
-            <div className='mb-6 flex items-start justify-between gap-4 pr-10'>
-              <div>
-                <Dialog.Title className='max-w-sm text-balance text-2xl font-black uppercase leading-tight'>Chi tiết độ phù hợp</Dialog.Title>
-                <Dialog.Description className='mt-2 text-pretty text-sm text-slate-600'>{match.job.title}</Dialog.Description>
-              </div>
-              <Button type='button' variant='ghost' size='icon' aria-label='Đọc chi tiết độ phù hợp' onClick={() => void speakAccessibleText(speechText)} className='size-10 rounded-full bg-slate-100'>
+            <div className='mb-7 flex items-center justify-between gap-4 pr-10'>
+              <Dialog.Title className='text-balance text-[26px] font-black uppercase leading-tight text-[#004080]'>
+                Chi tiết độ phù hợp
+              </Dialog.Title>
+              <Button type='button' variant='ghost' size='icon' aria-label='Đọc chi tiết độ phù hợp' onClick={() => void speakAccessibleText(speechText)} className='size-10 shrink-0 rounded-full text-[#004080] hover:bg-[#EAF4FF]'>
                 <Volume2 className='size-5' />
               </Button>
             </div>
-            <div className='space-y-1 bg-slate-50'>
-              {match.criteria.map((criterion) => (
-                <div key={criterion.key} className='grid gap-2 border-b border-slate-100 bg-white px-4 py-4 sm:grid-cols-[160px_1fr_auto] sm:items-center'>
-                  <p className='text-sm font-black uppercase'>{criterion.label}</p>
-                  <div className='h-2 overflow-hidden rounded-full bg-slate-100' aria-hidden='true'>
-                    <div className='h-full bg-[#006EFF]' style={{ width: `${criterion.score}%` }} />
+            <Dialog.Description className='sr-only'>{match.job.title}</Dialog.Description>
+            <div className='space-y-6'>
+              {match.criteria.map((criterion) => {
+                const description = getCriterionDescription(criterion)
+                return (
+                  <div key={criterion.key}>
+                    <div className='flex items-center gap-2'>
+                      <p className='text-[15px] font-black uppercase tracking-[0.02em] text-[#004080]'>{criterion.label}</p>
+                      <button type='button' aria-label={`Đọc ${criterion.label}`} onClick={() => void speakAccessibleText(`${criterion.label}. ${description}`)} className='text-[#004080] hover:text-[#003466]'>
+                        <Volume2 className='size-4' />
+                      </button>
+                    </div>
+                    <p className='mt-1 text-pretty text-[14px] leading-6 text-[#334155]'>{description}</p>
                   </div>
-                  <span className='tabular-nums text-sm font-black'>{criterion.score}/100</span>
-                </div>
-              ))}
+                )
+              })}
             </div>
             {match.accessibility.signals.length > 0 ? (
-              <div className='mt-5 border-l-4 border-emerald-500 bg-emerald-50 p-4'>
-                <p className='font-black'>Khả năng tiếp cận: {match.accessibility.score}/100</p>
+              <div className='mt-7 border-l-4 border-emerald-500 bg-emerald-50 p-4'>
+                <p className='font-black text-emerald-900'>Khả năng tiếp cận: {match.accessibility.score}/100</p>
                 <p className='mt-1 text-pretty text-sm text-emerald-900'>{match.accessibility.signals.join('. ')}</p>
               </div>
             ) : null}
@@ -274,8 +289,9 @@ export function JobDiscoveryPage() {
                       <p className='mt-2 truncate text-pretty text-xs font-medium text-slate-700'>{job.company.name} | {job.location}</p>
                     </div>
                     <div className='flex flex-wrap items-center gap-3 md:shrink-0'>
-                      <Button type='button' disabled={!match} onClick={() => match && setSelectedMatch(match)} className='rounded-full bg-emerald-100 px-4 text-xs font-black text-emerald-900 hover:bg-emerald-200 disabled:opacity-70'>
-                        {match ? `Điểm phù hợp: ${match.score}%` : 'Cần tạo CV'}
+                      <Button type='button' disabled={!match} onClick={() => match && setSelectedMatch(match)} className='gap-1.5 rounded-md bg-emerald-600 px-4 text-xs font-black uppercase text-white hover:bg-emerald-700 disabled:opacity-70'>
+                        <Volume2 className='size-3.5' aria-hidden='true' />
+                        {match ? `${match.score}% phù hợp` : 'Cần tạo CV'}
                       </Button>
                       <Button type='button' onClick={() => void handleApply(job.id)} disabled={applyingJobId === job.id} className='h-12 min-w-[158px] rounded-none bg-black text-xs font-black uppercase text-white hover:bg-slate-800'>
                         {applyingJobId === job.id ? <Loader2 className='size-4 animate-spin' /> : 'Ứng tuyển'}

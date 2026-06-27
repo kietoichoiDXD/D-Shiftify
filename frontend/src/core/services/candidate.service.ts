@@ -87,7 +87,7 @@ export interface UpdateProfileDto {
  */
 export async function getCandidateProfile(): Promise<CandidateProfile | null> {
   try {
-    const response = await apiClient.get('/candidate/profile')
+    const response = await apiClient.get('/api/v1/profile/me')
 
     const profile = unwrapData<CandidateProfile | null>(response)
     if (!profile) {
@@ -127,7 +127,7 @@ export async function getCandidateProfile(): Promise<CandidateProfile | null> {
  * const profile = await getCandidateProfileById('candidate-123')
  */
 export async function getCandidateProfileById(id: string): Promise<CandidateProfile> {
-  const response = await apiClient.get(`/candidate/profile/${id}`)
+  const response = await apiClient.get(`/api/v1/profile/${id}`)
   return unwrapData<CandidateProfile>(response)
 }
 
@@ -150,7 +150,7 @@ export async function getCandidateProfileById(id: string): Promise<CandidateProf
 export async function updateCandidateProfile(
   data: UpdateProfileDto
 ): Promise<CandidateProfile> {
-  const response = await apiClient.put('/candidate/profile', data)
+  const response = await apiClient.patch('/api/v1/profile/me', data)
   return unwrapData<CandidateProfile>(response)
 }
 
@@ -171,7 +171,7 @@ export async function uploadProfileAvatar(file: File): Promise<string> {
   const formData = new FormData()
   formData.append('avatar', file)
 
-  const response = await apiClient.post('/candidate/profile/upload-avatar', formData, {
+  const response = await apiClient.post('/api/v1/media/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -189,7 +189,7 @@ export async function uploadProfileAvatar(file: File): Promise<string> {
  * @returns Promise resolving to updated CandidateProfile
  */
 export async function addEducation(education: Omit<Education, 'id'>): Promise<Education> {
-  const response = await apiClient.post('/candidate/profile/education', education)
+  const response = await apiClient.post('/api/v1/profile/me/education', education)
   return unwrapData<Education>(response)
 }
 
@@ -206,7 +206,7 @@ export async function updateEducation(
   id: string,
   education: Partial<Omit<Education, 'id'>>
 ): Promise<Education> {
-  const response = await apiClient.put(`/candidate/profile/education/${id}`, education)
+  const response = await apiClient.put(`/api/v1/profile/me/education/${id}`, education)
   return unwrapData<Education>(response)
 }
 
@@ -219,7 +219,7 @@ export async function updateEducation(
  * @returns Promise resolving when deleted
  */
 export async function deleteEducation(id: string): Promise<void> {
-  await apiClient.delete(`/candidate/profile/education/${id}`)
+  await apiClient.delete(`/api/v1/profile/me/education/${id}`)
 }
 
 /**
@@ -233,7 +233,7 @@ export async function deleteEducation(id: string): Promise<void> {
 export async function addExperience(
   experience: Omit<Experience, 'id'>
 ): Promise<Experience> {
-  const response = await apiClient.post('/candidate/profile/experience', experience)
+  const response = await apiClient.post('/api/v1/profile/me/experience', experience)
   return unwrapData<Experience>(response)
 }
 
@@ -250,7 +250,7 @@ export async function updateExperience(
   id: string,
   experience: Partial<Omit<Experience, 'id'>>
 ): Promise<Experience> {
-  const response = await apiClient.put(`/candidate/profile/experience/${id}`, experience)
+  const response = await apiClient.put(`/api/v1/profile/me/experience/${id}`, experience)
   return unwrapData<Experience>(response)
 }
 
@@ -263,5 +263,5 @@ export async function updateExperience(
  * @returns Promise resolving when deleted
  */
 export async function deleteExperience(id: string): Promise<void> {
-  await apiClient.delete(`/candidate/profile/experience/${id}`)
+  await apiClient.delete(`/api/v1/profile/me/experience/${id}`)
 }

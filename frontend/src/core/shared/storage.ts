@@ -29,3 +29,17 @@ export const clearAuthClientState = () => {
   LocalStorageEventTarget.dispatchEvent(clearLSEvent)
 }
 
+export const getAccessTokenFromLS = () => localStorage.getItem(ACCESS_TOKEN_LOCAL_STORAGE_KEY) ?? ''
+
+export const getRefreshTokenFromLS = () => localStorage.getItem(REFRESH_TOKEN_LOCAL_STORAGE_KEY) ?? ''
+
+export const setAccessTokenToLS = (token: string) =>
+  localStorage.setItem(ACCESS_TOKEN_LOCAL_STORAGE_KEY, token)
+
+export const setRefreshTokenToLS = (token: string) =>
+  localStorage.setItem(REFRESH_TOKEN_LOCAL_STORAGE_KEY, token)
+
+export const removeAccessTokenFromLS = () => localStorage.removeItem(ACCESS_TOKEN_LOCAL_STORAGE_KEY)
+
+export const removeRefreshTokenFromLS = () => localStorage.removeItem(REFRESH_TOKEN_LOCAL_STORAGE_KEY)
+

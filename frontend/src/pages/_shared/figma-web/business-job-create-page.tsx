@@ -132,15 +132,15 @@ export function FigmaBusinessJobCreatePage() {
   return (
     <WorkspaceShell role='business'>
       <div className='mx-auto w-full max-w-[560px]'>
-        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase'>
+        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase text-[#004080]'>
           Tạo việc
           <button
             type='button'
             onClick={() => handleSpeakLabel('Tạo việc')}
             aria-label='Đọc tiêu đề Tạo việc'
-            className='rounded-full p-1 transition hover:bg-black/5 hover:text-black'
+            className='rounded-full p-1 transition hover:bg-[#004080]/5'
           >
-            <Volume2 className='h-5 w-5 text-black' aria-hidden='true' />
+            <Volume2 className='h-5 w-5 text-[#004080]' aria-hidden='true' />
           </button>
         </h1>
         <form onSubmit={handleSubmit} className='space-y-5'>
@@ -172,7 +172,7 @@ export function FigmaBusinessJobCreatePage() {
                   <Volume2 className='h-3 w-3 text-[#777]' aria-hidden='true' />
                 </button>
               </span>
-              <div className='min-h-12 border border-[#D9D9D9] bg-white px-3 py-2 flex flex-wrap gap-2 items-center focus-within:border-black focus-within:ring-2 focus-within:ring-black/10'>
+              <div className='min-h-12 border border-[#CFE3F7] bg-white px-3 py-2 flex flex-wrap gap-2 items-center focus-within:border-[#004080] focus-within:ring-2 focus-within:ring-[#004080]/10'>
                 {devices.map((device) => (
                   <Chip key={device} removable onRemove={() => handleRemoveDevice(device)}>
                     {device}
@@ -214,7 +214,7 @@ export function FigmaBusinessJobCreatePage() {
                   <Volume2 className='h-3 w-3 text-[#777]' aria-hidden='true' />
                 </button>
               </span>
-              <div className='min-h-[82px] border border-[#D9D9D9] bg-white p-3 flex flex-wrap gap-2 items-center'>
+              <div className='min-h-[82px] border border-[#CFE3F7] bg-white p-3 flex flex-wrap gap-2 items-center'>
                 {mustHaveSkills.map((skill) => (
                   <Chip key={skill} removable onRemove={() => handleRemoveMustHave(skill)}>
                     {skill}
@@ -224,7 +224,7 @@ export function FigmaBusinessJobCreatePage() {
                   <div className='flex items-center gap-1'>
                     <input
                       aria-label='Nhập kỹ năng chuyên môn'
-                      className='h-7 w-24 border border-[#D9D9D9] px-2 text-[11px] outline-none'
+                      className='h-7 w-24 border border-[#CFE3F7] px-2 text-[11px] outline-none'
                       placeholder='Tên kỹ năng'
                       value={newMustHave}
                       onChange={(e) => setNewMustHave(e.target.value)}
@@ -234,7 +234,7 @@ export function FigmaBusinessJobCreatePage() {
                     <button
                       type='button'
                       onClick={handleAddMustHave}
-                      className='h-7 bg-black text-white px-2 text-[10px] font-bold uppercase'
+                      className='h-7 bg-[#004080] text-white px-2 text-[10px] font-bold uppercase'
                     >
                       Thêm
                     </button>
@@ -244,7 +244,7 @@ export function FigmaBusinessJobCreatePage() {
                     type='button'
                     onClick={() => setShowAddMustHave(true)}
                     aria-label='Thêm kỹ năng chuyên môn'
-                    className='inline-flex h-7 w-7 items-center justify-center rounded-full border border-black hover:bg-black hover:text-white'
+                    className='inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#004080] text-[#004080] hover:bg-[#004080] hover:text-white'
                   >
                     <Plus className='h-3.5 w-3.5' aria-hidden='true' />
                   </AnimatedButton>
@@ -263,7 +263,7 @@ export function FigmaBusinessJobCreatePage() {
                   <Volume2 className='h-3 w-3 text-[#777]' aria-hidden='true' />
                 </button>
               </span>
-              <div className='min-h-[82px] border border-[#D9D9D9] bg-white p-3 flex flex-wrap gap-2 items-center'>
+              <div className='min-h-[82px] border border-[#CFE3F7] bg-white p-3 flex flex-wrap gap-2 items-center'>
                 {niceToHaveSkills.map((skill) => (
                   <Chip key={skill} removable onRemove={() => handleRemoveNiceToHave(skill)}>
                     {skill}
@@ -273,7 +273,7 @@ export function FigmaBusinessJobCreatePage() {
                   <div className='flex items-center gap-1'>
                     <input
                       aria-label='Nhập kỹ năng nice-to-have'
-                      className='h-7 w-24 border border-[#D9D9D9] px-2 text-[11px] outline-none'
+                      className='h-7 w-24 border border-[#CFE3F7] px-2 text-[11px] outline-none'
                       placeholder='Tên kỹ năng'
                       value={newNiceToHave}
                       onChange={(e) => setNewNiceToHave(e.target.value)}
@@ -283,7 +283,7 @@ export function FigmaBusinessJobCreatePage() {
                     <button
                       type='button'
                       onClick={handleAddNiceToHave}
-                      className='h-7 bg-black text-white px-2 text-[10px] font-bold uppercase'
+                      className='h-7 bg-[#004080] text-white px-2 text-[10px] font-bold uppercase'
                     >
                       Thêm
                     </button>
@@ -293,7 +293,7 @@ export function FigmaBusinessJobCreatePage() {
                     type='button'
                     onClick={() => setShowAddNiceToHave(true)}
                     aria-label='Thêm kỹ năng cộng điểm'
-                    className='inline-flex h-7 w-7 items-center justify-center rounded-full border border-black hover:bg-black hover:text-white'
+                    className='inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#004080] text-[#004080] hover:bg-[#004080] hover:text-white'
                   >
                     <Plus className='h-3.5 w-3.5' aria-hidden='true' />
                   </AnimatedButton>
@@ -328,7 +328,7 @@ export function FigmaBusinessJobCreatePage() {
                 <input
                   aria-label='Mức lương tối thiểu'
                   type='number'
-                  className='h-12 border border-[#D9D9D9] bg-white px-4 text-[13px] outline-none focus:border-black focus:ring-2 focus:ring-black/10'
+                  className='h-12 border border-[#CFE3F7] bg-white px-4 text-[13px] outline-none focus:border-[#004080] focus:ring-2 focus:ring-[#004080]/10'
                   placeholder='Min'
                   value={salaryMin}
                   onChange={(e) => setSalaryMin(e.target.value)}
@@ -337,7 +337,7 @@ export function FigmaBusinessJobCreatePage() {
                 <input
                   aria-label='Mức lương tối đa'
                   type='number'
-                  className='h-12 border border-[#D9D9D9] bg-white px-4 text-[13px] outline-none focus:border-black focus:ring-2 focus:ring-black/10'
+                  className='h-12 border border-[#CFE3F7] bg-white px-4 text-[13px] outline-none focus:border-[#004080] focus:ring-2 focus:ring-[#004080]/10'
                   placeholder='Max'
                   value={salaryMax}
                   onChange={(e) => setSalaryMax(e.target.value)}

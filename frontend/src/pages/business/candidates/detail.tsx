@@ -1,5 +1,5 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { CandidateDetailPage } from './components/candidate-detail-page'
 
 export default function BusinessCandidateDetailPage() {
-  return <PlaceholderPage title='Candidate Detail' description='Review candidate profile, CV, and recruitment fit details.' />
+  return <CandidateDetailPage />
 }

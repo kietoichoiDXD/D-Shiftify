@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { getCandidateProfile, CandidateProfile } from '@/core/services/candidate.service'
+import { getCandidateProfile, updateCandidateProfile, uploadProfileAvatar, CandidateProfile, UpdateProfileDto } from '@/core/services/candidate.service'
 import { ApiError } from '@/core/services/api/errors'
 
 export interface UseCandidateProfileReturn {
@@ -109,8 +109,6 @@ export function useCandidateProfile(): UseCandidateProfileReturn {
  * await mutate({ fullName: 'John Doe' })
  */
 
-import { updateCandidateProfile, UpdateProfileDto } from '@/core/services/candidate.service'
-
 export interface UseUpdateProfileReturn {
   isPending: boolean
   error: ApiError | null
@@ -150,8 +148,6 @@ export function useUpdateProfile(): UseUpdateProfileReturn {
  *
  * Manages state for uploading profile avatar
  */
-
-import { uploadProfileAvatar } from '@/core/services/candidate.service'
 
 export interface UseUploadAvatarReturn {
   isPending: boolean

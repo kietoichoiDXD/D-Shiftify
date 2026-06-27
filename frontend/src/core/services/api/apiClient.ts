@@ -1,22 +1,15 @@
-/**
- * API Client - Centralized Axios Instance
- *
- * This is the SINGLE SOURCE OF TRUTH for all API communication.
- * All HTTP requests MUST go through this client.
- *
- * Features:
- * - Automatic JWT token injection
- * - Global error handling
- * - Request/response logging
- * - Retry logic for failed requests
- * - Offline detection
- */
-
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
 import { ApiError } from './errors'
-import { useAuthStore } from '@/core/store/auth.store'
+import {
+  getAccessTokenFromLS,
+  getRefreshTokenFromLS,
+  setAccessTokenToLS,
+  removeAccessTokenFromLS,
+  removeRefreshTokenFromLS,
+  LocalStorageEventTarget
+} from '@/core/shared/storage'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const REQUEST_TIMEOUT = 10000
 
 export const apiClient: AxiosInstance = axios.create({
@@ -24,25 +17,20 @@ export const apiClient: AxiosInstance = axios.create({
   timeout: REQUEST_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
 })
 
 apiClient.interceptors.request.use(
   (config) => {
-    const authStore = useAuthStore.getState()
-    const token = authStore.accessToken
-
+    const token = getAccessTokenFromLS()
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
-
     config.headers['X-Request-ID'] = generateRequestId()
-
     return config
   },
   (error) => {
-    console.error('[API Request Error]', error)
     return Promise.reject(error)
   }
 )
@@ -56,7 +44,6 @@ apiClient.interceptors.response.use(
     const responseData = error.response?.data as Record<string, any> | undefined
 
     if (!error.response) {
-      console.error('[API Network Error]', error.message)
       throw new ApiError({
         code: 'NETWORK_ERROR',
         message: 'Network error. Please check your connection.',
@@ -86,7 +73,7 @@ apiClient.interceptors.response.use(
           },
         })
 
-      case 422:
+      case 422: {
         const validationDetails = responseData
         throw new ApiError({
           code: 'VALIDATION_ERROR',
@@ -94,6 +81,7 @@ apiClient.interceptors.response.use(
           statusCode: 422,
           details: validationDetails?.details,
         })
+      }
 
       case 500:
       case 502:
@@ -115,9 +103,9 @@ apiClient.interceptors.response.use(
 async function handle401Error(
   config: AxiosRequestConfig & { _authRetry?: boolean }
 ): Promise<never> {
-  const authStore = useAuthStore.getState()
+  const storedRefreshToken = getRefreshTokenFromLS()
 
-  if (!config._authRetry && authStore.refreshToken) {
+  if (!config._authRetry && storedRefreshToken) {
     try {
       config._authRetry = true
       const newAccessToken = await refreshToken()
@@ -127,19 +115,24 @@ async function handle401Error(
       }
       return apiClient(config)
     } catch (_error) {
-      authStore.logout()
+      triggerLogout()
     }
   } else {
-    authStore.logout()
+    triggerLogout()
   }
-
-  window.location.href = '/login'
 
   throw new ApiError({
     code: 'UNAUTHORIZED',
     message: 'Session expired. Please login again.',
     statusCode: 401,
   })
+}
+
+function triggerLogout() {
+  removeAccessTokenFromLS()
+  removeRefreshTokenFromLS()
+  const clearLSEvent = new Event('clearLS')
+  LocalStorageEventTarget.dispatchEvent(clearLSEvent)
 }
 
 async function retryRequest(
@@ -171,27 +164,30 @@ export function isOnline(): boolean {
 }
 
 export async function refreshToken(): Promise<string> {
-  try {
-    const authStore = useAuthStore.getState()
-    const refreshToken = authStore.refreshToken
+  const storedRefreshToken = getRefreshTokenFromLS()
 
-    if (!refreshToken) {
-      throw new Error('No refresh token available')
-    }
-
-    const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-      refreshToken,
-    })
-
-    const newAccessToken = response.data.data.accessToken
-    authStore.setAccessToken(newAccessToken)
-
-    return newAccessToken
-  } catch (error) {
-    console.error('Token refresh failed:', error)
-    useAuthStore.getState().logout()
-    throw error
+  if (!storedRefreshToken) {
+    throw new Error('No refresh token available')
   }
+
+  const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
+    refresh_token: storedRefreshToken,
+  })
+
+  const newAccessToken = response.data?.data?.access_token || response.data?.access_token
+  if (!newAccessToken) {
+    throw new Error('Refresh response missing access_token')
+  }
+
+  setAccessTokenToLS(newAccessToken)
+
+  const newRefreshToken = response.data?.data?.refresh_token || response.data?.refresh_token
+  if (newRefreshToken) {
+    const { setRefreshTokenToLS } = await import('@/core/shared/storage')
+    setRefreshTokenToLS(newRefreshToken)
+  }
+
+  return newAccessToken
 }
 
 export default apiClient

@@ -12,6 +12,9 @@ export type JobRecord = {
   salaryMin?: number
   salaryMax?: number
   workingTime?: string
+  description?: string
+  requirements?: string
+  deadline?: string
 }
 
 export type MatchCriterion = {
@@ -41,6 +44,10 @@ export const jobApi = {
   },
   async list(params: { page?: number; limit?: number; search?: string; work_mode?: string; location?: string } = {}) {
     return (await axiosClient.get('/api/v1/jobs/', { params })) as Envelope<JobRecord[]>
+  },
+  async get(jobId: string) {
+    const response = (await axiosClient.get(`/api/v1/jobs/${jobId}`)) as Envelope<JobRecord>
+    return response.data
   },
   async create(payload: Record<string, unknown>) {
     return axiosClient.post('/api/v1/jobs/', payload) as Promise<{ data: { id: string }; message: string }>

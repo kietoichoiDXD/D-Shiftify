@@ -53,17 +53,17 @@ export function FigmaProfileUpdatePage() {
   }
 
   return (
-    <div className='min-h-[calc(100vh-84px)] bg-white text-[#111]'>
-      <main className='mx-auto w-full max-w-[760px] px-5 pb-4 pt-12'>
-        <div className='mb-7 flex items-center justify-center gap-5 text-center text-[16px] font-medium text-[#333]'>
-          Vui lòng cập nhật đầy đủ thông tin để chúng tôi hỗ trợ bạn tốt nhất
+    <div className='min-h-[calc(100vh-84px)] bg-gradient-to-br from-[#F8FBFF] to-[#EAF4FF] text-[#111]'>
+      <main className='mx-auto w-full max-w-[760px] px-5 pb-4 pt-10'>
+        <div className='mb-8 flex items-center justify-between gap-4 bg-[#004080] px-6 py-4 text-white'>
+          <p className='text-[15px] font-semibold'>Vui lòng cung cấp thông tin để chúng tôi có thể hỗ trợ tốt nhất</p>
           <button
             type='button'
             onClick={handleSpeakGreeting}
             aria-label='Đọc hướng dẫn chung'
-            className='rounded-full p-1 transition hover:bg-black/5 hover:text-black'
+            className='flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 transition hover:bg-white/25'
           >
-            <Volume2 className='h-4 w-4 text-[#777]' />
+            <Volume2 className='h-4 w-4 text-white' />
           </button>
         </div>
 
@@ -76,21 +76,9 @@ export function FigmaProfileUpdatePage() {
           />
           <VoiceField
             label='Ngày tháng năm sinh'
-            placeholder='01/01/2000'
+            placeholder='DD/MM/YYYY'
             value={fields.birthday}
             onChange={(val) => updateField('birthday', val)}
-          />
-          <VoiceField
-            label='Số điện thoại'
-            placeholder='090 123 4567'
-            value={fields.phone}
-            onChange={(val) => updateField('phone', val)}
-          />
-          <VoiceField
-            label='Email'
-            placeholder='example@gmail.com'
-            value={fields.email}
-            onChange={(val) => updateField('email', val)}
           />
 
           <div className='space-y-3'>
@@ -117,6 +105,19 @@ export function FigmaProfileUpdatePage() {
               Nữ
             </OptionRow>
           </div>
+
+          <VoiceField
+            label='Số điện thoại'
+            placeholder='Nhập số điện thoại'
+            value={fields.phone}
+            onChange={(val) => updateField('phone', val)}
+          />
+          <VoiceField
+            label='Email'
+            placeholder='Nhập email'
+            value={fields.email}
+            onChange={(val) => updateField('email', val)}
+          />
 
           <div className='space-y-3'>
             <span className='flex items-center gap-2 text-[12px] font-bold text-[#222]'>
@@ -155,9 +156,9 @@ export function FigmaProfileUpdatePage() {
         </form>
       </main>
       <BottomVoiceAction
-        label='Tiếp tục'
+        label='Hoàn tất'
         onClick={handleComplete}
-        instructionText='Vui lòng cập nhật đầy đủ thông tin để chúng tôi hỗ trợ bạn tốt nhất'
+        instructionText='Vui lòng cung cấp thông tin để chúng tôi có thể hỗ trợ tốt nhất'
       />
     </div>
   )

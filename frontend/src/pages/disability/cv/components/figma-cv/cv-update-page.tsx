@@ -79,15 +79,15 @@ export function FigmaCvUpdatePage() {
   }
 
   return (
-    <div className='min-h-[calc(100vh-84px)] bg-[#FAFAFA] text-[#111]'>
+    <div className='min-h-[calc(100vh-84px)] bg-gradient-to-br from-[#F8FBFF] to-[#EAF4FF] text-[#111]'>
       <main className='mx-auto w-full max-w-[673px] px-5 pb-4 pt-10'>
-        <h1 className='mb-8 text-[30px] font-black uppercase tracking-[-0.02em] text-[#111]'>Hồ sơ năng lực</h1>
+        <h1 className='mb-8 text-[30px] font-black uppercase tracking-[-0.02em] text-[#004080]'>Hồ sơ năng lực</h1>
 
-        <form className='space-y-7 border-l-[3px] border-black pl-5' onSubmit={(e) => e.preventDefault()}>
+        <form className='space-y-7 border-l-[3px] border-[#004080] pl-5' onSubmit={(e) => e.preventDefault()}>
           {}
           <section className='space-y-4'>
             <div className='flex items-center gap-3'>
-              <h2 className='text-[14px] font-black uppercase text-[#222]'>Kinh nghiệm làm việc</h2>
+              <h2 className='text-[14px] font-black uppercase text-[#004080]'>Kinh nghiệm làm việc</h2>
             </div>
             <VoiceField
               label='Kinh nghiệm làm việc'
@@ -158,8 +158,8 @@ export function FigmaCvUpdatePage() {
           </section>
 
           {}
-          <section className='space-y-4 border-l-[3px] border-black pl-5'>
-            <h2 className='text-[14px] font-black uppercase text-[#222]'>Học vấn</h2>
+          <section className='space-y-4 border-l-[3px] border-[#004080] pl-5'>
+            <h2 className='text-[14px] font-black uppercase text-[#004080]'>Học vấn</h2>
             <VoiceField
               label='Học vấn'
               placeholder='Nhập trường'
@@ -218,7 +218,7 @@ export function FigmaCvUpdatePage() {
           />
 
           {}
-          <section className='space-y-4 border-l-[3px] border-black pl-5'>
+          <section className='space-y-4 border-l-[3px] border-[#004080] pl-5'>
             <VoiceField
               label='Mục tiêu nghề nghiệp'
               textarea

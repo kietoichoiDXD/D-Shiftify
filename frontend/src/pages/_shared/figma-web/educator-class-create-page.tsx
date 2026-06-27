@@ -96,15 +96,15 @@ export function FigmaEducatorClassCreatePage() {
   return (
     <WorkspaceShell role='educator'>
       <div className='mx-auto w-full max-w-[620px]'>
-        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase text-black'>
+        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase text-[#004080]'>
           Tạo lớp học mới
           <button
             type='button'
             onClick={() => handleSpeakLabel('Tạo lớp học mới')}
             aria-label='Đọc tiêu đề Tạo lớp học mới'
-            className='rounded-full p-1 transition hover:bg-black/5 hover:text-black'
+            className='rounded-full p-1 transition hover:bg-[#004080]/5'
           >
-            <Volume2 className='h-5 w-5 text-black' aria-hidden='true' />
+            <Volume2 className='h-5 w-5 text-[#004080]' aria-hidden='true' />
           </button>
         </h1>
         <form onSubmit={handleSubmit} className='space-y-5'>
@@ -135,7 +135,7 @@ export function FigmaEducatorClassCreatePage() {
                   aria-pressed={isSelected}
                   className={cn(
                     'flex h-12 w-full items-center justify-between border-l-[3px] bg-white px-4 text-[13px] font-black transition-all hover:bg-[#F5F5F5]',
-                    isSelected ? 'border-black bg-[#F5F5F5]' : 'border-transparent text-[#555]'
+                    isSelected ? 'border-[#004080] bg-[#EAF4FF] text-[#004080]' : 'border-transparent text-[#555]'
                   )}
                 >
                   {item}
@@ -193,7 +193,7 @@ export function FigmaEducatorClassCreatePage() {
                     aria-pressed={isSelected}
                     className={cn(
                       'flex h-24 flex-col items-center justify-center border-t-[3px] bg-white text-[11px] font-black uppercase transition-all hover:bg-[#F5F5F5]',
-                      isSelected ? 'border-black bg-[#F5F5F5]' : 'border-transparent text-[#555]'
+                      isSelected ? 'border-[#004080] bg-[#EAF4FF] text-[#004080]' : 'border-transparent text-[#555]'
                     )}
                   >
                     <Icon className='mb-2 h-6 w-6' aria-hidden='true' />
@@ -215,7 +215,7 @@ export function FigmaEducatorClassCreatePage() {
                 <Volume2 className='h-3 w-3 text-[#777]' aria-hidden='true' />
               </button>
             </span>
-            <div className='min-h-12 border border-[#D9D9D9] bg-white px-3 py-3 flex flex-wrap gap-2 items-center'>
+            <div className='min-h-12 border border-[#CFE3F7] bg-white px-3 py-3 flex flex-wrap gap-2 items-center'>
               {certificates.map((cert) => (
                 <Chip key={cert} removable onRemove={() => handleRemoveCertificate(cert)}>
                   {cert}
@@ -225,7 +225,7 @@ export function FigmaEducatorClassCreatePage() {
                 <div className='flex items-center gap-1'>
                   <input
                     aria-label='Nhập chứng chỉ đầu ra'
-                    className='h-7 w-28 border border-[#D9D9D9] px-2 text-[10px] outline-none'
+                    className='h-7 w-28 border border-[#CFE3F7] px-2 text-[10px] outline-none'
                     placeholder='Tên chứng chỉ'
                     value={newCertificate}
                     onChange={(e) => setNewCertificate(e.target.value)}
@@ -235,7 +235,7 @@ export function FigmaEducatorClassCreatePage() {
                   <button
                     type='button'
                     onClick={handleAddCertificate}
-                    className='h-7 bg-black text-white px-2 text-[10px] font-bold uppercase'
+                    className='h-7 bg-[#004080] text-white px-2 text-[10px] font-bold uppercase'
                   >
                     Thêm
                   </button>

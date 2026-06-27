@@ -35,6 +35,7 @@ const DisabilityCvPage = lazy(() => import('@/pages/disability/cv'))
 const DisabilityCvPreviewPage = lazy(() => import('@/pages/disability/cv/preview'))
 const DisabilityCvConfirmPage = lazy(() => import('@/pages/disability/cv/confirm'))
 const DisabilityCvEditPage = lazy(() => import('@/pages/disability/cv/edit'))
+const DisabilityCvUpdatePage = lazy(() => import('@/pages/disability/cv/update'))
 const BusinessDashboardPage = lazy(() => import('@/pages/business/dashboard'))
 const BusinessMessagesPage = lazy(() => import('@/pages/business/messages'))
 const BusinessCandidatesPage = lazy(() => import('@/pages/business/candidates'))
@@ -94,6 +95,7 @@ export default function useRoutesElements() {
             <Route path={ROUTE.DISABILITY.CV_PREVIEW} element={<DisabilityCvPreviewPage />} />
             <Route path={ROUTE.DISABILITY.CV_CONFIRM} element={<DisabilityCvConfirmPage />} />
             <Route path={ROUTE.DISABILITY.CV_EDIT} element={<DisabilityCvEditPage />} />
+            <Route path={ROUTE.DISABILITY.CV_UPDATE} element={<DisabilityCvUpdatePage />} />
             <Route path={ROUTE.BUSINESS.DASHBOARD} element={<BusinessDashboardPage />} />
             <Route path={ROUTE.BUSINESS.MESSAGES} element={<BusinessMessagesPage />} />
             <Route path={ROUTE.BUSINESS.CANDIDATES} element={<BusinessCandidatesPage />} />

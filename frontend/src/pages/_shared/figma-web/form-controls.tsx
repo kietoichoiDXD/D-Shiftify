@@ -129,7 +129,7 @@ export function FigmaField({
             aria-label={label || placeholder}
             value={value}
             onChange={(event) => handleChange(event.target.value)}
-            className='min-h-[130px] w-full resize-none border border-[#D9D9D9] bg-white px-4 py-4 pr-16 text-[13px] outline-none placeholder:text-[#767676] focus:border-black focus:ring-2 focus:ring-black/10'
+            className='min-h-[130px] w-full resize-none border border-[#CFE3F7] bg-white px-4 py-4 pr-16 text-[13px] outline-none placeholder:text-[#767676] focus:border-[#004080] focus:ring-2 focus:ring-[#004080]/10'
           />
         ) : select && options ? (
           <select
@@ -137,7 +137,7 @@ export function FigmaField({
             aria-label={label || placeholder}
             value={value}
             onChange={(event) => handleChange(event.target.value)}
-            className='h-12 w-full border border-[#D9D9D9] bg-white px-4 pr-16 text-[13px] outline-none appearance-none focus:border-black focus:ring-2 focus:ring-black/10'
+            className='h-12 w-full border border-[#CFE3F7] bg-white px-4 pr-16 text-[13px] outline-none appearance-none focus:border-[#004080] focus:ring-2 focus:ring-[#004080]/10'
           >
             {placeholder && <option value="" disabled hidden>{placeholder}</option>}
             {options.map((opt) => (
@@ -153,7 +153,7 @@ export function FigmaField({
             aria-label={label || placeholder}
             value={value}
             onChange={(event) => handleChange(event.target.value)}
-            className='h-12 w-full border border-[#D9D9D9] bg-white px-4 pr-16 text-[13px] outline-none placeholder:text-[#767676] focus:border-black focus:ring-2 focus:ring-black/10'
+            className='h-12 w-full border border-[#CFE3F7] bg-white px-4 pr-16 text-[13px] outline-none placeholder:text-[#767676] focus:border-[#004080] focus:ring-2 focus:ring-[#004080]/10'
           />
         )}
         <FieldIcons select={select} isListening={isListening} onMicClick={handleMicClick} onSpeakClick={handleSpeakValue} />
@@ -216,7 +216,7 @@ export function UploadBox({
         onClick={handleClick}
         disabled={uploading}
         aria-label={`${title}: ${value ? 'Đã tải lên' : action}`}
-        className='flex aspect-square min-h-[190px] w-full flex-col items-center justify-center border border-[#D9D9D9] bg-white text-center hover:border-black hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] relative overflow-hidden'
+        className='flex aspect-square min-h-[190px] w-full flex-col items-center justify-center border border-[#CFE3F7] bg-white text-center hover:border-black hover:shadow-[0_12px_28px_rgba(0,0,0,0.08)] relative overflow-hidden'
       >
         {uploading ? (
           <div className='flex flex-col items-center justify-center gap-2'>
@@ -256,7 +256,7 @@ export function Chip({
   onRemove?: () => void
 }) {
   return (
-    <span className='inline-flex items-center gap-2 bg-black px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-white'>
+    <span className='inline-flex items-center gap-2 bg-[#004080] px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.08em] text-white'>
       {children}
       {removable ? (
         <button type='button' onClick={onRemove} aria-label='Xóa' className='hover:opacity-75 focus:outline-none'>
@@ -283,7 +283,7 @@ export function PrimaryAction({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className='mt-8 h-14 w-full bg-black text-[12px] font-black uppercase tracking-[0.24em] text-white shadow-[0_14px_24px_rgba(0,0,0,0.12)] hover:bg-[#222]'
+      className='mt-8 h-14 w-full bg-[#004080] text-[12px] font-black uppercase tracking-[0.24em] text-white shadow-[0_14px_24px_rgba(0,64,128,0.18)] hover:bg-[#003466]'
     >
       {children}
     </AnimatedButton>

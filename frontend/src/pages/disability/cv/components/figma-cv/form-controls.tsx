@@ -26,7 +26,7 @@ export interface VoiceFieldProps {
 }
 
 export const commonInputClassName =
-  'w-full border border-[#E4E4E4] bg-white px-4 pr-16 text-[13px] font-medium text-[#111] outline-none transition placeholder:text-[#B8B8B8] focus:border-black focus:ring-2 focus:ring-black/5'
+  'w-full border border-[#CFE3F7] bg-white px-4 pr-16 text-[13px] font-medium text-[#111] outline-none transition placeholder:text-[#B8B8B8] focus:border-[#004080] focus:ring-2 focus:ring-[#004080]/10'
 
 export function FieldIcons({
   select,
@@ -188,7 +188,7 @@ export function OptionRow({
       onClick={onClick}
       className={cn(
         'flex h-12 w-full items-center justify-between border px-4 text-left text-[13px] font-medium transition',
-        selected ? 'border-black bg-slate-50' : 'border-[#E4E4E4] bg-white',
+        selected ? 'border-[#004080] bg-[#EAF4FF] text-[#004080] font-bold' : 'border-[#CFE3F7] bg-white',
         muted && 'text-[#A8A8A8]'
       )}
     >
@@ -236,7 +236,7 @@ export function BottomVoiceAction({
         <button
           type='button'
           onClick={onClick}
-          className='h-14 flex-1 bg-black text-[12px] font-black uppercase tracking-[0.24em] text-white shadow-[0_12px_20px_rgba(0,0,0,0.14)] transition hover:bg-[#222]'
+          className='h-14 flex-1 bg-[#004080] text-[12px] font-black uppercase tracking-[0.24em] text-white shadow-[0_12px_20px_rgba(0,64,128,0.18)] transition hover:bg-[#003466]'
         >
           {label}
         </button>

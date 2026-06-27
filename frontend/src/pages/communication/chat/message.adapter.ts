@@ -201,5 +201,5 @@ export const toChatMessage = (message: NormalizedMessage, participantRole: Conve
     : participantRole,
   text: message.content,
   timestamp: formatMessageTime(message.createdAt),
-  hasAudio: true
+  hasAudio: Boolean(message.voiceUrl)
 })

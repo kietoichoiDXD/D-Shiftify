@@ -140,15 +140,15 @@ export function FigmaBusinessProfilePage({ edit = false }: { edit?: boolean }) {
   return (
     <WorkspaceShell role='business'>
       <div className='mx-auto w-full max-w-[760px]'>
-        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase'>
+        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase text-[#004080]'>
           Doanh nghiệp
           <button
             type='button'
             onClick={() => handleSpeakLabel('Doanh nghiệp')}
             aria-label='Đọc tiêu đề Doanh nghiệp'
-            className='rounded-full p-1 transition hover:bg-black/5 hover:text-black'
+            className='rounded-full p-1 transition hover:bg-[#004080]/5'
           >
-            <Volume2 className='h-5 w-5 text-black' aria-hidden='true' />
+            <Volume2 className='h-5 w-5 text-[#004080]' aria-hidden='true' />
           </button>
         </h1>
         <form onSubmit={handleSubmit} className='space-y-8'>

@@ -1,6 +1,5 @@
-import { FigmaCandidateJobsPage } from '@/pages/_shared/figma-web-screens'
+import { JobDiscoveryPage } from './components/job-discovery-page'
 
 export default function DisabilityJobsPage() {
-  return <FigmaCandidateJobsPage />
+  return <JobDiscoveryPage />
 }
-

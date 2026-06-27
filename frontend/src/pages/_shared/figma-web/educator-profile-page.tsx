@@ -181,15 +181,15 @@ export function FigmaEducatorProfilePage() {
   return (
     <WorkspaceShell role='educator'>
       <div className='mx-auto w-full max-w-[620px]'>
-        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase text-black'>
+        <h1 className='mb-8 flex items-center gap-2 text-[34px] font-black uppercase text-[#004080]'>
           Cơ sở đào tạo
           <button
             type='button'
             onClick={() => handleSpeakLabel('Cơ sở đào tạo')}
             aria-label='Đọc tiêu đề Cơ sở đào tạo'
-            className='rounded-full p-1 transition hover:bg-black/5 hover:text-black'
+            className='rounded-full p-1 transition hover:bg-[#004080]/5'
           >
-            <Volume2 className='h-5 w-5 text-black' aria-hidden='true' />
+            <Volume2 className='h-5 w-5 text-[#004080]' aria-hidden='true' />
           </button>
         </h1>
         <form onSubmit={handleSubmit} className='space-y-6'>
@@ -272,7 +272,7 @@ export function FigmaEducatorProfilePage() {
                     aria-pressed={isSelected}
                     className={cn(
                       'flex h-12 w-full items-center justify-between border-l-[3px] bg-white px-4 text-[13px] font-black transition-all hover:bg-[#F5F5F5]',
-                      isSelected ? 'border-black bg-[#F5F5F5]' : 'border-transparent text-[#555]'
+                      isSelected ? 'border-[#004080] bg-[#EAF4FF] text-[#004080]' : 'border-transparent text-[#555]'
                     )}
                   >
                     {item}
@@ -311,7 +311,7 @@ export function FigmaEducatorProfilePage() {
                       aria-pressed={isSelected}
                       className={cn(
                         'flex-1 flex h-12 items-center justify-between border-l-[3px] bg-white px-4 text-[13px] font-black transition-all hover:bg-[#F5F5F5]',
-                        isSelected ? 'border-black bg-[#F5F5F5]' : 'border-transparent text-[#555]'
+                        isSelected ? 'border-[#004080] bg-[#EAF4FF] text-[#004080]' : 'border-transparent text-[#555]'
                       )}
                     >
                       {item}
@@ -331,7 +331,7 @@ export function FigmaEducatorProfilePage() {
                 <AnimatedButton
                   type='button'
                   onClick={handleAddCustomGroup}
-                  className='h-12 bg-black px-4 text-[11px] font-black uppercase text-white hover:bg-[#222]'
+                  className='h-12 bg-[#004080] px-4 text-[11px] font-black uppercase text-white hover:bg-[#003466]'
                 >
                   Thêm
                 </AnimatedButton>

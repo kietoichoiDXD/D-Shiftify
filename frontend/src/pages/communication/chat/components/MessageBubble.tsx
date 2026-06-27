@@ -10,6 +10,7 @@ interface MessageBubbleProps {
 
 export default function MessageBubble({ message, onReadMessage }: MessageBubbleProps) {
   const isMine = message.isMine
+  const isCandidate = message.sender === 'candidate'
   const senderLabel = getRoleLabel(message.sender)
 
   return (

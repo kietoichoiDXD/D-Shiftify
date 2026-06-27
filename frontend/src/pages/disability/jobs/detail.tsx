@@ -1,5 +1,5 @@
-import PlaceholderPage from '@/pages/_shared/placeholder-page'
+import { JobDetailPage } from './components/job-detail-page'
 
 export default function DisabilityJobDetailPage() {
-  return <PlaceholderPage title='Job Detail' description='Review an accessible job opportunity before applying.' />
+  return <JobDetailPage />
 }
