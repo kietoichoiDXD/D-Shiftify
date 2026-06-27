@@ -9,7 +9,8 @@ ApiDocument.addModel('TranscribeSpeechDto', {
 });
 
 ApiDocument.addModel('SynthesizeSpeechDto', {
-    text: SwaggerDocument.ApiProperty({ type: 'string' }),
+    text: SwaggerDocument.ApiProperty({ type: 'string', required: false }),
+    ssml: SwaggerDocument.ApiProperty({ type: 'string', required: false }),
     languageCode: SwaggerDocument.ApiProperty({ type: 'string', required: false }),
     voiceName: SwaggerDocument.ApiProperty({ type: 'string', required: false }),
     gender: SwaggerDocument.ApiProperty({ type: 'string', required: false }),

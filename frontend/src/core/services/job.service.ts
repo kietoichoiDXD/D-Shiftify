@@ -37,6 +37,8 @@ export type MatchCriterion = {
   weight: number
   score: number
   contribution: number
+  reason?: string
+  source?: 'ai' | 'deterministic'
 }
 
 export type JobMatch = {
@@ -47,6 +49,7 @@ export type JobMatch = {
   gaps: string[]
   explanation: string
   accessibility: { score: number; signals: string[]; warnings: string[] }
+  aiRefined?: boolean
 }
 
 type Envelope<T> = { data: T; meta?: { total: number; page: number; limit: number; totalPages: number } }

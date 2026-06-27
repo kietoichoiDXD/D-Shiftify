@@ -2,6 +2,9 @@ import connection from 'core/database';
 import { NotFoundException } from 'packages/httpException';
 import { ForbiddenException } from 'packages/httpException/ForbiddenException';
 import { evaluateMatch, MATCHING_CRITERIA_V2 } from '../../../ai/retrieval/match.scoring';
+import { refineMatchWithAI } from '../../../ai/matching/agentic.matcher';
+
+const AI_REFINE_TOP_N = Number.parseInt(process.env.AI_MATCH_REFINE_TOP_N || '10', 10);
 
 const parseJsonArray = value => {
     if (Array.isArray(value)) return value;
@@ -120,25 +123,45 @@ class MatchingServiceClass {
         }));
     }
 
-    async matchCvToJobs({ cvId, jobIds = [], priorities = [], limit = 20 }, userId) {
+    async matchCvToJobs({ cvId, jobIds = [], priorities = [], limit = 20, useAi = true }, userId) {
         const profile = await this.getCandidateProfile(cvId, userId);
         const jobs = await this.getJobs(jobIds, Math.min(limit, 50));
-        const matches = jobs
+
+        // Step 1 — deterministic v2 scoring for every retrieved job (fast, auditable).
+        const baseMatches = jobs
             .map(job => ({
-                job: {
+                jobRecord: job,
+                jobSummary: {
                     id: job.id,
                     title: job.title,
                     company: job.company,
                     location: job.location,
                     workMode: job.workMode,
                 },
-                ...evaluateMatch(profile, job, priorities),
+                result: evaluateMatch(profile, job, priorities),
             }))
-            .sort((left, right) => right.score - left.score);
+            .sort((left, right) => right.result.score - left.result.score);
+
+        // Step 2 — agentic refinement (Gemini LLM-as-judge) on the top-N only, to bound cost.
+        // Each call falls back to the deterministic result on any failure.
+        const refined = await Promise.all(
+            baseMatches.map(async (entry, index) => {
+                const result = useAi && index < AI_REFINE_TOP_N
+                    ? await refineMatchWithAI(profile, entry.jobRecord, entry.result)
+                    : { ...entry.result, aiRefined: false };
+                return { job: entry.jobSummary, ...result };
+            }),
+        );
+
+        // Re-sort because AI refinement can change individual scores.
+        const matches = refined.sort((left, right) => right.score - left.score);
+        const aiRefinedCount = matches.filter(match => match.aiRefined).length;
 
         return {
             cvId,
             criteriaVersion: 'v2',
+            engine: aiRefinedCount > 0 ? 'agentic-rag' : 'deterministic',
+            aiRefinedCount,
             generatedAt: new Date().toISOString(),
             count: matches.length,
             matches,

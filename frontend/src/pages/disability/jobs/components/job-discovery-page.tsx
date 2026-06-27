@@ -11,6 +11,7 @@ import {
   Mic,
   Search,
   SlidersHorizontal,
+  Sparkles,
   Volume2,
   X
 } from 'lucide-react'
@@ -51,7 +52,7 @@ const getSkillNames = (job: JobRecord) => job.skills.map((skill) => skill.name).
 // Prefer a description supplied by the matching API; otherwise derive a short
 // sentence from the criterion score so the dialog mirrors the Figma layout.
 const getCriterionDescription = (criterion: JobMatch['criteria'][number]) => {
-  const provided = (criterion as { description?: string }).description
+  const provided = criterion.reason || (criterion as { description?: string }).description
   if (provided && provided.trim()) return provided.trim()
   if (criterion.score >= 80) return `Đáp ứng tốt yêu cầu ở tiêu chí này (${criterion.score}/100).`
   if (criterion.score >= 50) return `Phù hợp một phần với yêu cầu (${criterion.score}/100).`
@@ -102,8 +103,13 @@ function MatchDialog({ match, open, onOpenChange }: { match: JobMatch | null; op
               </Button>
             </Dialog.Close>
             <div className='mb-7 flex items-center justify-between gap-4 pr-10'>
-              <Dialog.Title className='text-balance text-[26px] font-black uppercase leading-tight text-[#004080]'>
+              <Dialog.Title className='flex flex-wrap items-center gap-2 text-balance text-[26px] font-black uppercase leading-tight text-[#004080]'>
                 Chi tiết độ phù hợp
+                {match.aiRefined ? (
+                  <span className='inline-flex items-center gap-1 rounded-full bg-[#EAF4FF] px-2.5 py-1 text-[11px] font-bold normal-case text-[#004080]'>
+                    <Sparkles className='size-3' /> AI phân tích
+                  </span>
+                ) : null}
               </Dialog.Title>
               <Button type='button' variant='ghost' size='icon' aria-label='Đọc chi tiết độ phù hợp' onClick={() => void speakAccessibleText(speechText)} className='size-10 shrink-0 rounded-full text-[#004080] hover:bg-[#EAF4FF]'>
                 <Volume2 className='size-5' />
@@ -196,7 +202,10 @@ export function JobDiscoveryPage() {
     void speechApi
       .transcribe(audioBlob)
       .then((result) => {
-        setSearch(result.transcript)
+        // If the backend parsed a "tìm việc ..." voice command, search the query it carries;
+        // otherwise treat the whole transcript as the search term.
+        const query = result.command?.intent === 'search' && result.command.query ? result.command.query : result.transcript
+        setSearch(query)
         setLiveMessage(`Đã nhận giọng nói: ${result.transcript}`)
       })
       .catch(() => setLiveMessage('Không thể nhận dạng giọng nói. Vui lòng thử lại.'))

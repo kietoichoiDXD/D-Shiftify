@@ -6,10 +6,18 @@ type ApiResponse<T> = {
   data: T
 }
 
+export type VoiceCommand = {
+  intent: string
+  query: string | null
+  matched: string | null
+  raw: string
+}
+
 type Transcription = {
   transcript: string
   confidence: number | null
   languageCode: string
+  command?: VoiceCommand | null
 }
 
 type SpeechAudio = {
