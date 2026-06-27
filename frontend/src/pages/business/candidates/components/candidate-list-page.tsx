@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight, Search, Volume2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
-import { ROUTE } from '@/core/constants/path'
 import { cn } from '@/core/lib/utils'
 import { speakAccessibleText } from '@/core/services/speech.service'
 import { WorkspaceShell } from '@/pages/_shared/figma-web/workspace-shell'
