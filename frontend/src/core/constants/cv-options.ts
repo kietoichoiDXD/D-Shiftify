@@ -1,4 +1,4 @@
-import { type CvRecord, type DisabilityOptionsResponse } from '@/models/interface/cv.interfaces'
+import { type CvRecord } from '@/models/interface/cv.interfaces'
 
 export const FALLBACK_STATUSES = [
   { id: 'visual', label: 'Khiếm thị' },
@@ -63,26 +63,8 @@ export const FALLBACK_CERTIFICATIONS = [
   { id: 'vocational_training', label: 'Đào tạo nghề' }
 ]
 
-export const mockDisabilityOptions: DisabilityOptionsResponse = {
-  statuses: FALLBACK_STATUSES,
-  genders: FALLBACK_GENDERS,
-  disabilityTypes: FALLBACK_STATUSES,
-  disabilityLevels: [
-    { id: 'mild', label: 'Nhẹ' },
-    { id: 'moderate', label: 'Trung bình' },
-    { id: 'severe', label: 'Nặng' }
-  ],
-  workTimes: FALLBACK_WORK_TIMES,
-  workModes: FALLBACK_WORK_MODES,
-  softSkillOptions: FALLBACK_SOFT_SKILLS,
-  hardSkillOptions: FALLBACK_HARD_SKILLS,
-  workConditions: FALLBACK_WORK_CONDITIONS,
-  equipment: FALLBACK_EQUIPMENT,
-  certifications: FALLBACK_CERTIFICATIONS
-}
-
-export const mockCvRecord: CvRecord = {
-  id: 'mock-cv-001',
+export const DEFAULT_CV_RECORD: CvRecord = {
+  id: 'current',
   avatarUrl: '',
   fullName: '',
   birthday: '',

@@ -8,7 +8,7 @@ import {
   FALLBACK_WORK_CONDITIONS,
   FALLBACK_WORK_MODES,
   FALLBACK_WORK_TIMES
-} from '@/_mocks/data-cv.mock'
+} from '@/core/constants/cv-options'
 import { type CvFormValues } from '@/core/zod/cv.zod'
 import { type DisabilityOptionsResponse } from '@/models/interface/cv.interfaces'
 

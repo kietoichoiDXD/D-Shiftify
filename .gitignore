@@ -41,3 +41,8 @@ frontend/.github/ISSUE_TEMPLATE/
 *.pem
 env*.txt
 backend/nul
+
+# Mock/sample data — never push
+**/_mocks/
+**/*.mock.ts
+**/mock-data.ts

@@ -1,7 +1,7 @@
 import { Camera, Loader2, User } from 'lucide-react'
 import { Controller, type FieldErrors, type UseFormReturn, type Path } from 'react-hook-form'
 
-import { FALLBACK_GENDERS, FALLBACK_STATUSES } from '@/_mocks/data-cv.mock'
+import { FALLBACK_GENDERS, FALLBACK_STATUSES } from '@/core/constants/cv-options'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DatePicker } from '@/components/ui/date-picker'
 import FileUpload from '@/components/upload-file/file-upload'

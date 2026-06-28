@@ -4,7 +4,6 @@ import { Menu, X, LogOut, User } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
-import { navLinks } from '@/_mocks/data-nav-bar.mock'
 import { LanguageSwitcher } from '@/components/language/language-switcher'
 import Logo from '@/components/logo/logo'
 import { ThemeToggle } from '@/components/theme/theme-toogle'
@@ -13,6 +12,12 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ROUTE } from '@/core/constants/path'
 import { useAuthStore } from '@/core/store/features/auth/authStore'
+
+const navLinks = [
+  { labelKey: 'features.title', to: '#features' },
+  { labelKey: 'techStack.title', to: '#tech-stack' },
+  { labelKey: 'gettingStarted.title', to: '#getting-started' }
+]
 
 const handleSmoothScroll = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, to: string) => {
   e.preventDefault()

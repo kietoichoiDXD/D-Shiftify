@@ -1,7 +1,6 @@
 import { type AxiosInstance } from 'axios'
 
-import { mockCvRecord, mockDisabilityOptions } from '@/_mocks/data-cv.mock'
-import config from '@/core/configs/env'
+import { DEFAULT_CV_RECORD } from '@/core/constants/cv-options'
 import axiosClient from '@/core/services/axios-client'
 import {
   type CvPayload,
@@ -12,15 +11,9 @@ import {
 } from '@/models/interface/cv.interfaces'
 
 const API_CV_URL = '/api/v1/cv'
-const MOCK_DELAY_IN_MS = 250
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
 type ApiEnvelope<T> = { data: T; status?: string }
-
-const withMockDelay = async <T>(data: T): Promise<T> => {
-  await new Promise((resolve) => window.setTimeout(resolve, MOCK_DELAY_IN_MS))
-  return data
-}
 
 const splitValues = (value = '') =>
   value
@@ -102,7 +95,7 @@ const normalizeRecord = (value: unknown, payload?: CvPayload): CvRecord => {
   const raw = envelope?.data ?? value
   const record = (Array.isArray(raw) ? raw[0] : raw) as Record<string, unknown>
   return {
-    ...(payload || mockCvRecord),
+    ...(payload || DEFAULT_CV_RECORD),
     id: String(record?.id || 'current'),
     status: 'submitted',
     updatedAt: String(record?.updatedAt || new Date().toISOString()),
@@ -121,26 +114,21 @@ export type CvApi = {
 
 export const createCvApi = (client: AxiosInstance): CvApi => ({
   async getDisabilityOptions() {
-    if (config.useMockData) return withMockDelay(mockDisabilityOptions)
     return client.get(`${API_CV_URL}/disability-options`) as Promise<DisabilityOptionsResponse>
   },
   async getCvDetail(cvId) {
-    if (config.useMockData) return withMockDelay({ ...mockCvRecord, id: cvId })
     const response = await client.get(`${API_CV_URL}/${cvId}`)
     return normalizeRecord(response)
   },
   async createCv(payload) {
-    if (config.useMockData) return withMockDelay(normalizeRecord({ id: 'mock-cv-new' }, payload))
     const response = await client.post(API_CV_URL, toBackendPayload(payload))
     return normalizeRecord(response, payload)
   },
   async updateCv(cvId, payload) {
-    if (config.useMockData) return withMockDelay(normalizeRecord({ id: cvId }, payload))
     const response = await client.put(`${API_CV_URL}/${cvId}`, toBackendPayload(payload))
     return normalizeRecord(response, payload)
   },
   async uploadAvatar(file) {
-    if (config.useMockData) return withMockDelay({ avatarUrl: URL.createObjectURL(file) })
     const formData = new FormData()
     formData.append('file', file)
     const response = (await client.post('/api/v1/media/upload', formData, {
@@ -149,7 +137,6 @@ export const createCvApi = (client: AxiosInstance): CvApi => ({
     return { avatarUrl: response.avatarUrl || response.url || response.data?.url || '' }
   },
   async validatePreview(payload) {
-    if (config.useMockData) return withMockDelay(createPreview(payload))
     try {
       return (await client.post(`${API_CV_URL}/preview`, payload)) as CvPreviewResponse
     } catch {
