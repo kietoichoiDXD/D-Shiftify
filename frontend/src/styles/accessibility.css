@@ -1,0 +1,35 @@
+.a11y-high-contrast {
+  filter: contrast(1.15);
+}
+
+.a11y-high-contrast a,
+.a11y-high-contrast button {
+  text-underline-offset: 2px;
+}
+
+.a11y-high-contrast *:focus-visible {
+  outline: 3px solid #004080 !important;
+  outline-offset: 2px !important;
+}
+
+.a11y-large-targets button,
+.a11y-large-targets a[role='button'],
+.a11y-large-targets [role='switch'],
+.a11y-large-targets input,
+.a11y-large-targets select {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.a11y-large-targets button,
+.a11y-large-targets a {
+  letter-spacing: 0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a11y-high-contrast *,
+  .a11y-large-targets * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

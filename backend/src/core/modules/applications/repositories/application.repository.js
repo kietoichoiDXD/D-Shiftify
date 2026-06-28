@@ -34,12 +34,13 @@ class Repository extends DataRepository {
         return queryBuilder;
     }
 
-    getAll(page , size) {
+    getAll(page, size, filters = {}) {
         const offset = (page - 1) * size;
-        const query = this.query()
+        const qb = this.query()
             .join('jobs', 'jobs.id', 'applications.job_id')
             .join('cvs', 'cvs.id', 'applications.cv_id')
-            .whereNull('applications.deleted_at')
+            .leftJoin('profiles', 'profiles.id', 'cvs.profile_id');
+        return this.#applyListFilters(qb, filters)
             .select([
                 'applications.id',
                 { jobId: 'applications.job_id' },
@@ -47,17 +48,28 @@ class Repository extends DataRepository {
                 'applications.status',
                 { createdAt: 'applications.created_at' },
                 { jobTitle: 'jobs.title' },
-            ]).limit(size).offset(offset);
-        return  query;
+                { fullName: 'profiles.full_name' },
+                { phone: 'profiles.phone' },
+                { expectedJob: 'cvs.expected_job' },
+                { skills: 'cvs.skills' },
+            ])
+            .orderBy('applications.created_at', 'desc')
+            .limit(size)
+            .offset(offset);
     }
-    getTotalCount() {
-        return this.query()
-            .whereNull('deleted_at')
-            .count('id as total')
+
+    #applyListFilters(qb, { jobId, status } = {}) {
+        qb.whereNull('applications.deleted_at');
+        if (jobId) qb.where('applications.job_id', jobId);
+        if (status) qb.where('applications.status', status);
+        return qb;
+    }
+
+    getTotalCount(filters = {}) {
+        return this.#applyListFilters(this.query(), filters)
+            .count('applications.id as total')
             .first()
-            .then(result => {
-            return result || { total: 0 };
-        });
+            .then(result => result || { total: 0 });
     }
 
     findByJobAndCv(jobId, cvId) {
@@ -94,7 +106,6 @@ class Repository extends DataRepository {
 
         return queryBuilder;
     }
-
 
 }
 

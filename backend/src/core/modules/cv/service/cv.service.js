@@ -16,13 +16,12 @@ class Service {
 
         const trx = await getTransaction();
         try {
-            
+
             const { userId } = cvData;
             const deviceIds = cvData.cv?.deviceIds || [];
 
             let userProfile = await ProfileRepository.findByUserId(userId);
 
-            // create or update profile
             if (!userProfile) {
                 userProfile = await ProfileRepository.create({ user_id: userId, ...CreateProfileDto(cvData.profile) }, trx);
             } else {
@@ -35,7 +34,7 @@ class Service {
             }
 
             const cv = await this.repository.createCV(CreateCVDto({ ...cvData, profileId: userProfile.id }),trx);
-            
+
             await trx.commit();
             return cv;
         } catch (e) {
@@ -43,13 +42,26 @@ class Service {
             throw e;
         }
     }
-    
+
     async getCurrentCv(userId) {
         const cv = await this.repository.findLatestByUserId(userId);
         if (!cv) {
             throw new NotFoundException('CV not found');
         }
         return cv;
+    }
+
+    async listMyCvs(userId) {
+        return this.repository.findAllByUserId(userId);
+    }
+
+    async deleteCV(id, userId) {
+        const existing = await this.repository.findByIdAndUserId(id, userId);
+        if (!existing) {
+            throw new ForbiddenException('You do not have permission to delete this CV');
+        }
+        await this.repository.softDelete(id);
+        return { message: 'Đã xóa CV thành công' };
     }
 
     async getCvById(id, userId) {
@@ -73,7 +85,7 @@ class Service {
             if (!updatedCV || updatedCV.length === 0) {
                 throw new Error('CV not found or update failed');
             }
-            // update devices
+
             if (cvData.cv?.deviceIds !== undefined) {
                 await UserDeviceRepository.deleteByProfileId(existing.profileId,trx);
 

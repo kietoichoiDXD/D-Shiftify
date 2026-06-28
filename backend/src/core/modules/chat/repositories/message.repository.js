@@ -1,7 +1,7 @@
 import { DataRepository } from 'packages/restBuilder/core/dataHandler/data.repository';
 
 class MessageRepository extends DataRepository {
-    
+
     create(messageData, trx = null) {
         const queryBuilder = this.query()
             .insert(messageData).returning([
@@ -73,6 +73,60 @@ class MessageRepository extends DataRepository {
                 'messages.created_at',
                 'asc'
             );
+    }
+
+    getLastMessage(conversationId) {
+        return this.query()
+            .where('conversation_id', conversationId)
+            .whereNull('deleted_at')
+            .orderBy('created_at', 'desc')
+            .select(
+                'id',
+                'content',
+                'voice_url as voiceUrl',
+                'sender_id as senderId',
+                'created_at as createdAt',
+            )
+            .first();
+    }
+
+    async findByCursor(conversationId, cursorCreatedAt, limit) {
+        const qb = this.query()
+            .where('conversation_id', conversationId)
+            .whereNull('deleted_at');
+        if (cursorCreatedAt) qb.where('created_at', '<', cursorCreatedAt);
+        return qb
+            .orderBy('created_at', 'desc')
+            .limit(limit)
+            .select(
+                'id',
+                'conversation_id as conversationId',
+                'sender_id as senderId',
+                'content',
+                'voice_url as voiceUrl',
+                'created_at as createdAt',
+            );
+    }
+
+    async countUnread(conversationId, userId, lastReadAt) {
+        const qb = this.query()
+            .where('conversation_id', conversationId)
+            .whereNull('deleted_at')
+            .whereNot('sender_id', userId);
+        if (lastReadAt) qb.where('created_at', '>', lastReadAt);
+        const row = await qb.count({ count: '*' }).first();
+        return Number(row?.count || 0);
+    }
+
+    findCreatedAtById(id) {
+        return this.query().where('id', id).select('created_at as createdAt').first();
+    }
+
+    softDelete(id) {
+        return this.query()
+            .where('id', id)
+            .whereNull('deleted_at')
+            .update({ deleted_at: new Date(), updated_at: new Date() });
     }
 
     update(id, messageData) {

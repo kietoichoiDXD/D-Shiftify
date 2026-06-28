@@ -11,7 +11,6 @@
 
         io = new Server(httpServer, { cors: { origin: '*' } });
 
-        //auth socket 
         io.use(socketAuthInterceptor);
 
         io.on(SOCKET_EVENTS.CONNECTION, socket => {
@@ -41,7 +40,7 @@
                     socket.emit(SOCKET_EVENTS.JOIN_CONVERSATION_SUCCESS, {
                         conversationId: payload.conversationId,
                     });
-                    
+
                 } catch (error) {
                     socket.emit(SOCKET_EVENTS.ERROR, {
                         message: error.message,
@@ -65,6 +64,50 @@
                     });
                 }
             });
+
+            const callRoomOf = roomId => `call:${roomId}`;
+
+            socket.on(SOCKET_EVENTS.CALL_JOIN, payload => {
+                try {
+                    const roomId = payload?.roomId;
+                    if (!roomId) {
+                        return socket.emit(SOCKET_EVENTS.ERROR, { message: 'roomId is required to join a call' });
+                    }
+                    const room = callRoomOf(roomId);
+                    const peers = io.sockets.adapter.rooms.get(room);
+                    const peerCount = peers ? peers.size : 0;
+
+                    if (peerCount >= 2) {
+                        return socket.emit(SOCKET_EVENTS.ERROR, { message: 'Call room is full' });
+                    }
+
+                    socket.join(room);
+                    socket.data.callRoom = room;
+
+                    socket.emit(SOCKET_EVENTS.CALL_READY, { roomId, shouldOffer: peerCount === 1 });
+
+                    socket.to(room).emit(SOCKET_EVENTS.CALL_PEER_JOINED, { userId: socket.user?.id });
+                } catch (error) {
+                    socket.emit(SOCKET_EVENTS.ERROR, { message: error.message });
+                }
+            });
+
+            socket.on(SOCKET_EVENTS.CALL_SIGNAL, payload => {
+                const room = socket.data.callRoom;
+                if (!room || !payload?.data) return;
+                socket.to(room).emit(SOCKET_EVENTS.CALL_SIGNAL, { data: payload.data, from: socket.user?.id });
+            });
+
+            const leaveCall = () => {
+                const room = socket.data.callRoom;
+                if (!room) return;
+                socket.to(room).emit(SOCKET_EVENTS.CALL_PEER_LEFT, { userId: socket.user?.id });
+                socket.leave(room);
+                socket.data.callRoom = null;
+            };
+
+            socket.on(SOCKET_EVENTS.CALL_LEAVE, leaveCall);
+            socket.on(SOCKET_EVENTS.DISCONNECT, leaveCall);
         });
 
         return io;

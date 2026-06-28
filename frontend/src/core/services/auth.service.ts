@@ -55,4 +55,10 @@ export const createAuthApi = (client: AxiosInstance): AuthApi => ({
   }
 })
 
-export const authApi: AuthApi = createAuthApi(axiosClient)
+let cachedAuthApi: AuthApi | undefined
+export const authApi: AuthApi = new Proxy({} as AuthApi, {
+  get(_target, prop) {
+    cachedAuthApi ??= createAuthApi(axiosClient)
+    return cachedAuthApi[prop as keyof AuthApi]
+  }
+})

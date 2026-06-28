@@ -24,3 +24,16 @@ hiretab-temp/
 *.csv
 .mcp.json
 .agents/
+
+# Agent/editor tooling and skills (never push)
+.claude/
+.codex/
+.cursor/
+.tmp-skill-install/
+
+# Archives, key dumps and stray files
+*.zip
+*.key
+*.pem
+env*.txt
+backend/nul

@@ -12,3 +12,15 @@ export const CreateMessageDto = body => ({
     content: body.content,
     voice_url: body.voiceUrl || null,
 });
+
+ApiDocument.addModel('UpdateMessageDto', {
+    content: SwaggerDocument.ApiProperty({ type: 'string', required: false }),
+    voiceUrl: SwaggerDocument.ApiProperty({ type: 'string', required: false }),
+});
+
+export const UpdateMessageDto = body => {
+    const data = {};
+    if (body.content !== undefined) data.content = body.content;
+    if (body.voiceUrl !== undefined) data.voice_url = body.voiceUrl;
+    return data;
+};

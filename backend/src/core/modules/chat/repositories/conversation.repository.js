@@ -60,6 +60,10 @@ class ConversationRepository extends DataRepository {
             );
     }
 
+    deleteById(id) {
+        return this.query().where('id', id).delete();
+    }
+
     update(id, conversationData) {
         return this.query().where('id', id).update({
             ...conversationData,

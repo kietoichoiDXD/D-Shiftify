@@ -4,7 +4,12 @@ import { JoiUtils } from '../../../utils';
 
 export const CreateApplicationInterceptor = new DefaultValidatorInterceptor(
         Joi.object({
-            jobId: JoiUtils.requiredString(),
-            cvId: JoiUtils.requiredString(),
-        }).unknown(true)
+            jobId: Joi.string().optional(),
+            cvId: Joi.string().optional(),
+            job_id: Joi.string().optional(),
+            cv_id: Joi.string().optional(),
+        })
+            .or('jobId', 'job_id')
+            .or('cvId', 'cv_id')
+            .unknown(true)
     );

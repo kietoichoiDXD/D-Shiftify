@@ -80,6 +80,20 @@ class Repository extends DataRepository {
             .first();
     }
 
+    findAllByUserId(userId) {
+        return this.query()
+            .innerJoin('profiles', 'profiles.id', 'cvs.profile_id')
+            .where('profiles.user_id', userId)
+            .whereNull('cvs.deleted_at')
+            .select([
+                'cvs.id',
+                'cvs.expected_job as expectedJob',
+                'cvs.job_type as jobType',
+                'cvs.created_at as createdAt',
+            ])
+            .orderBy('cvs.created_at', 'desc');
+    }
+
     updateCV(id, cvData) {
         return this.query()
             .where('id', id)
@@ -89,6 +103,13 @@ class Repository extends DataRepository {
                 updated_at: new Date(),
             })
             .returning(this.baseSelect());
+    }
+
+    softDelete(id) {
+        return this.query()
+            .where('id', id)
+            .whereNull('deleted_at')
+            .update({ deleted_at: new Date(), updated_at: new Date() });
     }
     findCandidateUserIdByCvId(cvId, trx = null) {
         const query = this.query()
@@ -115,7 +136,7 @@ class Repository extends DataRepository {
 
         return query;
     }
-    
+
 }
 
 export const CVRepository = new Repository('cvs');

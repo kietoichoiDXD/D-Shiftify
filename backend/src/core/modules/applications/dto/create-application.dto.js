@@ -7,6 +7,6 @@ ApiDocument.addModel('CreateApplicationDto', {
     });
 
 export const CreateApplicationDto = body => ({
-        job_id: body.jobId,
-        cv_id: body.cvId,
+        job_id: body.job_id || body.jobId,
+        cv_id: body.cv_id || body.cvId,
     });

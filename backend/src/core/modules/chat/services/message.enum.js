@@ -21,4 +21,13 @@ export const MESSAGE = {
     APPLICATION_MUST_BE_ACCEPTED: 'Application must be accepted',
     RECRUITER_NOT_FOUND: 'Recruiter not found',
     CANDIDATE_NOT_FOUND: 'Candidate not found',
+
+    PARTICIPANTS_REQUIRED: 'At least one other participant is required',
+    CONVERSATION_DELETED: 'Conversation deleted successfully',
+    PARTICIPANT_ADDED: 'Them participant thanh cong',
+    PARTICIPANT_REMOVED: 'Participant removed successfully',
+    CONVERSATION_MARKED_READ: 'Conversation marked as read',
+    MESSAGE_NOT_FOUND: 'Message not found',
+    NOT_MESSAGE_OWNER: 'You can only modify your own messages',
+    MESSAGE_DELETED: 'Message deleted successfully',
 };

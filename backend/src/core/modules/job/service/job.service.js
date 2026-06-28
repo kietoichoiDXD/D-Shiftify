@@ -97,7 +97,6 @@ class Service {
 
         const { assistive_devices, ...jobData } = data;
 
-        // Stringify skills array of objects for PostgreSQL jsonb column compatibility if present
         if (jobData.skills) {
             jobData.skills = JSON.stringify(jobData.skills);
         }
@@ -114,7 +113,6 @@ class Service {
             );
             const jobId = insertedJob.id || insertedJob;
 
-            // Map assistive devices to the job in the join table
             if (assistive_devices && assistive_devices.length > 0) {
                 const jobDevicesRows = assistive_devices.map(deviceId => ({
                     job_id: jobId,
@@ -152,7 +150,6 @@ class Service {
             throw new ForbiddenException('You do not have permission to update this job');
         }
 
-        // Validate salary constraint (salary_max >= salary_min) to avoid database constraint violations
         const salaryMin = data.salary_min !== undefined ? data.salary_min : job.salary_min;
         const salaryMax = data.salary_max !== undefined ? data.salary_max : job.salary_max;
 
@@ -160,18 +157,18 @@ class Service {
             throw new BadRequestException('Maximum salary must be greater than or equal to minimum salary');
         }
 
-        // Stringify skills array of objects for PostgreSQL jsonb column compatibility if present
         if (data.skills) {
             data.skills = JSON.stringify(data.skills);
         }
 
+        const updatedAt = new Date();
         const trx = await getTransaction();
         try {
             await this.jobRepository.update(
                 jobId,
                 {
                     ...data,
-                    updated_at: new Date(),
+                    updated_at: updatedAt,
                 },
                 trx,
             );
@@ -183,6 +180,7 @@ class Service {
 
         return {
             message: 'Job updated successfully',
+            updatedAt,
         };
     }
 

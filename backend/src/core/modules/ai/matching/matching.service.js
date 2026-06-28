@@ -6,6 +6,12 @@ import { refineMatchWithAI } from '../../../ai/matching/agentic.matcher';
 
 const AI_REFINE_TOP_N = Number.parseInt(process.env.AI_MATCH_REFINE_TOP_N || '10', 10);
 
+const DISABILITY_SUPPORT_NOTE = {
+    visual_impairment: 'Cần hỗ trợ giao diện tương phản cao / trình đọc màn hình',
+    hearing_impairment: 'Cần phụ đề và thông báo bằng hình ảnh',
+    mobility_impairment: 'Cần hỗ trợ thao tác rảnh tay / vị trí làm việc tiếp cận được',
+};
+
 const parseJsonArray = value => {
     if (Array.isArray(value)) return value;
     if (!value) return [];
@@ -127,7 +133,6 @@ class MatchingServiceClass {
         const profile = await this.getCandidateProfile(cvId, userId);
         const jobs = await this.getJobs(jobIds, Math.min(limit, 50));
 
-        // Step 1 — deterministic v2 scoring for every retrieved job (fast, auditable).
         const baseMatches = jobs
             .map(job => ({
                 jobRecord: job,
@@ -142,8 +147,6 @@ class MatchingServiceClass {
             }))
             .sort((left, right) => right.result.score - left.result.score);
 
-        // Step 2 — agentic refinement (Gemini LLM-as-judge) on the top-N only, to bound cost.
-        // Each call falls back to the deterministic result on any failure.
         const refined = await Promise.all(
             baseMatches.map(async (entry, index) => {
                 const result = useAi && index < AI_REFINE_TOP_N
@@ -153,7 +156,6 @@ class MatchingServiceClass {
             }),
         );
 
-        // Re-sort because AI refinement can change individual scores.
         const matches = refined.sort((left, right) => right.score - left.score);
         const aiRefinedCount = matches.filter(match => match.aiRefined).length;
 
@@ -166,6 +168,106 @@ class MatchingServiceClass {
             count: matches.length,
             matches,
         };
+    }
+
+    async findLatestCvIdByUser(userId) {
+        const cv = await connection('cvs')
+            .innerJoin('profiles', 'profiles.id', 'cvs.profile_id')
+            .where('profiles.user_id', userId)
+            .whereNull('cvs.deleted_at')
+            .orderBy('cvs.created_at', 'desc')
+            .select('cvs.id')
+            .first();
+        return cv?.id || null;
+    }
+
+    async suggestJobsForUser(userId, { limit = 10 } = {}) {
+        const cvId = await this.findLatestCvIdByUser(userId);
+        if (!cvId) throw new NotFoundException('Bạn chưa có CV để gợi ý việc làm');
+
+        const { matches } = await this.matchCvToJobs({ cvId, limit, useAi: false }, userId);
+        return {
+            suggested_jobs: matches.slice(0, limit).map(m => ({
+                job_id: m.job.id,
+                title: m.job.title,
+                company_name: m.job.company?.name || null,
+                match_score: m.score,
+                reason: m.explanation || null,
+            })),
+        };
+    }
+
+    async getCandidateProfilesForMatching(limit = 50) {
+        const cvs = await connection('cvs')
+            .innerJoin('profiles', 'profiles.id', 'cvs.profile_id')
+            .whereNull('cvs.deleted_at')
+            .orderBy('cvs.created_at', 'desc')
+            .limit(limit)
+            .select(
+                'cvs.id', 'cvs.profile_id', 'cvs.job_type', 'cvs.work_mode', 'cvs.mobility',
+                'cvs.expected_job', 'cvs.skills', 'cvs.conditions', 'cvs.experiences',
+                'cvs.certificates', 'cvs.custom_sections',
+                'profiles.user_id', 'profiles.full_name', 'profiles.disability_status',
+            );
+        if (!cvs.length) return [];
+
+        const deviceRows = await connection('user_devices')
+            .innerJoin('assistive_devices', 'assistive_devices.id', 'user_devices.device_id')
+            .whereIn('user_devices.profile_id', cvs.map(c => c.profile_id))
+            .whereNull('user_devices.deleted_at')
+            .select('user_devices.profile_id', 'assistive_devices.name');
+        const devicesByProfile = deviceRows.reduce((acc, row) => ({
+            ...acc,
+            [row.profile_id]: [...(acc[row.profile_id] || []), row.name],
+        }), {});
+
+        return cvs.map(cv => ({
+            userId: cv.user_id,
+            fullName: cv.full_name,
+            disabilityStatus: cv.disability_status,
+            profile: {
+                id: cv.id,
+                jobType: cv.job_type,
+                workMode: cv.work_mode,
+                mobility: cv.mobility,
+                expectedJob: cv.expected_job,
+                skills: parseJsonArray(cv.skills),
+                conditions: parseJsonArray(cv.conditions),
+                experiences: parseJsonArray(cv.experiences),
+                certificates: parseJsonArray(cv.certificates),
+                customSections: parseJsonArray(cv.custom_sections),
+                devices: devicesByProfile[cv.profile_id] || [],
+            },
+        }));
+    }
+
+    async suggestCandidatesForJob(jobId, { limit = 10 } = {}) {
+        const [job] = await this.getJobs([jobId], 1);
+        if (!job) throw new NotFoundException('Không tìm thấy công việc');
+
+        const candidates = await this.getCandidateProfilesForMatching(50);
+        const jobSkills = (job.skills || []).map(s => String(s).toLowerCase());
+
+        const scored = candidates
+            .map(candidate => {
+                const result = evaluateMatch(candidate.profile, job, []);
+                const highlight = (candidate.profile.skills || [])
+                    .filter(s => jobSkills.includes(String(s).toLowerCase()))
+                    .slice(0, 5);
+                return {
+                    candidate_id: candidate.userId,
+                    full_name: candidate.fullName || null,
+                    match_score: result.score,
+                    highlight_skills: highlight.length ? highlight : result.strengths.slice(0, 3),
+                    disability_support: candidate.disabilityStatus
+                        ? DISABILITY_SUPPORT_NOTE[candidate.disabilityStatus] || candidate.disabilityStatus
+                        : null,
+                };
+            })
+            .sort((left, right) => right.match_score - left.match_score)
+            .slice(0, limit);
+
+        return { job_id: jobId, suggested_candidates: scored };
     }
 }
 

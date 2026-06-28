@@ -27,11 +27,11 @@ class Controller {
     deletedJobById = async req => {
         const jobId = req.params.id;
         const userId = getUserContext(req).payload.id;
-        const data = await this.service.deleteJobById(jobId, userId);
+        await this.service.deleteJobById(jobId, userId);
 
         return ValidHttpResponse.toOkResponse({
             status: 'success',
-            message: data.message,
+            message: 'Đã đóng tin tuyển dụng thành công',
         });
     }
 
@@ -40,7 +40,8 @@ class Controller {
         const data = await this.service.createJob(PostJobDto(req.body), userId);
         return ValidHttpResponse.toOkResponse({
             status: 'success',
-            message: data.message,
+            message: 'Đăng tin tuyển dụng thành công',
+            job_id: data.id,
             data: {
                 id: data.id,
             },
@@ -54,7 +55,8 @@ class Controller {
 
         return ValidHttpResponse.toOkResponse({
             status: 'success',
-            message: data.message,
+            message: 'Cập nhật thông tin thành công',
+            updated_at: data.updatedAt instanceof Date ? data.updatedAt.toISOString() : data.updatedAt,
         });
     }
 
@@ -63,6 +65,10 @@ class Controller {
         return ValidHttpResponse.toOkResponse({
             status: 'success',
             message: 'Get jobs successfully',
+
+            total,
+            page,
+            limit,
             data,
             meta: {
                 total,
