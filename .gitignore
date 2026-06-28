@@ -30,6 +30,10 @@ hiretab-temp/
 .codex/
 .cursor/
 .tmp-skill-install/
+**/.agents/
+**/skills/vercel-react-best-practices/
+.github/ISSUE_TEMPLATE/
+frontend/.github/ISSUE_TEMPLATE/
 
 # Archives, key dumps and stray files
 *.zip
