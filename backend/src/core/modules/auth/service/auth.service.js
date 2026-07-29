@@ -3,6 +3,7 @@ import { JwtPayload } from 'core/modules/auth/dto/jwt-sign.dto';
 import connection, { getTransaction } from 'core/database';
 import { BcryptService } from './bcrypt.service';
 import { JwtService } from './jwt.service';
+import { TokenRevocationService } from './token-revocation.service';
 import { UserRepository } from '../../user/repository/user.repository';
 import { RefreshTokenRepository } from '../repository/refresh-token.repository';
 import { PasswordResetTokenRepository } from '../repository/password-reset-token.repository';
@@ -37,6 +38,7 @@ class Service {
         this.passwordResetTokenRepository = PasswordResetTokenRepository;
         this.jwtService = JwtService;
         this.bcryptService = BcryptService;
+        this.tokenRevocationService = TokenRevocationService;
     }
 
     async login(loginDto) {
@@ -216,6 +218,15 @@ class Service {
 
         if (tokenRecord) {
             await this.refreshTokenRepository.revokeToken(tokenRecord.id);
+        }
+
+        // Additive defense-in-depth only: the live request-auth guard (JwtValidator) does NOT
+        // consult TokenRevocationService.isRevoked(); it relies on the refresh_tokens ref-check
+        // above, which already invalidates the access token on the next protected request. Best-effort:
+        // only revoke when an access token is present, never throw (logout always returns 200).
+        // See backlog/access-token-revocation-wiring_NOTE_05-07-26.md for the full analysis.
+        if (logoutDto.access_token) {
+            await this.tokenRevocationService.revoke(logoutDto.access_token);
         }
 
         return {

@@ -29,8 +29,12 @@ export const useRegisterAuth = () => {
   const navigate = useNavigate()
   return useMutation({
     mutationKey: [MUTATION_KEYS.register],
-    mutationFn: ({ confirmPassword: _confirmPassword, ...data }: z.infer<typeof RegisterSchema>) =>
-      authApi.register(data),
+    mutationFn: ({ confirmPassword: _confirmPassword, ...data }: z.infer<typeof RegisterSchema>) => {
+      if (!data.role || !data.full_name) {
+        return Promise.reject(new Error('Role và họ tên là bắt buộc'))
+      }
+      return authApi.register({ ...data, role: data.role, full_name: data.full_name })
+    },
     onSuccess: () => {
       navigate(ROUTE.PUBLIC.LOGIN)
       toastifyCommon.success('Đăng ký thành công, vui lòng đăng nhập!')

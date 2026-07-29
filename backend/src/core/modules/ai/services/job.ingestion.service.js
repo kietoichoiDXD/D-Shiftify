@@ -3,7 +3,7 @@ import { embedText } from '../../../ai/embeddings/embedder.js';
 import { hrNode } from '../../../ai/agents/hr.agent.js';
 import { JobRepository } from '../repositories/job.repository.js';
 import { runAlertJob } from './alert.job.service.js';
-import { inferWeights } from '../../../ai/retrieval/match.scoring.js';
+import { getJobWeights } from '../../../ai/retrieval/match.scoring.js';
 
 /**
  * Called when HR posts a new job.
@@ -23,7 +23,7 @@ export const ingestJob = async jobPayload => {
     const [hrState, embedding, weights] = await Promise.all([
         hrNode({ messages: [new HumanMessage(description_raw)], nextStep: 'hr', narrative_raw: '' }),
         embedText(description_raw),
-        inferWeights({ job_id: 'temp', description_raw, title }),
+        getJobWeights(jobPayload),
     ]);
 
     const hr = hrState.hr_result || {};

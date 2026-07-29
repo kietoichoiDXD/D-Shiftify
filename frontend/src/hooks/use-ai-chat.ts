@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+
 import { aiApi, type ChatResponse } from '@/core/services/ai.service'
 
 type State = {

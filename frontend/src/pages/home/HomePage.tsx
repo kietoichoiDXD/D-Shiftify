@@ -1,3 +1,4 @@
+import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import {
   ArrowRight,
   Brain,
@@ -11,11 +12,12 @@ import {
   Sparkles,
   UserRound
 } from 'lucide-react'
-import { motion, useReducedMotion, type Variants } from 'framer-motion'
 import { Link } from 'react-router-dom'
 
 import Header from '@/components/header-nav/header-nav'
 import { ROUTE } from '@/core/constants/path'
+import { getDashboardRouteByRole, getMatchingRouteByRole } from '@/core/helpers/auth-route'
+import { useAuthStore } from '@/core/store/features/auth/authStore'
 
 const stats = [
   { value: '8 tiêu chí', label: 'Chấm điểm phù hợp bằng AI' },
@@ -101,6 +103,8 @@ export default function HomePage() {
     viewport: { once: true, margin: '-80px' }
   }
 
+  const { isAuthenticated, user } = useAuthStore()
+
   return (
     <div className='min-h-screen bg-[#F8FBFF] text-[#102033]'>
       <Header />
@@ -143,20 +147,41 @@ export default function HomePage() {
               </motion.p>
 
               <motion.div variants={rise} className='mt-8 flex flex-wrap items-center gap-4'>
-                <Link
-                  to={ROUTE.PUBLIC.REGISTER}
-                  className='group inline-flex items-center gap-2 rounded-xl bg-[#004080] px-7 py-3.5 text-base font-bold text-white shadow-lg shadow-[#004080]/25 transition hover:bg-[#003466] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#CFE3F7]'
-                >
-                  Bắt đầu miễn phí
-                  <ArrowRight className='size-4 transition-transform group-hover:translate-x-1' aria-hidden='true' />
-                </Link>
+                {isAuthenticated ? (
+                  <>
+                    <Link
+                      to={getMatchingRouteByRole(user?.role)}
+                      className='group inline-flex items-center gap-2 rounded-xl bg-[#004080] px-7 py-3.5 text-base font-bold text-white shadow-lg shadow-[#004080]/25 transition hover:bg-[#003466] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#CFE3F7]'
+                    >
+                      Ghép nối AI & Việc làm
+                      <ArrowRight className='size-4 transition-transform group-hover:translate-x-1' aria-hidden='true' />
+                    </Link>
 
-                <Link
-                  to={ROUTE.PUBLIC.LOGIN}
-                  className='inline-flex items-center gap-2 rounded-xl border border-[#CFE3F7] bg-white px-7 py-3.5 text-base font-bold text-[#004080] transition hover:border-[#004080] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#CFE3F7]'
-                >
-                  Đăng nhập
-                </Link>
+                    <Link
+                      to={getDashboardRouteByRole(user?.role)}
+                      className='inline-flex items-center gap-2 rounded-xl border border-[#CFE3F7] bg-white px-7 py-3.5 text-base font-bold text-[#004080] transition hover:border-[#004080] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#CFE3F7]'
+                    >
+                      Bảng điều khiển
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to={ROUTE.PUBLIC.REGISTER}
+                      className='group inline-flex items-center gap-2 rounded-xl bg-[#004080] px-7 py-3.5 text-base font-bold text-white shadow-lg shadow-[#004080]/25 transition hover:bg-[#003466] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#CFE3F7]'
+                    >
+                      Bắt đầu miễn phí
+                      <ArrowRight className='size-4 transition-transform group-hover:translate-x-1' aria-hidden='true' />
+                    </Link>
+
+                    <Link
+                      to={ROUTE.PUBLIC.LOGIN}
+                      className='inline-flex items-center gap-2 rounded-xl border border-[#CFE3F7] bg-white px-7 py-3.5 text-base font-bold text-[#004080] transition hover:border-[#004080] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#CFE3F7]'
+                    >
+                      Đăng nhập
+                    </Link>
+                  </>
+                )}
 
               </motion.div>
 

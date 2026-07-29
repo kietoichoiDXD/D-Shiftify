@@ -6,7 +6,7 @@ import { MESSAGE } from '../services/message.enum.js';
 export const socketAuthInterceptor =
     (socket, next) => {
         try {
-            const token = socket.handshake.auth.token;
+            const {token} = socket.handshake.auth;
             if (!token) {
                 return next(
                     new Error(MESSAGE.TOKEN_REQUIRED)

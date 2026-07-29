@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
+
 import { Volume2, Loader2 } from 'lucide-react'
 
-import { trainingApi, type TrainingCenterProfile } from '@/core/services/training.service'
-import { cvApi } from '@/core/services/cv.service'
-import { speakAccessibleText } from '@/core/services/speech.service'
 import toastifyCommon from '@/core/lib/toastify-common'
 import { cn } from '@/core/lib/utils'
+import { cvApi } from '@/core/services/cv.service'
+import { speakAccessibleText } from '@/core/services/speech.service'
+import { trainingApi, type TrainingCenterProfile } from '@/core/services/training.service'
 
 import { FigmaField, PrimaryAction, UploadBox, Chip } from './form-controls'
 import { AnimatedButton } from './interactive'

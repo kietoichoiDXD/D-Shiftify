@@ -9,6 +9,7 @@ import { CVsResolver } from './cv/cvs.resolver';
 import { ProfileResolver } from './profile/profile.resolver';
 import { ApplicationsResolver } from './applications/applications.resolver';
 import { JobResolver, AdminJobResolver, RecruiterJobResolver } from './job/job.resolver';
+import { AiResolver } from './ai/ai.resolver';
 import { MatchingResolver } from './ai/matching.resolver';
 import { MatchesResolver } from './ai/matches.resolver';
 import { SpeechResolver } from './ai/speech.resolver';
@@ -33,6 +34,7 @@ export const ModuleResolver = HandlerResolver.builder()
         JobResolver,
         AdminJobResolver,
         RecruiterJobResolver,
+        AiResolver,
         MatchingResolver,
         MatchesResolver,
         SpeechResolver,

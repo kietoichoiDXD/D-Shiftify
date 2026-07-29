@@ -1,5 +1,6 @@
-import speech from '@google-cloud/speech';
-import textToSpeech from '@google-cloud/text-to-speech';
+// @google-cloud/speech and @google-cloud/text-to-speech are optional providers loaded lazily
+// (see getSpeechClient/getTextToSpeechClient). They are NOT top-level imports so the server can
+// boot without the packages installed — the team's default path is Groq STT (no Google billing).
 import connection from 'core/database';
 import { BadRequestException } from 'packages/httpException';
 import {
@@ -59,15 +60,17 @@ class SpeechServiceClass {
         this.ttsClient = null;
     }
 
-    getSpeechClient() {
+    async getSpeechClient() {
         if (!this.speechClient) {
+            const speech = (await import('@google-cloud/speech')).default;
             this.speechClient = new speech.SpeechClient({ projectId: GOOGLE_CLOUD_PROJECT });
         }
         return this.speechClient;
     }
 
-    getTextToSpeechClient() {
+    async getTextToSpeechClient() {
         if (!this.ttsClient) {
+            const textToSpeech = (await import('@google-cloud/text-to-speech')).default;
             this.ttsClient = new textToSpeech.TextToSpeechClient({ projectId: GOOGLE_CLOUD_PROJECT });
         }
         return this.ttsClient;
@@ -119,7 +122,8 @@ class SpeechServiceClass {
         if (input.sampleRateHertz) config.sampleRateHertz = input.sampleRateHertz;
 
         try {
-            const [response] = await this.getSpeechClient().recognize({
+            const speechClient = await this.getSpeechClient();
+            const [response] = await speechClient.recognize({
                 config,
                 audio: { content: audio.toString('base64') },
             });
@@ -179,7 +183,8 @@ class SpeechServiceClass {
         }
 
         try {
-            const [response] = await this.getTextToSpeechClient().synthesizeSpeech({
+            const ttsClient = await this.getTextToSpeechClient();
+            const [response] = await ttsClient.synthesizeSpeech({
                 input: ssml ? { ssml } : { text },
                 voice,
                 audioConfig: { audioEncoding: 'MP3', speakingRate, pitch },

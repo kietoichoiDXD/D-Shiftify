@@ -2,6 +2,8 @@ import { type LoginResponse } from '@/models/interface/auth.interfaces'
 
 export interface AuthState {
   user: LoginResponse['user'] | null
+  accessToken: string | null
+  refreshToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
@@ -13,4 +15,6 @@ export interface AuthStore extends AuthState {
   loginFailure: (error: string) => void
   logout: () => void
   updateUser: (user: LoginResponse['user']) => void
+  setToken: (accessToken: string, refreshToken: string) => void
+  clearToken: () => void
 }

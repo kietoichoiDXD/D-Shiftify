@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import { Mic, Volume2, ShieldAlert, HeartHandshake, School } from 'lucide-react'
+import { Mic, Volume2, HeartHandshake, School } from 'lucide-react'
+
 import { speakAccessibleText } from '@/core/services/speech.service'
 
 const features = [

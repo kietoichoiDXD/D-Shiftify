@@ -151,11 +151,6 @@ export const useChat = () => {
     const payload = {
       conversationId: readyToJoinConversationId
     }
-    console.log(
-      `%c📤 [Socket/Emit] ${SOCKET_EVENTS.JOIN_CONVERSATION}:`,
-      'color: #3b82f6; font-weight: bold',
-      payload
-    )
     socket.emit(SOCKET_EVENTS.JOIN_CONVERSATION, payload)
   }, [isConnected, readyToJoinConversationId, socket])
 
@@ -165,11 +160,6 @@ export const useChat = () => {
     }
 
     const handleReceiveMessage = (payload: unknown) => {
-      console.log(
-        `%c📥 [Socket/On] ${SOCKET_EVENTS.RECEIVE_MESSAGE}:`,
-        'color: #a855f7; font-weight: bold',
-        payload
-      )
       const receivePayload = payload as ReceiveMessagePayload
       const normalizedMessage = normalizeMessage(
         receivePayload as RawConversationMessage,
@@ -220,11 +210,6 @@ export const useChat = () => {
         content: cleanContent
       }
 
-      console.log(
-        `%c📤 [Socket/Emit] ${SOCKET_EVENTS.SEND_MESSAGE}:`,
-        'color: #3b82f6; font-weight: bold',
-        payload
-      )
       socket.emit(SOCKET_EVENTS.SEND_MESSAGE, payload)
     },
     [activeConversationId, isConnected, socket]

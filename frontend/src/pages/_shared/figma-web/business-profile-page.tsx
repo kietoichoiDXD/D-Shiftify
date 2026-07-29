@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+
 import { Volume2, Loader2 } from 'lucide-react'
 
+import toastifyCommon from '@/core/lib/toastify-common'
 import { companyApi, type CompanyProfile } from '@/core/services/company.service'
 import { cvApi } from '@/core/services/cv.service'
 import { speakAccessibleText } from '@/core/services/speech.service'
-import toastifyCommon from '@/core/lib/toastify-common'
 
 import { FigmaField, PrimaryAction, UploadBox } from './form-controls'
 import { WorkspaceShell } from './workspace-shell'

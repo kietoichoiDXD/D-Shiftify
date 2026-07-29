@@ -1,5 +1,5 @@
 import { Module } from 'packages/handler/Module';
-import { hasEmployerRole } from 'core/modules/auth/guard';
+import { hasRecruiterRole } from 'core/modules/auth/guard';
 import {
   AiAuditJdInterceptor,
   AiChatInterceptor,
@@ -23,8 +23,8 @@ export const AiResolver = Module.builder()
     { route: '/chat',               method: 'post',   interceptors: [AiChatInterceptor],                                                  body: 'AiChatDto',     controller: AiController.chat,         preAuthorization: true },
     { route: '/voice',              method: 'post',   interceptors: [AiVoiceInterceptor],                                                 body: 'AiVoiceDto',    controller: AiController.voice,        preAuthorization: true },
     { route: '/voice/stream',       method: 'get',    interceptors: [AiStreamTtsQueryInterceptor],                                                               controller: AiController.streamTts,    preAuthorization: true },
-    { route: '/audit-jd',           method: 'post',   interceptors: [AiAuditJdInterceptor],         guards: [hasEmployerRole],            body: 'AiAuditJdDto',  controller: AiController.auditJD,      preAuthorization: true },
-    { route: '/jobs',               method: 'post',   interceptors: [AiPostJobInterceptor],          guards: [hasEmployerRole],            body: 'AiPostJobDto',  controller: AiController.postJob,      preAuthorization: true },
+    { route: '/audit-jd',           method: 'post',   interceptors: [AiAuditJdInterceptor],         guards: [hasRecruiterRole],            body: 'AiAuditJdDto',  controller: AiController.auditJD,      preAuthorization: true },
+    { route: '/jobs',               method: 'post',   interceptors: [AiPostJobInterceptor],          guards: [hasRecruiterRole],            body: 'AiPostJobDto',  controller: AiController.postJob,      preAuthorization: true },
     { route: '/jobs/:id/skill-gap', method: 'get',    interceptors: [AiSkillGapParamInterceptor, AiSkillGapQueryInterceptor],                                   controller: AiController.skillGap,     preAuthorization: true },
     { route: '/match/:profileId',    method: 'get',    interceptors: [AiMatchParamInterceptor, AiMatchQueryInterceptor],                                          controller: AiController.matchJobs,    preAuthorization: true },
     { route: '/market-trends',      method: 'get',    interceptors: [AiMarketTrendQueryInterceptor],                                                              controller: AiController.marketTrends, preAuthorization: true },

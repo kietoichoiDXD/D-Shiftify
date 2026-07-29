@@ -103,8 +103,8 @@ export function FigmaCvPreviewPage() {
   }
 
   const handleFinalSubmit = () => {
-    alert('Hồ sơ năng lực của bạn đã được xuất bản và xác nhận thành công!')
-    navigate(ROUTE.DISABILITY.DASHBOARD)
+    alert('Hồ sơ năng lực của bạn đã được xuất bản và xác nhận thành công! Chuyển hướng tới trang Ghép nối việc làm AI ngay...')
+    navigate(ROUTE.DISABILITY.JOBS)
   }
 
   return (

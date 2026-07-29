@@ -1,3 +1,4 @@
+/* global fetch, FormData, Blob */
 /**
  * Groq Whisper STT — drop-in Vietnamese speech-to-text that needs no Google billing.
  *

@@ -121,21 +121,21 @@ axiosClient.interceptors.response.use(
         const { data: refreshResponse } = await refreshClient.post('/api/v1/auth/refresh', {
           refresh_token
         })
-        const access_token = refreshResponse?.data?.access_token || refreshResponse?.access_token
-        const next_refresh_token = refreshResponse?.data?.refresh_token || refreshResponse?.refresh_token
+        const access_token = refreshResponse?.data?.accessToken || refreshResponse?.accessToken
+        const next_refresh_token = refreshResponse?.data?.refreshToken || refreshResponse?.refreshToken
 
         if (!access_token) {
-          throw new Error('Refresh response is missing access_token')
+          throw new Error('Refresh response is missing accessToken')
         }
 
         // Save access token to LocalStorage and update Zustand store state
         setAccessTokenToLS(access_token)
-        useAuthStore.setState({ access_token, isAuthenticated: true })
+        useAuthStore.setState({ accessToken: access_token, isAuthenticated: true })
 
         // Save rotated refresh token if returned by backend to prevent token reuse failure
         if (next_refresh_token) {
           setRefreshTokenToLS(next_refresh_token)
-          useAuthStore.setState({ refresh_token: next_refresh_token })
+          useAuthStore.setState({ refreshToken: next_refresh_token })
         }
 
         originalRequest.headers.Authorization = `Bearer ${access_token}`

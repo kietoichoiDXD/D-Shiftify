@@ -1,0 +1,117 @@
+{
+  "candidate": {
+    "email": "candidate.test@shiftify.com",
+    "password": "Password123!",
+    "role": "candidate",
+    "full_name": "Nguyễn Văn An (Ứng viên Khiếm thị)",
+    "phone": "0912345678",
+    "disability_status": "visual_impairment",
+    "job_type": "fulltime",
+    "work_mode": "remote",
+    "mobility": "high",
+    "expected_job": "Chuyên viên phân tích dữ liệu",
+    "skills": [
+      { "name": "NodeJS", "type": "hard" },
+      { "name": "PostgreSQL", "type": "hard" },
+      { "name": "Python", "type": "hard" },
+      { "name": "Data Analytics", "type": "hard" },
+      { "name": "Giao tiếp", "type": "soft" },
+      { "name": "Làm việc nhóm", "type": "soft" }
+    ],
+    "conditions": [
+      "Cần màn hình tương phản cao",
+      "Hỗ trợ trình đọc màn hình NVDA"
+    ],
+    "experiences": [
+      {
+        "title": "Data Analyst Trainee",
+        "company": "Công ty Công nghệ Tech Vina",
+        "years": "1.5 năm",
+        "description": "Xử lý dữ liệu bằng Python, truy vấn SQL PostgreSQL và lập báo cáo phân tích."
+      }
+    ],
+    "certificates": [
+      {
+        "name": "Google Data Analytics Professional Certificate",
+        "year": "2024",
+        "issuer": "Coursera / Google"
+      }
+    ],
+    "custom_sections": [
+      {
+        "title": "Mục tiêu nghề nghiệp",
+        "content": "Trở thành chuyên viên phân tích dữ liệu chuyên nghiệp làm việc từ xa, đóng góp giá trị cho doanh nghiệp hòa nhập."
+      }
+    ],
+    "devices": [
+      "Laptop",
+      "Trình đọc màn hình (NVDA)",
+      "Tai nghe hỗ trợ"
+    ]
+  },
+  "company": {
+    "name": "Tập đoàn Công nghệ Alpha",
+    "policy_for_disabled": "Chính sách làm việc rảnh tay, cung cấp phần mềm đọc màn hình bản quyền và thời gian làm việc linh hoạt.",
+    "experience_with_disabled": "Đã có kinh nghiệm tuyển dụng và hỗ trợ hơn 50 nhân sự là người khuyết tật thị giác và vận động."
+  },
+  "jobs": [
+    {
+      "title": "Chuyên viên phân tích dữ liệu (Data Analyst)",
+      "job_type": "fulltime",
+      "work_mode": "remote",
+      "experience_required": "1 năm",
+      "skills": [
+        { "name": "NodeJS", "required": true },
+        { "name": "PostgreSQL", "required": true },
+        { "name": "Python", "required": true },
+        { "name": "Data Analytics", "required": true }
+      ],
+      "salary_min": 15000000,
+      "salary_max": 25000000,
+      "location": "Hồ Chí Minh",
+      "description": "Tuyển dụng Data Analyst làm việc từ xa. Môi trường hòa nhập, trang bị phần mềm tương thích NVDA cho người khiếm thị.",
+      "devices": [
+        "Laptop",
+        "Trình đọc màn hình (NVDA)"
+      ]
+    },
+    {
+      "title": "Lập trình viên Frontend (ReactJS)",
+      "job_type": "fulltime",
+      "work_mode": "hybrid",
+      "experience_required": "2 năm",
+      "skills": [
+        { "name": "ReactJS", "required": true },
+        { "name": "TypeScript", "required": true },
+        { "name": "Tailwind CSS", "required": false }
+      ],
+      "salary_min": 18000000,
+      "salary_max": 30000000,
+      "location": "Hà Nội",
+      "description": "Phát triển ứng dụng Web tiếp cận chuẩn WCAG 2.1. Ưu tiên ứng viên hiểu biết về accessibility và hỗ trợ đọc màn hình.",
+      "devices": [
+        "Laptop",
+        "Màn hình phụ"
+      ]
+    },
+    {
+      "title": "Nhân viên hỗ trợ khách hàng qua Chat / Voice",
+      "job_type": "parttime",
+      "work_mode": "remote",
+      "experience_required": "Không yêu cầu",
+      "skills": [
+        { "name": "Giao tiếp", "required": true },
+        { "name": "Tiếng Anh", "required": false },
+        { "name": "Soạn thảo văn bản", "required": true }
+      ],
+      "salary_min": 8000000,
+      "salary_max": 12000000,
+      "location": "Đà Nẵng",
+      "description": "Hỗ trợ khách hàng từ xa qua tổng đài voice/chat. Đào tạo miễn phí cho người khuyết tật vận động hoặc thị giác.",
+      "devices": [
+        "Laptop",
+        "Tai nghe hỗ trợ"
+      ]
+    }
+  ]
+}

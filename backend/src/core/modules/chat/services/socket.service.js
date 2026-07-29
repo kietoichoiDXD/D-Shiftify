@@ -15,7 +15,7 @@ class Service {
             socket.user.id
         );
 
-        //emit realtime 
+        // emit realtime 
         io.to(payload.conversationId).emit(
             SOCKET_EVENTS.RECEIVE_MESSAGE,
             message

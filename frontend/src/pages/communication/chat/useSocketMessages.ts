@@ -29,7 +29,6 @@ export const useSocketMessages = ({
    */
   const handleReceiveMessage = useCallback(
     (payload: ReceiveMessagePayload) => {
-      console.log('%c🟣 [Socket] Message received: ' + payload.content, 'color: #a855f7; font-weight: bold')
       // Only process messages for the current conversation
       if (payload.conversationId !== conversationId) {
         return
@@ -131,12 +130,7 @@ export const useSocketMessages = ({
       }
 
       try {
-        console.log('%c🔵 [Socket] Message sent: ' + content, 'color: #3b82f6; font-weight: bold')
-        socket.emit(SOCKET_EVENTS.SEND_MESSAGE, payload, (acknowledgment?: unknown) => {
-          if (import.meta.env.DEV) {
-            console.log('Message sent successfully:', acknowledgment)
-          }
-        })
+        socket.emit(SOCKET_EVENTS.SEND_MESSAGE, payload)
         return true
       } catch (error) {
         if (onError) {

@@ -1,6 +1,7 @@
 import { type AxiosInstance } from 'axios'
 
 import axiosClient from '@/core/services/axios-client'
+import { getRefreshTokenFromLS } from '@/core/shared/storage'
 import {
   type VerifyEmailReq,
   type LoginResponse,
@@ -51,7 +52,8 @@ export const createAuthApi = (client: AxiosInstance): AuthApi => ({
     return client.post(API_RESEND_CODE_URL, { email }) as Promise<{ message: string }>
   },
   logout() {
-    return client.post(API_LOGOUT_URL, undefined, { withCredentials: true }) as Promise<void>
+    const refresh_token = getRefreshTokenFromLS()
+    return client.post(API_LOGOUT_URL, { refresh_token }, { withCredentials: true }) as Promise<void>
   }
 })
 

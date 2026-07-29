@@ -1,3 +1,4 @@
+/* global fetch */
 import { randomUUID } from 'crypto';
 import { NotFoundException, BadRequestException } from 'packages/httpException';
 import { VoiceLogRepository } from '../repositories/voice-log.repository';

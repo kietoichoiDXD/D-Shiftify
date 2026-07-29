@@ -46,11 +46,13 @@ const BusinessJobCreatePage = lazy(() => import('@/pages/business/jobs/create'))
 const BusinessSchedulePage = lazy(() => import('@/pages/business/schedule'))
 const BusinessProfilePage = lazy(() => import('@/pages/business/profile'))
 const BusinessProfileUpdatePage = lazy(() => import('@/pages/business/profile/update'))
+const EducatorDashboardPage = lazy(() => import('@/pages/educator/dashboard'))
 const EducatorProfileUpdatePage = lazy(() => import('@/pages/educator/profile/update'))
 const EducatorCourseCreatePage = lazy(() => import('@/pages/educator/courses/create'))
 const EducatorClassCreatePage = lazy(() => import('@/pages/educator/classes/create'))
 const Dashboard = lazy(() => import('@/pages/admin/dashboard'))
 const Users = lazy(() => import('@/pages/admin/users'))
+const AdminAnalyticsComingSoon = lazy(() => import('@/pages/admin/analytics/coming-soon'))
 const PageNotFound = lazy(() => import('@/pages/404'))
 
 export default function useRoutesElements() {
@@ -106,7 +108,7 @@ export default function useRoutesElements() {
             <Route path={ROUTE.BUSINESS.SCHEDULE} element={<BusinessSchedulePage />} />
             <Route path={ROUTE.BUSINESS.PROFILE} element={<BusinessProfilePage />} />
             <Route path={ROUTE.BUSINESS.PROFILE_UPDATE} element={<BusinessProfileUpdatePage />} />
-            <Route path={ROUTE.EDUCATOR.DASHBOARD} element={<EducatorProfileUpdatePage />} />
+            <Route path={ROUTE.EDUCATOR.DASHBOARD} element={<EducatorDashboardPage />} />
             <Route path={ROUTE.EDUCATOR.PROFILE_UPDATE} element={<EducatorProfileUpdatePage />} />
             <Route path={ROUTE.EDUCATOR.COURSE_CREATE} element={<EducatorCourseCreatePage />} />
             <Route path={ROUTE.EDUCATOR.CLASS_CREATE} element={<EducatorClassCreatePage />} />
@@ -118,11 +120,20 @@ export default function useRoutesElements() {
           <Route path={ROUTE.ADMIN.ROOT} element={<LayoutMain />}>
             <Route path={ROUTE.ADMIN.DASHBOARD} element={<Dashboard />} />
             <Route path={ROUTE.ADMIN.USERS} element={<Users />} />
-            <Route path={ROUTE.ADMIN.ANALYTICS.ROOT} element={<span>Analytics</span>} />
-            <Route path={ROUTE.ADMIN.ANALYTICS.OVERVIEW} element={<span>Analytics Overview</span>} />
-            <Route path={ROUTE.ADMIN.ANALYTICS.SALES} element={<span>Analytics Sales</span>} />
-            <Route path={ROUTE.ADMIN.ANALYTICS.USERS} element={<span>Analytics Users</span>} />
-            <Route path={ROUTE.ADMIN.ANALYTICS.PERFORMANCE} element={<span>Analytics Performance</span>} />
+            <Route path={ROUTE.ADMIN.ANALYTICS.ROOT} element={<AdminAnalyticsComingSoon title='Phân tích' />} />
+            <Route
+              path={ROUTE.ADMIN.ANALYTICS.OVERVIEW}
+              element={<AdminAnalyticsComingSoon title='Tổng quan phân tích' />}
+            />
+            <Route path={ROUTE.ADMIN.ANALYTICS.SALES} element={<AdminAnalyticsComingSoon title='Phân tích doanh thu' />} />
+            <Route
+              path={ROUTE.ADMIN.ANALYTICS.USERS}
+              element={<AdminAnalyticsComingSoon title='Phân tích người dùng' />}
+            />
+            <Route
+              path={ROUTE.ADMIN.ANALYTICS.PERFORMANCE}
+              element={<AdminAnalyticsComingSoon title='Phân tích hiệu suất' />}
+            />
           </Route>
         </Route>
 

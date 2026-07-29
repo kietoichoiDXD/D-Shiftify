@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react'
+
 import useEmblaCarousel from 'embla-carousel-react'
 import { motion } from 'framer-motion'
 import { Volume2 } from 'lucide-react'

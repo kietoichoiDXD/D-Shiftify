@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Sparkles, Volume2, User, Building, GraduationCap } from 'lucide-react'
 import { Link } from 'react-router-dom'
+
 import { ROUTE } from '@/core/constants/path'
 import { speakAccessibleText } from '@/core/services/speech.service'
 

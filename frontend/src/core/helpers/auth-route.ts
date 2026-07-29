@@ -5,7 +5,7 @@ export const getDashboardRouteByRole = (role?: string | null) => {
   const normalizedRole = role?.trim().toLowerCase()
 
   if (!normalizedRole) {
-    return ROUTE.DISABILITY.DASHBOARD
+    return ROUTE.DISABILITY.JOBS
   }
 
   if ([ROLE_ADMIN, ROLE_EMPLOYEE].some((adminRole) => adminRole.toLowerCase() === normalizedRole)) {
@@ -13,12 +13,23 @@ export const getDashboardRouteByRole = (role?: string | null) => {
   }
 
   if (['business', 'recruiter', 'employer', 'company'].includes(normalizedRole)) {
-    return ROUTE.BUSINESS.DASHBOARD
+    return ROUTE.BUSINESS.MATCHED_CANDIDATES
   }
 
   if (['training_center', 'educator', 'education'].includes(normalizedRole)) {
     return ROUTE.EDUCATOR.PROFILE_UPDATE
   }
 
-  return ROUTE.DISABILITY.DASHBOARD
+  return ROUTE.DISABILITY.JOBS
 }
+
+export const getMatchingRouteByRole = (role?: string | null) => {
+  const normalizedRole = role?.trim().toLowerCase()
+
+  if (['business', 'recruiter', 'employer', 'company'].includes(normalizedRole || '')) {
+    return ROUTE.BUSINESS.MATCHED_CANDIDATES
+  }
+
+  return ROUTE.DISABILITY.JOBS
+}
+

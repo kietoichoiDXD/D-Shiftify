@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { routerModel } from '../llm/gemini.client.js';
-import { extractEntities, detectATTools } from '../utils/nlp.js';
+import { extractEntities } from '../utils/nlp.js';
+import { detectATTools } from '../utils/at_detector.js';
 import { synthesizeSpeech } from '../utils/tts.js';
 import { logger } from '../../../packages/logger/index.js';
 

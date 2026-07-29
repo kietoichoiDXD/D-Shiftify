@@ -4,6 +4,7 @@ import { logger } from '../../../../packages/logger';
 import { MESSAGE } from './message.enum.js';
 import { JobRepository } from '../../job/repository/index';
 import { CVRepository } from '../../cv/repository/cv.repository.js';
+
 class Service {
     constructor() {
         this.conversationRepository = ConversationsRepository;
@@ -25,7 +26,7 @@ class Service {
             if (!recruiter) {
                 throw new NotFoundException(MESSAGE.RECRUITER_NOT_FOUND);
             }
-            const candidate =await this.cvRepository.findCandidateUserIdByCvId(application.cv_id,trx,);
+            const candidate =await this.cvRepository.findCandidateUserIdByCvId(application.cv_id,trx);
 
             if (!candidate) {
                 throw new NotFoundException(MESSAGE.CANDIDATE_NOT_FOUND);
@@ -64,10 +65,11 @@ class Service {
             const items = [];
             for (const conversationId of ids) {
                 const conversation = await this.conversationRepository.findById(conversationId);
-                if (!conversation) continue;
-                const participants = await this.participantRepository.findDetailedByConversationId(conversationId);
-                const lastMessage = await this.messageRepository.getLastMessage(conversationId);
-                items.push({ ...conversation, participants, lastMessage });
+                if (conversation) {
+                    const participants = await this.participantRepository.findDetailedByConversationId(conversationId);
+                    const lastMessage = await this.messageRepository.getLastMessage(conversationId);
+                    items.push({ ...conversation, participants, lastMessage });
+                }
             }
 
             const term = search.trim().toLowerCase();

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, ChevronDown, ChevronsLeft, ChevronsRight, Mic, Search, Volume2, X, Loader2 } from 'lucide-react'
@@ -10,10 +11,10 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import toastifyCommon from '@/core/lib/toastify-common'
 import { cn } from '@/core/lib/utils'
 import { jobApi, type JobRecord, type JobMatch } from '@/core/services/job.service'
 import { speakAccessibleText } from '@/core/services/speech.service'
-import toastifyCommon from '@/core/lib/toastify-common'
 
 import { allFilterLabel, filterGroups, initialFilters, matchReasons, type CandidateJob, type FilterKey, type FilterState } from './data'
 import { AnimatedButton, AnimatedCard } from './interactive'

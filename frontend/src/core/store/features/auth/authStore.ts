@@ -2,13 +2,15 @@ import { create } from 'zustand'
 
 import { authApi } from '@/core/services/auth.service'
 import { getPersistedAuth } from '@/core/shared/auth'
-import { clearAuthClientState } from '@/core/shared/storage'
+import { clearAuthClientState, setAccessTokenToLS, setRefreshTokenToLS } from '@/core/shared/storage'
 import { type LoginResponse } from '@/models/interface/auth.interfaces'
 
 import { type AuthState, type AuthStore } from './types'
 
 const initialState: AuthState = {
   user: null,
+  accessToken: null,
+  refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
   error: null
@@ -57,5 +59,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set({
       user
     })
+  },
+
+  setToken: (accessToken: string, refreshToken: string) => {
+    setAccessTokenToLS(accessToken)
+    setRefreshTokenToLS(refreshToken)
+    set({ accessToken, refreshToken })
+  },
+
+  clearToken: () => {
+    set({ accessToken: null, refreshToken: null })
   }
 }))

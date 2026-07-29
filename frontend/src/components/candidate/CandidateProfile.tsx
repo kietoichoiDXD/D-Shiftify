@@ -10,8 +10,9 @@
  */
 
 import React, { useState } from 'react'
-import { useCandidateProfile } from '@/hooks/useCandidateProfile'
+
 import { ProfileSkeleton } from '@/components/loaders/ProfileSkeleton'
+import { useCandidateProfile } from '@/hooks/useCandidateProfile'
 
 export const CandidateProfile: React.FC = () => {
   const { profile, isLoading, error, refetch } = useCandidateProfile()

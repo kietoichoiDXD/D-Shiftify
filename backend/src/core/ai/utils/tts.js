@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { GoogleAuth } from 'google-auth-library';
 import { logger } from '../../../packages/logger/index.js';
+import { GOOGLE_CLOUD_PROJECT } from '../../env/index.js';
 
 const auth = new GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/cloud-platform']
@@ -70,7 +71,7 @@ const fetchGcpTtsChunk = async (chunk) => {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'x-goog-user-project': 'bdien-muonmay'
+        'x-goog-user-project': GOOGLE_CLOUD_PROJECT || 'bdien-muonmay'
       }
     }
   );

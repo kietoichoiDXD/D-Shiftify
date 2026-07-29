@@ -1,5 +1,5 @@
 import { Module } from 'packages/handler/Module';
-//import { hasCandidateRole , hasRecruiter } from 'core/modules/auth/guard';
+// import { hasCandidateRole , hasRecruiter } from 'core/modules/auth/guard';
 import { page, size } from '../../common/swagger';
 import {CreateApplicationInterceptor,UpdateApplicationStatusInterceptor} from 'core/modules/applications/interceptors/index';              
 import { ApplicationsController } from './applications.controller';

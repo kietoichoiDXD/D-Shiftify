@@ -16,6 +16,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom'
 
 import { ROUTE } from '@/core/constants/path'
+import { getDashboardRouteByRole } from '@/core/helpers/auth-route'
 import { cn } from '@/core/lib/utils'
 import { authApi } from '@/core/services/auth.service'
 import { setToken, setUserToLS } from '@/core/shared/storage'
@@ -201,14 +202,12 @@ function AuthCard({ mode, role }: { mode: 'login' | 'register'; role: AuthRole }
       if (!isRegister) {
         const res = await authApi.login({ email: getData('email'), password: getData('password') })
         const data = (res as any).data ?? res
-        setToken(data.access_token, data.refresh_token)
+        setToken(data.accessToken, data.refreshToken)
         setUserToLS(data.user)
         loginSuccess(data)
 
         const userRole = data.user?.role ?? ''
-        if (userRole === 'recruiter') navigate(ROUTE.BUSINESS.JOB_CREATE)
-        else if (userRole === 'training_center') navigate(ROUTE.EDUCATOR.PROFILE_UPDATE)
-        else navigate(ROUTE.DISABILITY.JOBS)
+        navigate(getDashboardRouteByRole(userRole))
         return
       }
 

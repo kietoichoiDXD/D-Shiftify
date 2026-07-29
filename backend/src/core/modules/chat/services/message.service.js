@@ -34,7 +34,7 @@ class Service {
         );
         const sender = await this.getSenderInfo(senderId);
 
-        return {...message,sender,};
+        return {...message,sender};
     }
 
     async getMessages(conversationId, userId, { cursor = null, limit = 30 } = {}) {
@@ -62,6 +62,7 @@ class Service {
 
         return { messages: page, nextCursor };
     }
+
     async getMessageById(messageId, userId) {
         const message = await this.messageRepository.findById(messageId);
         if (!message) {
@@ -88,7 +89,7 @@ class Service {
         if (!Object.keys(updateData).length) {
             throw new BadRequestException(MESSAGE.MESSAGE_CONTENT_REQUIRED);
         }
-        return await this.messageRepository.update(messageId, updateData);
+        return this.messageRepository.update(messageId, updateData);
     }
 
     async deleteMessage(messageId, userId) {

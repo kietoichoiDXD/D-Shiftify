@@ -32,7 +32,9 @@ class Controller {
     };
 
     refresh = async (req, res) => {
-        const refreshToken = req.cookies?.refresh_token;
+        // Cookie takes priority; body is an additive fallback for header/body-based callers
+        // (frontend axios/apiClient interceptors POST { refresh_token } in the body).
+        const refreshToken = req.cookies?.refresh_token || req.body?.refresh_token;
         if (!refreshToken) {
             throw new UnAuthorizedException('Refresh token is missing');
         }
@@ -52,13 +54,13 @@ class Controller {
     };
 
     logout = async (req, res) => {
-        const refreshToken = req.cookies?.refresh_token;
-        if (!refreshToken) {
-            throw new UnAuthorizedException('Refresh token is missing');
+        const refreshToken = req.cookies?.refresh_token || req.body?.refresh_token;
+        const accessToken = req.cookies?.access_token || req.headers.authorization?.split(' ')[1];
+        if (refreshToken) {
+            await this.service.logout({ refresh_token: refreshToken, access_token: accessToken });
         }
-        const data = await this.service.logout({ refresh_token: refreshToken });
         this.#clearTokenCookies(res);
-        return ValidHttpResponse.toOkResponse(data);
+        return ValidHttpResponse.toOkResponse({ message: 'Logout successful.' });
     };
 }
 

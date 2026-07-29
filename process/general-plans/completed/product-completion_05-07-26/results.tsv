@@ -1,0 +1,4 @@
+cycle	date	verdict	gaps_open	loop_status
+0	2026-07-05	baseline	2	RUNNING
+1	2026-07-05	CONDITIONAL-resolved-in-pass	0	HALTED_SUCCESS
+2	2026-07-05	EVL-all-gates-pass	0	HALTED_SUCCESS

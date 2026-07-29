@@ -9,8 +9,9 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { getCandidateProfile, updateCandidateProfile, uploadProfileAvatar, CandidateProfile, UpdateProfileDto } from '@/core/services/candidate.service'
+
 import { ApiError } from '@/core/services/api/errors'
+import { getCandidateProfile, updateCandidateProfile, uploadProfileAvatar, type CandidateProfile, type UpdateProfileDto } from '@/core/services/candidate.service'
 
 export interface UseCandidateProfileReturn {
   // Data

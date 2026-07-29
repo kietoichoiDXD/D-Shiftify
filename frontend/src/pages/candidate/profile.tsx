@@ -6,7 +6,9 @@
  */
 
 import React, { useEffect } from 'react'
+
 import { useNavigate } from 'react-router-dom'
+
 import CandidateProfile from '@/components/candidate/CandidateProfile'
 import { useAuthStore } from '@/core/store/auth.store'
 

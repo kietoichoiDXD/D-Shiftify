@@ -111,6 +111,7 @@ class Repository extends DataRepository {
             .whereNull('deleted_at')
             .update({ deleted_at: new Date(), updated_at: new Date() });
     }
+
     findCandidateUserIdByCvId(cvId, trx = null) {
         const query = this.query()
             .innerJoin(

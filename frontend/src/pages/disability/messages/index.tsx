@@ -71,21 +71,13 @@ export default function DisabilityMessagesPage() {
     setActiveContactId(id)
   }, [])
 
-  const handleSearch = useCallback((query: string) => {
-    console.log('Search query:', query)
-  }, [])
+  const handleSearch = useCallback((_query: string) => {}, [])
 
-  const handleSendMessage = useCallback((contactId: string, text: string) => {
-    console.log(`Message sent to ${contactId}: ${text}`)
-  }, [])
+  const handleSendMessage = useCallback((_contactId: string, _text: string) => {}, [])
 
-  const handleCall = useCallback((contactId: string) => {
-    console.log(`Voice call initiated with ${contactId}`)
-  }, [])
+  const handleCall = useCallback((_contactId: string) => {}, [])
 
-  const handleVideoCall = useCallback((contactId: string) => {
-    console.log(`Video call initiated with ${contactId}`)
-  }, [])
+  const handleVideoCall = useCallback((_contactId: string) => {}, [])
 
   const switchTab = (tab: 'companies' | 'training') => {
     setActiveTab(tab)

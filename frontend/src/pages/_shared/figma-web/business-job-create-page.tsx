@@ -1,11 +1,12 @@
 import { useState } from 'react'
+
 import { Plus, Volume2, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { ROUTE } from '@/core/constants/path'
+import toastifyCommon from '@/core/lib/toastify-common'
 import { jobApi } from '@/core/services/job.service'
 import { speakAccessibleText } from '@/core/services/speech.service'
-import toastifyCommon from '@/core/lib/toastify-common'
 
 import { Chip, FigmaField, PrimaryAction } from './form-controls'
 import { AnimatedButton } from './interactive'

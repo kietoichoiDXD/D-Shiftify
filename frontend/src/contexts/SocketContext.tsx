@@ -12,7 +12,7 @@ interface SocketProviderProps {
 }
 
 export const SocketProvider = ({ children }: SocketProviderProps) => {
-  const storeToken = useAuthStore((state) => state.access_token)
+  const storeToken = useAuthStore((state) => state.accessToken)
   const storeUser = useAuthStore((state) => state.user)
   const token = storeToken || getAccessTokenFromLS()
   const userId = storeUser?.id || ''

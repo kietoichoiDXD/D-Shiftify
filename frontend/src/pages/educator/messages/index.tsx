@@ -60,21 +60,13 @@ export default function EducatorMessagesPage() {
     setActiveContactId(id)
   }, [])
 
-  const handleSearch = useCallback((query: string) => {
-    console.log('Search students:', query)
-  }, [])
+  const handleSearch = useCallback((_query: string) => {}, [])
 
-  const handleSendMessage = useCallback((contactId: string, text: string) => {
-    console.log(`Message sent to student ${contactId}: ${text}`)
-  }, [])
+  const handleSendMessage = useCallback((_contactId: string, _text: string) => {}, [])
 
-  const handleCall = useCallback((contactId: string) => {
-    console.log(`Voice call initiated with student ${contactId}`)
-  }, [])
+  const handleCall = useCallback((_contactId: string) => {}, [])
 
-  const handleVideoCall = useCallback((contactId: string) => {
-    console.log(`Video call initiated with student ${contactId}`)
-  }, [])
+  const handleVideoCall = useCallback((_contactId: string) => {}, [])
 
   return (
     <SharedChatLayout

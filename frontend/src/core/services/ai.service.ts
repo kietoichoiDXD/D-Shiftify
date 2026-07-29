@@ -1,4 +1,5 @@
 import { type AxiosInstance } from 'axios'
+
 import axiosClient from '@/core/services/axios-client'
 
 export type ChatResponse = {

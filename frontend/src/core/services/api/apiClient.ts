@@ -1,5 +1,5 @@
-import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios'
-import { ApiError } from './errors'
+import axios, { type AxiosInstance, type AxiosError, type AxiosRequestConfig } from 'axios'
+
 import {
   getAccessTokenFromLS,
   getRefreshTokenFromLS,
@@ -8,6 +8,8 @@ import {
   removeRefreshTokenFromLS,
   LocalStorageEventTarget
 } from '@/core/shared/storage'
+
+import { ApiError } from './errors'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const REQUEST_TIMEOUT = 10000
@@ -174,14 +176,14 @@ export async function refreshToken(): Promise<string> {
     refresh_token: storedRefreshToken,
   })
 
-  const newAccessToken = response.data?.data?.access_token || response.data?.access_token
+  const newAccessToken = response.data?.data?.accessToken || response.data?.accessToken
   if (!newAccessToken) {
-    throw new Error('Refresh response missing access_token')
+    throw new Error('Refresh response missing accessToken')
   }
 
   setAccessTokenToLS(newAccessToken)
 
-  const newRefreshToken = response.data?.data?.refresh_token || response.data?.refresh_token
+  const newRefreshToken = response.data?.data?.refreshToken || response.data?.refreshToken
   if (newRefreshToken) {
     const { setRefreshTokenToLS } = await import('@/core/shared/storage')
     setRefreshTokenToLS(newRefreshToken)

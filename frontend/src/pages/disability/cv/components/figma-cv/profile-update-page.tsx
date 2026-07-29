@@ -4,8 +4,8 @@ import { Volume2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { ROUTE } from '@/core/constants/path'
-import { useCvDraftStore } from '@/core/store/features/cv/cvDraftStore'
 import { speakAccessibleText } from '@/core/services/speech.service'
+import { useCvDraftStore } from '@/core/store/features/cv/cvDraftStore'
 import { DEFAULT_CV_FORM_VALUES, type CvFormValues } from '@/core/zod/cv.zod'
 
 import { BottomVoiceAction, OptionRow, VoiceField } from './form-controls'

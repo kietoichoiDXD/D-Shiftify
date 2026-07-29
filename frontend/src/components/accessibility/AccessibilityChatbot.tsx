@@ -2,8 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { useNavigate } from 'react-router-dom'
 
-import { ROUTE } from '@/core/constants/path'
 import { useAccessibility } from '@/contexts/useAccessibility'
+import { ROUTE } from '@/core/constants/path'
 import { useAutoSTT, type VoiceIntent } from '@/hooks/accessibility/useAutoSTT'
 
 interface BotLine {

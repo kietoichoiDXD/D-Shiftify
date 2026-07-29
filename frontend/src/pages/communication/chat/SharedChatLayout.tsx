@@ -2,14 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { getAccessTokenFromLS } from '@/core/shared/storage'
 import { useAuthStore } from '@/core/store/features/auth/authStore'
+
 import ChatSidebar, { type ConversationItem } from './components/ChatSidebar'
 import ChatWindow from './components/ChatWindow'
 import { type Message } from './components/MessageListNew'
+import { formatChatTime, normalizeMessagesResponse, normalizeConversationsResponse } from './message.adapter'
+import { getConversationMessages, getChatConversations } from './message.service'
 import { type SocketMessage } from './socket.types'
 import { useAutoScroll } from './useAutoScroll'
 import { useSocketMessages } from './useSocketMessages'
-import { getConversationMessages, getChatConversations } from './message.service'
-import { formatChatTime, normalizeMessagesResponse, normalizeConversationsResponse } from './message.adapter'
 import './chat.css'
 
 export type UserRole = 'candidate' | 'business' | 'educator'
@@ -51,7 +52,7 @@ export default function SharedChatLayout({
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [socketError, setSocketError] = useState<string | null>(null)
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
-  const storeToken = useAuthStore((state) => state.access_token)
+  const storeToken = useAuthStore((state) => state.accessToken)
   const token = storeToken || getAccessTokenFromLS()
   const isSocketEnabled = Boolean(token)
 

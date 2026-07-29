@@ -1,12 +1,13 @@
 import { useState } from 'react'
+
 import { CheckCircle2, Volume2, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { ROUTE } from '@/core/constants/path'
-import { trainingApi, type CourseInput } from '@/core/services/training.service'
-import { speakAccessibleText } from '@/core/services/speech.service'
 import toastifyCommon from '@/core/lib/toastify-common'
 import { cn } from '@/core/lib/utils'
+import { speakAccessibleText } from '@/core/services/speech.service'
+import { trainingApi, type CourseInput } from '@/core/services/training.service'
 
 import { workModeOptions } from './data'
 import { Chip, FigmaField, PrimaryAction } from './form-controls'

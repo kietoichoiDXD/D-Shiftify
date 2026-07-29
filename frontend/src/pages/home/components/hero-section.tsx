@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
-import { Volume2, Sparkles, Mic, ChevronRight, Check } from 'lucide-react'
+import { Volume2, Sparkles, ChevronRight, Check } from 'lucide-react'
 import { Link } from 'react-router-dom'
+
 import { ROUTE } from '@/core/constants/path'
 import { speakAccessibleText } from '@/core/services/speech.service'
 

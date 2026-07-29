@@ -49,21 +49,13 @@ export default function BusinessMessagesPage() {
     setActiveContactId(id)
   }, [])
 
-  const handleSearch = useCallback((query: string) => {
-    console.log('Search candidates:', query)
-  }, [])
+  const handleSearch = useCallback((_query: string) => {}, [])
 
-  const handleSendMessage = useCallback((contactId: string, text: string) => {
-    console.log(`Message sent to candidate ${contactId}: ${text}`)
-  }, [])
+  const handleSendMessage = useCallback((_contactId: string, _text: string) => {}, [])
 
-  const handleCall = useCallback((contactId: string) => {
-    console.log(`Voice call initiated with candidate ${contactId}`)
-  }, [])
+  const handleCall = useCallback((_contactId: string) => {}, [])
 
-  const handleVideoCall = useCallback((contactId: string) => {
-    console.log(`Video call initiated with candidate ${contactId}`)
-  }, [])
+  const handleVideoCall = useCallback((_contactId: string) => {}, [])
 
   return (
     <div className='h-screen w-full flex flex-col bg-white overflow-hidden'>

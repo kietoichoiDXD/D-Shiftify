@@ -5,10 +5,10 @@ import { useNavigate } from 'react-router-dom'
 
 import { Button } from '@/components/ui/button'
 import { ROUTE } from '@/core/constants/path'
+import toastifyCommon from '@/core/lib/toastify-common'
 import { cn } from '@/core/lib/utils'
 import { jobApi } from '@/core/services/job.service'
 import { speakAccessibleText } from '@/core/services/speech.service'
-import toastifyCommon from '@/core/lib/toastify-common'
 
 type FormState = {
   title: string

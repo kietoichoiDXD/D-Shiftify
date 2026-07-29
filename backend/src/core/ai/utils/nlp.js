@@ -1,20 +1,7 @@
 import { z } from 'zod';
 import { routerModel } from '../llm/gemini.client.js';
+import { detectATTools } from './at_detector.js';
 
-
-const AT_MAP = {
-  screen_reader: ['nvda', 'jaws', 'voiceover', 'narrator', 'trình đọc màn hình', 'đọc màn hình'],
-  braille:       ['braille', 'chữ nổi', 'màn hình chữ nổi'],
-  magnifier:     ['kính lúp', 'zoom text', 'phóng to màn hình', 'magnifier'],
-  voice_control: ['điều khiển giọng nói', 'voice control', 'dragon naturally'],
-};
-
-export const detectATTools = (text) => {
-  const lower = text.toLowerCase();
-  return Object.entries(AT_MAP)
-    .filter(([, keywords]) => keywords.some((k) => lower.includes(k)))
-    .map(([need]) => need);
-};
 
 const NERSchema = z.object({
   hard_skills:     z.array(z.string()),

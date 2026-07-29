@@ -1,19 +1,9 @@
 import { GoogleAuth } from 'google-auth-library';
 import axios from 'axios';
-import Groq from 'groq-sdk';
 import { logger } from '../../../packages/logger/index.js';
+import { GOOGLE_CLOUD_PROJECT } from '../../env/index.js';
+import { transcribeWithGroq } from './groq.stt.js';
 
-
-let groq;
-const getGroqClient = () => {
-  if (!groq) {
-    if (!process.env.GROQ_API_KEY) {
-      throw new Error("GROQ_API_KEY environment variable is missing");
-    }
-    groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-  }
-  return groq;
-};
 const auth = new GoogleAuth({
   scopes: ['https://www.googleapis.com/auth/cloud-platform']
 });
@@ -21,12 +11,16 @@ const auth = new GoogleAuth({
 const FILLER = /\b(ừm+|à+|ờ+|uh+|um+)\b/gi;
 const REPEAT = /\b(\w+)( \1)+\b/gi;
 
-const transcribeGcp = async (audioBase64, mimeType) => {
-  let encoding = 'WEBM_OPUS';
-  if (mimeType.includes('wav')) encoding = 'LINEAR16';
-  else if (mimeType.includes('mp3')) encoding = 'MP3';
-  else if (mimeType.includes('ogg')) encoding = 'OGG_OPUS';
+// Map a browser MIME type to the app's STT encoding enum — shared by the GCP and Groq paths.
+const encodingFromMime = (mimeType = '') => {
+  if (mimeType.includes('wav')) return 'LINEAR16';
+  if (mimeType.includes('mp3')) return 'MP3';
+  if (mimeType.includes('ogg')) return 'OGG_OPUS';
+  return 'WEBM_OPUS';
+};
 
+const transcribeGcp = async (audioBase64, mimeType) => {
+  const encoding = encodingFromMime(mimeType);
   const token = await auth.getAccessToken();
   const payload = {
     config: {
@@ -46,7 +40,7 @@ const transcribeGcp = async (audioBase64, mimeType) => {
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'x-goog-user-project': 'bdien-muonmay'
+        'x-goog-user-project': GOOGLE_CLOUD_PROJECT || 'bdien-muonmay'
       }
     }
   );
@@ -69,14 +63,11 @@ export const transcribeAudio = async (audioBase64, mimeType = 'audio/webm') => {
     logger.warn(`[STT] Google Cloud STT failed, falling back to Groq Whisper: ${error.message}`);
   }
 
-  // Fallback to Groq Whisper
+  // Fallback to the shared Groq Whisper implementation (single source of truth: groq.stt.js).
   const buf = Buffer.from(audioBase64, 'base64');
-  const file = new File([buf], 'audio.webm', { type: mimeType });
-  const res = await getGroqClient().audio.transcriptions.create({
-    file,
-    model: 'whisper-large-v3-turbo',
-    language: 'vi',
-    response_format: 'text',
+  const { transcript } = await transcribeWithGroq(buf, {
+    encoding: encodingFromMime(mimeType),
+    languageCode: 'vi-VN',
   });
-  return res.replace(FILLER, '').replace(REPEAT, '$1').trim();
+  return String(transcript || '').replace(FILLER, '').replace(REPEAT, '$1').trim();
 };

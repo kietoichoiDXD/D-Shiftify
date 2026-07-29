@@ -21,6 +21,7 @@ class Repository extends DataRepository {
 
         return queryBuilder.then(([profile]) => profile);
     }
+
     findByUserId(userId) {
         return this.query()
             .whereNull('deleted_at')

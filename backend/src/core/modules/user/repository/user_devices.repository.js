@@ -7,7 +7,7 @@ class Repository extends DataRepository {
         if (!device_ids.length) {
             return Promise.resolve([]);
         }
-        const rows = device_ids.map(device_id => ({profile_id,device_id,}));
+        const rows = device_ids.map(device_id => ({profile_id,device_id}));
         const queryBuilder = this.query().insert(rows)
             .onConflict(['profile_id', 'device_id'])
             .ignore();

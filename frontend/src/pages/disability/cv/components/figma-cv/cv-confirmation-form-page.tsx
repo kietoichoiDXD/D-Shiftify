@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+
 import { useNavigate } from 'react-router-dom'
 
 import { ROUTE } from '@/core/constants/path'
-import { useCvDraftStore } from '@/core/store/features/cv/cvDraftStore'
 import { cvApi } from '@/core/services/cv.service'
 import { speakAccessibleText } from '@/core/services/speech.service'
+import { useCvDraftStore } from '@/core/store/features/cv/cvDraftStore'
 import { DEFAULT_CV_FORM_VALUES, type CvFormValues } from '@/core/zod/cv.zod'
 
 import { PlaybackControls, VoiceField } from './form-controls'

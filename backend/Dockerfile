@@ -3,6 +3,13 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+FROM deps AS dev
+WORKDIR /app
+COPY . .
+ENV NODE_ENV=development
+EXPOSE 3000
+CMD ["npm", "run", "dev"]
+
 FROM deps AS build
 WORKDIR /app
 COPY . .
